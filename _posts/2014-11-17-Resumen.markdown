@@ -1,0 +1,9 @@
+---
+layout: post
+title:  "Resumen: Gestiond de la Configuracion del Software!"
+date:   2014-11-17 13:35:45
+categories: jekyll update
+---
+La gestión de la configuración del software es uno de los procesos clave para toda organización dedicada a la Ingeniería del Software, ya que posibilita una mejor organización del desarrollo y mantenimiento, producto, facilitando el resto de procesos de producción.
+
+Durante el proceso de construcción de un software, los cambios son inevitables. Los cambios provocan confusión e incertidumbre, sobre todo cuando no se han analizado o pronosticado correctamente. Es importante considerar ciertas modificaciones que pueden ocurrirle al software dentro de todo el proceso de ingeniería.
