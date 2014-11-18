@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Resumen: Gestiond de la Configuracion del Software!"
+title:  "Resumen: Gestión de la Configuración del Software!"
 date:   2014-11-17 13:35:45
 categories: jekyll update
 ---
