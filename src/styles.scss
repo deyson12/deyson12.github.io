@@ -1,0 +1,26 @@
+/* You can add global styles to this file, and also import other style files */
+@use './tailwind.css';
+@use './assets/layout/layout.scss';
+@use 'primeicons/primeicons.css';
+@use './assets/demo/demo.scss';
+
+:host ::ng-deep .p-carousel-prev,
+:host ::ng-deep .p-carousel-next {
+  background-color: #f97316;    /* bg-orange-500 */
+  border-radius: 50%;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: none !important;
+}
+
+:host ::ng-deep .p-carousel-prev .pi,
+:host ::ng-deep .p-carousel-next .pi {
+  color: #fff;
+  font-size: 1.25rem;
+}
+
+/* Opcional: eliminar sombra al focus */
+:host ::ng-deep .p-carousel-prev:focus,
+:host ::ng-deep .p-carousel-next:focus {
+  box-shadow: none;
+}

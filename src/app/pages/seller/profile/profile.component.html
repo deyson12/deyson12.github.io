@@ -1,0 +1,171 @@
+<!-- seller-profile.component.html -->
+<div class="card w-full mx-auto p-6">
+  <!-- Sección de edición de perfil -->
+  <section class="mb-8">
+    <h2 class="text-2xl font-bold mb-4">Mi Perfil</h2>
+    <form (ngSubmit)="saveProfile()" [formGroup]="profileForm" class="space-y-4">
+      <div class="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-4">
+        <ng-container *ngIf="seller.profileImage; else avatarInitial">
+          <img
+            [src]="seller.profileImage"
+            alt="{{ seller.name }}"
+            class="w-24 h-24 rounded-full object-cover"
+          />
+        </ng-container>
+        <ng-template #avatarInitial>
+          <div
+            class="w-24 h-24 rounded-full bg-primary text-white flex items-center justify-center uppercase text-3xl font-bold">
+            {{ seller.name[0] | uppercase }}
+          </div>
+        </ng-template>
+        <input
+          type="file"
+          (change)="onProfileImageChange($event)"
+          class="w-full sm:w-auto border rounded p-2"
+        />
+      </div>
+      <div>
+        <label class="block font-medium mb-1">Nombre</label>
+        <input formControlName="name" type="text" class="w-full border rounded p-2" />
+      </div>
+      <div>
+        <label class="block font-medium mb-1">Descripción</label>
+        <textarea formControlName="description" rows="3" class="w-full border rounded p-2"></textarea>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block font-medium mb-1">Facebook URL</label>
+          <input formControlName="facebookUrl" type="url" class="w-full border rounded p-2" />
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Instagram URL</label>
+          <input formControlName="instagramUrl" type="url" class="w-full border rounded p-2" />
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Twitter URL</label>
+          <input formControlName="twitterUrl" type="url" class="w-full border rounded p-2" />
+        </div>
+        <div>
+          <label class="block font-medium mb-1">LinkedIn URL</label>
+          <input formControlName="linkedinUrl" type="url" class="w-full border rounded p-2" />
+        </div>
+      </div>
+      <button
+        type="submit"
+        class="w-full sm:w-auto px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark"
+      >
+        Guardar Perfil
+      </button>
+    </form>
+  </section>
+
+  <!-- Banner de límite de productos -->
+  <ng-container>
+    <div
+      *ngIf="products.length >= productLimit"
+      class="w-full bg-orange-500 text-white flex items-center justify-between px-4 py-2 shadow-md z-50 font-semibold"
+    >
+      <div class="text-sm">
+        Has llegado al máximo de productos permitido. Para añadir nuevos ítems, actualiza tu plan. Escríbenos por
+        <a href="https://wa.me/573136090247" target="_blank" class="font-semibold underline">
+          WhatsApp: 3136090247
+        </a>
+      </div>
+      <button
+        type="button"
+        class="p-1 focus:outline-none"
+        aria-label="Cerrar banner"
+        (click)="closeBanner()"
+      >
+        <i class="pi pi-times text-xl"></i>
+      </button>
+    </div>
+    <!-- Para que el contenido no quede oculto tras el banner: -->
+    <div *ngIf="products.length >= productLimit" class="h-12"></div>
+  </ng-container>
+
+  <!-- Sección de CRUD de productos -->
+  <section>
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 space-y-2 sm:space-y-0">
+      <div>
+        <h2 class="text-2xl font-bold">Mis Productos</h2>
+        <p class="text-gray-700 mt-1">
+          Tienes {{ products.length }} productos de {{ productLimit }}.
+        </p>
+      </div>
+      <button
+        (click)="openNewProductForm()"
+        [disabled]="products.length >= productLimit"
+        class="w-full sm:w-auto px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        + Nuevo Producto
+      </button>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-[600px] w-full border-collapse">
+        <thead>
+          <tr class="bg-gray-100 text-left">
+            <th class="px-4 py-2">Imagen</th>
+            <th class="px-4 py-2">Nombre</th>
+            <th class="px-4 py-2">Precio</th>
+            <th class="px-4 py-2">Precio original</th>
+            <th class="px-4 py-2">Destacado</th>
+            <th class="px-4 py-2">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of products" class="border-t hover:bg-gray-50">
+            <td class="px-4 py-2">
+              <img [src]="p.image" alt="{{ p.name }}" class="w-12 h-12 object-cover rounded" />
+            </td>
+            <td class="px-4 py-2">{{ p.name }}</td>
+            <td class="px-4 py-2">{{ p.price | currency:'COP':'symbol':'1.0-0' }}</td>
+            <td class="px-4 py-2">{{ p.originalPrice | currency:'COP':'symbol':'1.0-0' }}</td>
+            <td class="px-4 py-2">{{ p.featured ? 'Sí' : 'No' }}</td>
+            <td class="px-4 py-2 space-x-2 whitespace-nowrap">
+              <button
+                (click)="previewProduct(p)"
+                class="px-2 py-1 bg-indigo-500 text-white rounded hover:bg-indigo-600"
+              >
+                Ver
+              </button>
+              <button
+                (click)="editProduct(p)"
+                class="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                Editar
+              </button>
+              <button
+                (click)="deleteProduct(p)"
+                class="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+              >
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Modal de vista previa -->
+  <div
+    *ngIf="displayPreview"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+  >
+    <div class="bg-white rounded-lg overflow-hidden w-11/12 md:w-1/2">
+      <div class="p-4 flex justify-between items-center border-b">
+        <h3 class="text-xl font-bold">Vista previa del producto</h3>
+        <button (click)="closePreview()" class="text-gray-500 hover:text-gray-700">
+          <i class="pi pi-times text-xl"></i>
+        </button>
+      </div>
+      <div class="p-4">
+        <app-card
+          class="col-span-12 lg:col-span-6 xl:col-span-4"
+          [product]="selectedProduct"
+        ></app-card>
+      </div>
+    </div>
+  </div>
+</div>

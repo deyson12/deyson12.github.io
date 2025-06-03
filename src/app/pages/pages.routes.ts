@@ -1,0 +1,31 @@
+import { Routes } from '@angular/router';
+import { HomeComponent } from './product/home/home.component';
+import { CartComponent } from './product/cart/cart.component';
+import { ProductDetailComponent } from './product/product-detail/product-detail.component';
+import { SellerProfileComponent } from './product/seller-profile/seller-profile.component';
+import { ProfileComponent } from './seller/profile/profile.component';
+import { MySalesComponent } from './seller/my-sales/my-sales.component';
+import { PaymentHelpComponent } from './seller/payment-help/payment-help.component';
+import { CreateSellerComponent } from './seller/create-seller/create-seller.component';
+
+export default [
+    { path: 'all', component: HomeComponent },
+    { path: 'food-and-drinks', component: HomeComponent },
+    { path: 'fashion', component: HomeComponent },
+    { path: 'electronics', component: HomeComponent },
+    { path: 'home', component: HomeComponent },
+    { path: 'health-and-beauty', component: HomeComponent },
+    { path: 'sports-and-outdoors', component: HomeComponent },
+    { path: 'automotive', component: HomeComponent },
+    { path: 'toys-and-entertainment', component: HomeComponent },
+    { path: 'pets', component: HomeComponent },
+    { path: 'services', component: HomeComponent },
+    { path: 'cart', component: CartComponent },
+    { path: 'product-detail', component: ProductDetailComponent },
+    { path: 'seller-profile', component: SellerProfileComponent },
+    { path: 'profile', component: ProfileComponent },
+    { path: 'my-sales', component: MySalesComponent },
+    { path: 'help', component: PaymentHelpComponent },
+    { path: 'create-seller', component: CreateSellerComponent },
+    { path: '**', redirectTo: '/all' }
+] as Routes;

@@ -1,0 +1,16 @@
+<!-- slide-menu.component.html -->
+<div class="pb-4">
+  <div class="card overflow-x-auto snap-x snap-mandatory scroll-smooth py-2 hide-scrollbar" appDragScroll>
+    <div class="flex space-x-1 px-1">
+      @for (item of itemsMenu; track $index) {
+        <a href="#" (click)="onClick(item)">
+          <div class="snap-center flex-shrink-0 w-28 flex flex-col items-center justify-center rounded-lg p-1">
+            <img [src]="item.icon" alt="{{ item.label }}"
+                 class="w-16 h-16 object-contain mb-2 rounded-full" />
+            <span class="text-xs text-center">{{ item.label }}</span>
+          </div>
+        </a>
+      }
+    </div>
+  </div>
+</div>
