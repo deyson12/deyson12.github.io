@@ -1,1 +1,404 @@
-<p>create-seller works!</p>
+<!-- seller-profile.component.html -->
+<div class="card w-full mx-auto p-6">
+    <p-stepper [(value)]="activeStep" class="basis-[40rem]">
+        <p-step-list>
+            <p-step [value]="1" class="flex flex-row flex-auto gap-2">
+                <ng-template #content let-activateCallback="activateCallback" let-value="value">
+                    <span class="rounded-full border-2 w-12 h-12 inline-flex items-center justify-center" [ngClass]="{
+                            'bg-primary text-primary-contrast border-primary': value <= activeStep,
+                            'border-surface': value > activeStep
+                        }">
+                        <i class="pi pi-user"></i>
+                    </span>
+                </ng-template>
+            </p-step>
+
+            <p-step [value]="2" class="flex flex-row flex-auto gap-2">
+                <ng-template #content let-activateCallback="activateCallback" let-value="value">
+                    <span class="rounded-full border-2 w-12 h-12 inline-flex items-center justify-center" [ngClass]="{
+                            'bg-primary text-primary-contrast border-primary': value <= activeStep,
+                            'border-surface': value > activeStep
+                        }">
+                        <i class="pi pi-star"></i>
+                    </span>
+                </ng-template>
+            </p-step>
+
+            <p-step [value]="3" class="flex flex-row flex-auto gap-2">
+                <ng-template #content let-activateCallback="activateCallback" let-value="value">
+                    <span class="rounded-full border-2 w-12 h-12 inline-flex items-center justify-center" [ngClass]="{
+                            'bg-primary text-primary-contrast border-primary': value <= activeStep,
+                            'border-surface': value > activeStep
+                        }">
+                        <i class="pi pi-id-card"></i>
+                    </span>
+                </ng-template>
+            </p-step>
+        </p-step-list>
+
+        <p-step-panels>
+            <p-step-panel [value]="1">
+                <ng-template #content let-activateCallback="activateCallback">
+                    <div class="flex flex-col gap-2 mx-auto">
+                        <div class="text-center mt-4 mb-4 text-xl font-semibold">Darme de alta como vendedor</div>
+                        <form [formGroup]="sellerForm" (ngSubmit)="onSubmit()" class="min-w-[30%] mx-auto p-4">
+                            <!-- Avatar / imagen de perfil -->
+                            <label for="image" class="block text-sm font-medium text-gray-700 mb-1">
+                                Imagen del negocio
+                            </label>
+                            <div class="flex flex-col items-center mb-6 rounded-border border-2 p-2">
+                                <img [src]="avatarUrl" alt="Avatar vendedor"
+                                    class="w-24 h-24 rounded-full border border-gray-300 mb-2 object-cover" />
+                                <input type="file" accept="image/*" (change)="uploadSellerImage($event)"
+                                    class="text-sm text-gray-600" />
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-4">
+                                <!-- Nombre del dueño -->
+                                <div class="col-span-1">
+                                    <label for="ownerName" class="block text-sm font-medium text-gray-700 mb-1">
+                                        Nombre del dueño
+                                    </label>
+                                    <input id="ownerName" type="text" formControlName="ownerName" maxlength="100"
+                                        placeholder="Ej: Juan Pérez"
+                                        class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-300" />
+                                    <small *ngIf="ownerName.touched && ownerName.invalid" class="text-red-600 text-xs">
+                                        <span *ngIf="ownerName.errors?.['required']">El nombre es obligatorio.</span>
+                                        <span *ngIf="ownerName.errors?.['maxLength']">Máximo 100 caracteres.</span>
+                                    </small>
+                                </div>
+
+                                <!-- Nombre del negocio -->
+                                <div class="col-span-1">
+                                    <label for="businessName" class="block text-sm font-medium text-gray-700 mb-1">
+                                        Nombre del negocio
+                                    </label>
+                                    <input id="businessName" type="text" formControlName="businessName" maxlength="100"
+                                        placeholder="Ej: Tienda La Esquina"
+                                        class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-300" />
+                                    <small *ngIf="businessName.touched && businessName.invalid"
+                                        class="text-red-600 text-xs">
+                                        <span *ngIf="businessName.errors?.['required']">El nombre del negocio es
+                                            obligatorio.</span>
+                                        <span *ngIf="businessName.errors?.['maxLength']">Máximo 100 caracteres.</span>
+                                    </small>
+                                </div>
+
+                                <!-- Email (deshabilitado si role === 'buyer') -->
+                                <div class="col-span-1">
+                                    <label for="email"
+                                        class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                    <input id="email" type="email" formControlName="email"
+                                        placeholder="ejemplo@correo.com" [disabled]="isBuyer"
+                                        class="w-full border border-gray-300 rounded px-3 py-2 bg-gray-100 focus:outline-none focus:ring focus:border-blue-300" />
+                                    <small *ngIf="email.touched && email.invalid" class="text-red-600 text-xs">
+                                        <span *ngIf="email.errors?.['required']">El email es obligatorio.</span>
+                                        <span *ngIf="email.errors?.['email']">Formato de email inválido.</span>
+                                    </small>
+                                </div>
+
+                                <!-- Celular con InputMask de PrimeNG -->
+                                <div class="col-span-1">
+                                    <label for="phone"
+                                        class="block text-sm font-medium text-gray-700 mb-1">Celular</label>
+                                    <p-inputMask id="phone" formControlName="phone" mask="(999) 999-9999"
+                                        class="w-full"></p-inputMask>
+                                    <small *ngIf="phone.touched && phone.invalid" class="text-red-600 text-xs">
+                                        <span *ngIf="phone.errors?.['required']">El teléfono es obligatorio.</span>
+                                        <span *ngIf="phone.errors?.['pattern']">Formato válido: (313) 123-5678.</span>
+                                    </small>
+                                </div>
+
+                                <!-- Contraseña (solo si no es buyer) -->
+                                <ng-container *ngIf="!isBuyer">
+                                    <div class="col-span-1">
+                                        <label for="password"
+                                            class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+                                        <input id="password" type="password" formControlName="password"
+                                            placeholder="Mínimo 6 caracteres"
+                                            class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-300" />
+                                        <small *ngIf="password.touched && password.invalid"
+                                            class="text-red-600 text-xs">
+                                            <span *ngIf="password.errors?.['required']">La contraseña es
+                                                obligatoria.</span>
+                                            <span *ngIf="password.errors?.['minlength']">Mínimo 6 caracteres.</span>
+                                        </small>
+                                    </div>
+
+                                    <div class="col-span-1">
+                                        <label for="confirmPassword"
+                                            class="block text-sm font-medium text-gray-700 mb-1">
+                                            Repetir contraseña
+                                        </label>
+                                        <input id="confirmPassword" type="password" formControlName="confirmPassword"
+                                            placeholder="Repite la contraseña"
+                                            class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-300" />
+                                        <small
+                                            *ngIf="(confirmPassword.touched && confirmPassword.invalid) || (sellerForm.errors?.['passwordsMismatch'] && confirmPassword.touched)"
+                                            class="text-red-600 text-xs">
+                                            <span *ngIf="confirmPassword.errors?.['required']">
+                                                Debes confirmar la contraseña.
+                                            </span>
+                                            <span *ngIf="sellerForm.errors?.['passwordsMismatch']">
+                                                Las contraseñas no coinciden.
+                                            </span>
+                                        </small>
+                                    </div>
+
+                                    <div class="col-span-1 flex items-center mt-4">
+                                        <p-checkbox formControlName="termsAccepted" binary="true"></p-checkbox>
+                                        <label for="termsAccepted" class="ml-2 text-sm">
+                                            He leído y acepto los
+                                            <a href="#" (click)="openTerms($event)" class="text-blue-600 underline">
+                                                términos y condiciones
+                                            </a>.
+                                        </label>
+                                    </div>
+                                </ng-container>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="flex pt-6 justify-end">
+                        <p-button [disabled]="sellerForm.invalid"
+                            (onClick)="activateCallback(2); startTimer(); onSubmit()" label="Siguiente"
+                            icon="pi pi-arrow-right" iconPos="right" />
+                    </div>
+                </ng-template>
+            </p-step-panel>
+
+            <p-step-panel [value]="2">
+                <ng-template #content let-activateCallback="activateCallback">
+                    <div class="flex flex-col gap-2 mx-auto" style="min-height: 16rem; max-width: 24rem">
+                        <div class="text-center mt-4 mb-4 text-xl font-semibold">Verificación de Email</div>
+                        <div class="flex flex-wrap justify-center gap-4">
+                            <!-- verification-code.component.html -->
+                            <div class="flex flex-col items-center justify-center p-4">
+                                <!-- Texto informativo -->
+                                <p class="mb-4 text-center">
+                                    Se envió un código al correo: {{ getEmail() }}
+                                </p>
+
+                                <!-- Contenedor de inputs estilo “cajitas” alineadas y centradas -->
+                                <div class="flex space-x-2">
+                                    <input #codeInput *ngFor="let _ of inputs; let i = index" type="text" maxlength="1"
+                                        inputmode="numeric" pattern="[0-9]*" (input)="onInput($event, i)"
+                                        (keydown)="onKeyDown($event, i)" (paste)="onPaste($event)"
+                                        [disabled]="completeVerification"
+                                        class="w-12 h-12 text-center text-2xl border-2 border-gray-300 rounded focus:border-blue-500 focus:outline-none" />
+                                </div>
+
+                                <!-- Enlace para reenviar código / contador y botón “Verificar” -->
+                                <div
+                                    class="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full max-w-xs mt-4">
+                                    <!-- Resend Section -->
+                                    <div class="mb-2 sm:mb-0">
+                                        <!-- Si ya se alcanzó el máximo de reenvíos -->
+                                        <span *ngIf="resendAttempts >= maxAttempts" class="text-gray-500">
+                                            No puedes reenviar más códigos, contacta al administrador
+                                        </span>
+
+                                        <!-- Si aún faltan reintentos -->
+                                        <ng-container *ngIf="resendAttempts < maxAttempts">
+                                            <!-- Mostrar contador mientras countdown > 0 -->
+                                            <span *ngIf="!showResend" class="text-gray-500">
+                                                Reenviar disponible en {{ countdown }}s
+                                            </span>
+
+                                            <!-- Mostrar enlace cuando countdown = 0 -->
+                                            <a *ngIf="showResend" href="#"
+                                                (click)="resendCode(); $event.preventDefault()"
+                                                class="text-blue-500 hover:underline">
+                                                Reenviar código
+                                            </a>
+                                        </ng-container>
+                                    </div>
+
+                                    <!-- Botón Verificar -->
+                                    <button (click)="verifyCode()"
+                                        [disabled]="codeDigits.join('').length < 6 || completeVerification"
+                                        class="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed">
+                                        Verificar
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="flex pt-6 justify-between">
+                        <p-button (onClick)="activateCallback(1)" label="Volver" severity="secondary"
+                            icon="pi pi-arrow-left" />
+                        <p-button [disabled]="!this.completeVerification"
+                            (onClick)="activateCallback(3); completeSellerCreation();" label="Siguiente"
+                            icon="pi pi-arrow-right" iconPos="right" />
+                    </div>
+                </ng-template>
+            </p-step-panel>
+
+            <p-step-panel [value]="3">
+                <ng-template #content let-activateCallback="activateCallback">
+                    <div class="flex flex-col gap-2 mx-auto" style="min-height: 16rem; max-width: 24rem">
+                        <div class="flex flex-col items-center justify-center text-center p-4 bg-gray-50">
+                            <!-- Imagen de éxito: reemplaza la ruta con la de tu imagen -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 512 512">
+                                <!-- Círculo verde de fondo -->
+                                <circle cx="256" cy="256" r="256" fill="#149c46" />
+                                <!-- Marca de verificación blanca -->
+                                <path d="M150 266.1l87.6 87.6l147.4-147.4" fill="none" stroke="#FFFFFF"
+                                    stroke-width="40" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+
+
+                            <h1 class="text-2xl font-bold text-green-600">
+                                ¡Felicitaciones! Te has dado de alta como vendedor.
+                            </h1>
+                            <p class="mt-2 text-lg text-gray-600">
+                                Serás contactado al celular {{sellerForm.get('phone')?.value}} y en un plazo máximo de
+                                24 horas serás habilitado como vendedor.
+                            </p>
+
+                            <div>
+                                <a [routerLink]="['/pages/all']"
+                                    class="inline-block px-6 py-3 bg-blue-600 text-white font-semibold rounded-full shadow hover:bg-blue-700 transition">
+                                    Explorar productos
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </ng-template>
+            </p-step-panel>
+        </p-step-panels>
+    </p-stepper>
+
+
+    <p-dialog header="Términos y Condiciones" [(visible)]="displayTerms" [modal]="true" [style]="{width: '600px'}"
+        [contentStyle]="{'max-height':'70vh','overflow':'auto'}" [closeOnEscape]="true" (onHide)="closeTerms()">
+        <!-- Pega aquí el HTML completo de tus Términos y Condiciones -->
+        <div class="p-4">
+            <!-- Términos y Condiciones (contenido para el popup) -->
+
+            <p class="mb-4">Antes de completar tu registro como vendedor en Ventas 7 Lunas, por favor lee
+                detenidamente estos Términos y Condiciones. Al aceptar, manifiestas que comprendes y aceptas las
+                obligaciones y responsabilidades que aquí se describen.</p>
+
+            <h3 class="text-xl font-semibold mt-4 mb-2">1. Definiciones</h3>
+            <ul class="list-disc list-inside mb-4">
+                <li><strong>Plataforma:</strong> Ventas 7 Lunas, sitio web y/o aplicación móvil donde se publica y
+                    comercializa productos.</li>
+                <li><strong>Vendedor:</strong> Persona natural o jurídica que se registra y publica productos para
+                    la venta.</li>
+                <li><strong>Comprador:</strong> Persona que navega y adquiere productos publicados por los
+                    Vendedores.</li>
+                <li><strong>Contenido:</strong> Texto, imágenes, descripciones, precios y demás información que el
+                    Vendedor proporciona sobre sus productos.</li>
+            </ul>
+
+            <h3 class="text-xl font-semibold mt-4 mb-2">2. Registro y Activación</h3>
+            <ul class="list-disc list-inside mb-4">
+                <li>Completar todos los campos del formulario de registro con información veraz y actualizada.</li>
+                <li>Aceptar este documento y la Política de Privacidad.</li>
+                <li>Verificar tu correo electrónico mediante el enlace o código enviado.</li>
+            </ul>
+            <p class="mb-4">Una vez verificado tu email, tu cuenta pasará a estado “En Revisión” y, tras validación
+                por parte del equipo de Ventas 7 Lunas, se activará para que puedas publicar productos.</p>
+
+            <h3 class="text-xl font-semibold mt-4 mb-2">3. Responsabilidades del Vendedor</h3>
+            <ul class="list-disc list-inside mb-4">
+                <li><strong>Exactitud de la Información:</strong> Todas las descripciones, precios, fotos y
+                    condiciones de venta deben ser veraces. No está permitido publicar información engañosa,
+                    fraudulenta o que infrinja derechos de terceros.</li>
+                <li><strong>Legalidad del Producto:</strong> No se pueden ofrecer productos ilegales, robados,
+                    falsificados o que atenten contra la propiedad intelectual. El Vendedor se compromete a cumplir
+                    con todas las leyes y regulaciones aplicables.</li>
+                <li><strong>Actualización Constante:</strong> Mantener tu catálogo de productos actualizado: retirar
+                    del listado aquel producto que ya no esté disponible o cuyo precio cambie.</li>
+                <li><strong>Atención al Comprador:</strong> Responder oportunamente consultas, coordinar entregas o
+                    envíos y gestionar reclamos según la normativa vigente.</li>
+            </ul>
+
+            <h3 class="text-xl font-semibold mt-4 mb-2">4. Publicación de Productos</h3>
+            <ul class="list-disc list-inside mb-4">
+                <li>Cada plan de suscripción define la cantidad máxima de productos que puedes publicar. Si excedes
+                    ese límite, deberás adquirir un plan superior.</li>
+                <li>Queda prohibido publicar contenido ofensivo, discriminatorio o que promueva actividades
+                    ilícitas.</li>
+                <li>Las imágenes deben ser propias o contar con los permisos necesarios. Si se detecta uso de
+                    imágenes con derechos reservados, Ventas 7 Lunas podrá eliminar el anuncio inmediatamente.</li>
+            </ul>
+
+            <h3 class="text-xl font-semibold mt-4 mb-2">5. Precios, Suscripciones y Pagos</h3>
+            <ul class="list-disc list-inside mb-4">
+                <li><strong>Planes:</strong>
+                    <ul class="list-circle list-inside ml-6 mb-2">
+                        <li><strong>Básico:</strong> gratuito por 1 mes, hasta 5 productos.</li>
+                        <li><strong>Preferido:</strong> COP 30 000/mes, hasta 15 productos y destacado en página
+                            principal.</li>
+                        <li><strong>Premium:</strong> COP 50 000/mes, productos ilimitados, 1 destacado y prioridad
+                            en búsquedas.</li>
+                    </ul>
+                </li>
+                <li>Cada mes debes realizar el pago correspondiente y compartir el comprobante al número de WhatsApp
+                    que encontrarás en la sección de “Planes y Pagos”.</li>
+                <li>Para procesar tus pagos utilizamos Stripe; los montos se muestran en pesos colombianos (COP).
+                </li>
+                <li>Cualquier impuesto o comisión adicional (pública o privada) corre por cuenta del Vendedor.</li>
+                <li><strong>Modificación de precios:</strong> Ventas 7 Lunas se reserva el derecho de cambiar los
+                    precios de las suscripciones en cualquier momento; dichos ajustes se publicarán con antelación
+                    en la sección de “Planes y Pagos”. El uso continuado de la plataforma después de la publicación
+                    constituirá aceptación de los nuevos precios.</li>
+            </ul>
+
+            <h3 class="text-xl font-semibold mt-4 mb-2">6. Propiedad Intelectual</h3>
+            <ul class="list-disc list-inside mb-4">
+                <li>El Vendedor conserva todos los derechos de propiedad intelectual sobre sus productos y
+                    contenidos, siempre que no infrinjan derechos de terceros.</li>
+                <li>Al publicar en Ventas 7 Lunas, otorgas una licencia no exclusiva, mundial y sin regalías para
+                    que podamos mostrar tu contenido a los Compradores.</li>
+                <li>Está prohibido copiar, distribuir o reproducir el material de otros Vendedores sin autorización.
+                </li>
+            </ul>
+
+            <h3 class="text-xl font-semibold mt-4 mb-2">7. Privacidad y Protección de Datos</h3>
+            <p class="mb-4">La información personal que proporcionas se regirá por nuestra Política de Privacidad.
+                Al aceptar estos Términos, consientes el tratamiento de tus datos para fines de facturación,
+                notificaciones y comunicación con Compradores.</p>
+
+            <h3 class="text-xl font-semibold mt-4 mb-2">8. Responsabilidad y Garantías</h3>
+            <ul class="list-disc list-inside mb-4">
+                <li>Ventas 7 Lunas actúa únicamente como plataforma de intermediación y no garantiza la calidad,
+                    veracidad o entrega de los productos.</li>
+                <li><strong>Ventas 7 Lunas NO</strong> se hace responsable de ventas fraudulentas, devoluciones ni
+                    de cualquier problema relacionado con el producto o su envío; dichas responsabilidades
+                    corresponden exclusivamente al Vendedor.</li>
+                <li>El Vendedor asume toda responsabilidad legal en caso de reclamos de Compradores, autoridades o
+                    terceros.</li>
+                <li>No nos hacemos responsables por daños indirectos, lucro cesante o pérdida de datos que derive
+                    del uso de la plataforma.</li>
+            </ul>
+
+            <h3 class="text-xl font-semibold mt-4 mb-2">9. Suspensión y Terminación</h3>
+            <ul class="list-disc list-inside mb-4">
+                <li>Ventas 7 Lunas podrá suspender o cancelar tu cuenta de Vendedor sin previo aviso si detecta
+                    actividades fraudulentas, incumplimiento de estos Términos o violaciones legales.</li>
+                <li>Si tu cuenta es desactivada por falta de pago, podrás reactivarla regularizando el valor
+                    pendiente.</li>
+                <li>Si deseas cierre voluntario de tu cuenta, no habrá devolución de ningún monto ya pagado y la
+                    cuenta se desactivará en la próxima fecha de corte y facturación.</li>
+            </ul>
+
+            <h3 class="text-xl font-semibold mt-4 mb-2">10. Modificaciones a los Términos</h3>
+            <p class="mb-4">Ventas 7 Lunas se reserva el derecho de modificar estos Términos en cualquier momento.
+                Las actualizaciones se publicarán en esta sección. Si continúas usando la plataforma, se considerará
+                que aceptas las modificaciones.</p>
+
+            <h3 class="text-xl font-semibold mt-4 mb-2">11. Ley Aplicable y Jurisdicción</h3>
+            <p class="mb-4">Estos Términos se rigen por las leyes de la República de Colombia. Para cualquier
+                disputa derivada de estos Términos, las partes se someten a la jurisdicción de los jueces y
+                tribunales de Medellín, Antioquia.</p>
+
+            <h3 class="text-xl font-semibold mt-4 mb-2">12. Contacto</h3>
+            <p class="mb-4">Si tienes dudas sobre estos Términos, escríbenos a <a href="mailto:legal@ventas7lunas.com"
+                    class="text-blue-600 underline"> {{tycEmail}} </a> o
+                contáctanos vía WhatsApp al +57 XXX XXX XXXX.</p>
+        </div>
+    </p-dialog>
+</div>

@@ -4,6 +4,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import { VerifyCodeResponse } from '../../models/verifyCodeResponse';
 
 interface LoginResponse {
   token: string;
@@ -13,32 +14,45 @@ interface LoginResponse {
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly baseUrl = `${environment.apiUrl}/api/auth`;
+  private readonly apiUrl = `${environment.apiUrl}/api/auth`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   /** Envía email y password, devuelve el token en el observable */
   login(email: string, password: string): Observable<string> {
-    const url = `${this.baseUrl}/login`;
+    const url = `${this.apiUrl}/login`;
     return this.http.post<LoginResponse>(url, { email, password }).pipe(
       map(response => response.token),
-      catchError(this.handleError)
+      catchError(this.loginHandleError)
     );
   }
 
-  private handleError(error: HttpErrorResponse) {
+  private loginHandleError(error: HttpErrorResponse) {
     // Puedes extender esto para leer mensajes específicos del backend
     return throwError(() => new Error('Usuario o contraseña inválidos'));
   }
 
-  getRole(): 'buyer' | 'seller' | null {
+  verifyCode(userId: string, code: string): Observable<VerifyCodeResponse> {
+    const url = `${this.apiUrl}/verify-code`;
+    return this.http.post<VerifyCodeResponse>(url, { userId, code }).pipe(
+      map(response => response),
+      catchError(this.verifyCodeHandleError)
+    );
+  }
+
+  private verifyCodeHandleError(error: HttpErrorResponse) {
+    // Puedes extender esto para leer mensajes específicos del backend
+    return throwError(() => new Error('Ocurrió un error por favor intentar mas tarde'));
+  }
+
+  getValueFromToken(claim: string): string {
     const token = localStorage.getItem('token');
-    if (!token) return null;
+    if (!token) return '';
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.role ?? null;
+      return payload[claim] ?? null;
     } catch {
-      return null;
+      return '';
     }
   }
 }

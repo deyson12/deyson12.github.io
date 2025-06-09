@@ -22,7 +22,7 @@ export class CartService {
   addProductToCart(product: Product): void {
 
     // Añadir producto al carrito 
-    const existingOrder = this.orders.find(o => o.sellerId === product.sellerId && o.status === 'Pendiente');
+    const existingOrder = this.orders.find(o => o.sellerId === product.seller && o.status === 'Pendiente');
     if (existingOrder) {
       // addProduct(orderId: number, product: Omit<ProductCart,'quantity'>)
       
@@ -37,7 +37,7 @@ export class CartService {
       this.addProduct(existingOrder.order, productCart);
     } else {
       const newOrder: Omit<Order, 'order' | 'products'> = {
-        sellerId: product.sellerId,
+        sellerId: product.seller,
         buyer: {
           name: 'Cliente Anónimo', // Aquí podrías usar un servicio de usuario para obtener el nombre del cliente
           cellphone: '123'

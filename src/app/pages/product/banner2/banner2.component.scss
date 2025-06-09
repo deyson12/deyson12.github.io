@@ -1,0 +1,99 @@
+.special-offer {
+      font-family: 'Anton', sans-serif;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .producto-destacado {
+      font-family: 'Pacifico', cursive;
+      font-style: italic;
+    }
+
+    .banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: url('/assets/img/background.png') no-repeat center center;
+      background-size: cover;
+      color: white;
+      padding: 2rem;
+      min-height: 300px;
+      flex-wrap: wrap;
+      position: relative;
+    }
+
+    .badge {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      background: #ff9900;
+      color: white;
+      border-radius: 50%;
+      width: 80px;
+      height: 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+
+    .product-image {
+      max-width: 300px;
+      height: auto;
+      margin: 0 1rem;
+    }
+
+    .text-content {
+      flex: 1 1 300px;
+      padding: 1rem;
+      color: #fff;
+      text-align: right;
+    }
+
+    .text-content h1 {
+      font-size: 2.5rem;
+      margin: 0;
+    }
+
+    .text-content h2 {
+      font-size: 2rem;
+      margin: 0.5rem 0;
+      color: #ffbb33;
+    }
+
+    .text-content p {
+      margin: 1rem 0;
+      font-size: 1.1rem;
+    }
+
+    .text-content .btn {
+      display: inline-block;
+      background: #ff6600;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      color: white;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    @media (max-width: 768px) {
+      .banner {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .text-content {
+        text-align: center;
+      }
+
+      .badge {
+        position: relative;
+        margin: 1rem auto;
+      }
+
+      .product-image {
+        margin: 1rem auto;
+      }
+    }

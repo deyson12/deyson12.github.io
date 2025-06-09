@@ -1,1 +1,14 @@
-<p>my-sales works!</p>
+<p-fluid class="grid grid-cols-12 gap-8">
+      <div class="col-span-12 xl:col-span-6">
+        <div class="card">
+          <div class="font-semibold text-xl mb-4">Ventas Mensuales</div>
+          <p-chart type="line" [data]="lineData" [options]="lineOptions"></p-chart>
+        </div>
+      </div>
+      <div class="col-span-12 xl:col-span-6">
+        <div class="card">
+          <div class="font-semibold text-xl mb-4">Ventas por Producto</div>
+          <p-chart type="bar" [data]="barData" [options]="barOptions"></p-chart>
+        </div>
+      </div>
+    </p-fluid>

@@ -5,6 +5,7 @@ import { MenuItem } from 'primeng/api';
 import { AppMenuitem } from './app.menuitem';
 import { Category } from '../../models/category';
 import { CategoryService } from '../../pages/service/category.service';
+import { AuthService } from '../../pages/service/auth.service';
 
 @Component({
   selector: 'app-menu',
@@ -18,17 +19,26 @@ import { CategoryService } from '../../pages/service/category.service';
     </ul> `
 })
 export class AppMenu implements OnInit {
+
+  role: string | null = null;
+
   model: MenuItem[] = [];
 
-  constructor(private categoryService: CategoryService) { }
+  constructor(
+    private categoryService: CategoryService,
+    private auth: AuthService
+  ) { }
 
   ngOnInit() {
+
+    this.role = this.auth.getValueFromToken('role');
+
     const profileGroup: MenuItem = {
       label: 'Perfil vendedor',
       items: [
         { label: 'Mi perfil', icon: 'mdi:account', routerLink: ['/pages/profile'] },
         { label: 'Mis ventas', icon: 'mdi:cash-register', routerLink: ['/pages/my-sales'] },
-        { label: 'Ayuda', icon: 'mdi:help-circle', routerLink: ['/pages/help'] },
+        { label: 'Plan y Pagos', icon: 'mdi:help-circle', routerLink: ['/pages/help'] },
         { label: 'Cerrar sesión', icon: 'mdi:logout', routerLink: ['/pages/logout'] }
       ]
     };
@@ -54,21 +64,24 @@ export class AppMenu implements OnInit {
             ...categories.map(cat => ({
               label: cat.name,
               icon: cat.icon,
-              routerLink: ['/pages/'+cat.code]
+              routerLink: ['/pages/' + cat.code]
             }))
           ]
         };
 
 
         this.model = [
-          profileGroup,
+          ...(this.role === 'seller' ? [profileGroup] : []),
           categoriesGroup,
-          sellersGroup
+          // sellersGroup
         ];
       },
       error: err => {
         console.error('Error cargando categorías', err);
-        this.model = [profileGroup, sellersGroup];
+        this.model = [
+          ...(this.role === 'seller' ? [profileGroup] : []),
+          // sellersGroup
+        ];
       }
     });
   }

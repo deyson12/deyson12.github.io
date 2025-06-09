@@ -1,59 +1,105 @@
 <!-- En tu componente (por ejemplo header.component.html) -->
-<ng-container *ngIf="showBanner">
-  <div
-    class="w-full bg-orange-500 text-white flex items-center justify-between px-4 py-2 shadow-md z-50 font-semibold"
-  >
+@if (showBannerGlobal) {
+<ng-container>
+  <div class="w-full bg-orange-500 text-white flex items-center justify-between px-4 py-2 shadow-md z-50 font-semibold">
+    @if (showBanner) {
     <div class="text-sm">
-      👉 ¿Quieres vender algún producto o servicio con nosotros?
+      👉 ¿Quieres vender algún producto o servicio con nosotros? <a routerLink="/pages/create-seller" class="font-semibold underline hover:text-orange-200"><b>Haz clic aqui</b></a> o
       Escríbenos al
-      <a
-        href="https://wa.me/573136090247"
-        target="_blank"
-        rel="noopener"
-        class="font-semibold underline hover:text-orange-200"
-        >WhatsApp: 313 6090247</a
-      >
+      <a href="https://wa.me/573136090247" target="_blank" rel="noopener"
+        class="font-semibold underline hover:text-orange-200"><b>WhatsApp: 313 6090247</b></a>
     </div>
-    <button
-      type="button"
-      (click)="showBanner = false"
-      class="p-1 focus:outline-none"
-      aria-label="Cerrar banner"
-    >
+    } @else {
+    <div class="text-sm">
+      ⚠️
+      <a routerLink="/pages/help" class="font-semibold hover:text-orange-200">
+        <span *ngIf="days > 0">
+          Tu plan “{{ plan }}” vence en {{ days }} días, renovar aquí.
+        </span>
+        <span *ngIf="days === 0">
+          Tu plan “{{ plan }}” vence hoy, renueva el plan.
+        </span>
+        <span *ngIf="days < 0">
+          Tu plan “{{ plan }}” venció hace {{ -days }} días, renueva el plan.
+        </span>
+      </a>
+    </div>
+    }
+    <button type="button" (click)="showBannerGlobal = false" class="p-1 focus:outline-none" aria-label="Cerrar banner">
       <i class="pi pi-times text-xl"></i>
     </button>
   </div>
   <!-- Para que el contenido no quede oculto tras el banner: -->
   <div class="h-12"></div>
 </ng-container>
+}
+
+<!--app-banner2></app-banner2-->
+
+<app-banner [banner]="banner3" gradientClasses="bg-gradient-to-r from-purple-400 via-violet-500 to-indigo-600"
+  buttonColor="text-purple-600" />
 
 <app-carousel [itemsCarousel]="itemsCarousel"></app-carousel>
 
-<app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-orange-500 via-red-500 to-pink-500" buttonColor="text-pink-600"/>
-<app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-amber-400 via-orange-500 to-yellow-500" buttonColor="text-amber-600"/>
+<app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-orange-500 via-red-500 to-pink-500"
+  buttonColor="text-pink-600" />
+<app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-amber-400 via-orange-500 to-yellow-500"
+  buttonColor="text-amber-600" />
 
-<app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-teal-400 via-cyan-500 to-blue-600" buttonColor="text-cyan-600"/>
-<app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-600" buttonColor="text-indigo-600"/>
-<app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-sky-400 via-blue-500 to-indigo-700" buttonColor="text-blue-700"/>
+<app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-teal-400 via-cyan-500 to-blue-600"
+  buttonColor="text-cyan-600" />
+<app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-600"
+  buttonColor="text-indigo-600" />
+<app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-sky-400 via-blue-500 to-indigo-700"
+  buttonColor="text-blue-700" />
 
-<app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-green-400 via-lime-500 to-yellow-400" buttonColor="text-lime-600"/>
-<app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-emerald-400 via-green-500 to-teal-500" buttonColor="text-teal-600"/>
-<app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-lime-300 via-green-400 to-emerald-500" buttonColor="text-emerald-600"/>
+<app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-green-400 via-lime-500 to-yellow-400"
+  buttonColor="text-lime-600" />
+<app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-emerald-400 via-green-500 to-teal-500"
+  buttonColor="text-teal-600" />
+<app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-lime-300 via-green-400 to-emerald-500"
+  buttonColor="text-emerald-600" />
 
-<app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-gray-700 via-gray-900 to-black" buttonColor="text-neutral-700"/>
-<app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-slate-500 via-gray-600 to-slate-800" buttonColor="text-neutral-700"/>
-<app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-zinc-300 via-neutral-400 to-stone-500" buttonColor="text-neutral-700"/>
+<app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-gray-700 via-gray-900 to-black"
+  buttonColor="text-neutral-700" />
+<app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-slate-500 via-gray-600 to-slate-800"
+  buttonColor="text-neutral-700" />
+<app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-zinc-300 via-neutral-400 to-stone-500"
+  buttonColor="text-neutral-700" />
 
-<app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-pink-500 via-fuchsia-500 to-violet-500" buttonColor="text-fuchsia-600"/>
-<app-banner [banner]="banner3" gradientClasses="bg-gradient-to-r from-purple-400 via-violet-500 to-indigo-600" buttonColor="text-purple-600"/>
-<app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-rose-400 via-pink-500 to-red-500" buttonColor="text-rose-600"/>
+<app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-pink-500 via-fuchsia-500 to-violet-500"
+  buttonColor="text-fuchsia-600" />
+<app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-rose-400 via-pink-500 to-red-500"
+  buttonColor="text-rose-600" />
 
-<app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-600" buttonColor="text-red-600"/>
+<app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-600"
+  buttonColor="text-red-600" />
 
-<app-slider [itemsMenu]="itemsMenu"></app-slider>
+<!--app-slider [itemsMenu]="itemsMenu"></app-slider-->
+<div class="flex justify-between items-center mb-1">
+  <h3 class="text-lg font-semibold">
+    Productos
+  </h3>
+</div>
 
+<!-- product-list.component.html -->
 <div class="grid grid-cols-12 gap-8">
-    @for (product of products; track $index) {
-        <app-card class="col-span-12 lg:col-span-6 xl:col-span-4" [product]="product"></app-card>
-    }
+  <ng-container *ngFor="let product of products; let i = index">
+
+    <ng-container *ngIf="(i + 1) % interval === 0">
+      <app-banner
+        class="col-span-12"
+        [banner]="getBannerForIndex(i)"
+        gradientClasses="bg-gradient-to-r from-purple-400 via-violet-500 to-indigo-600"
+        buttonColor="text-purple-600">
+      </app-banner>
+    </ng-container>
+
+    <app-card
+      class="col-span-12 lg:col-span-6 xl:col-span-4"
+      [product]="product">
+    </app-card>
+
+    
+  </ng-container>
 </div>

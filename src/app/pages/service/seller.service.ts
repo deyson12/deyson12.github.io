@@ -1,15 +1,33 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { catchError, map, Observable, of, throwError } from 'rxjs';
 import { Seller } from '../../models/selller';
 import { Comment } from '../../models/coment';
 import { Product } from '../../models/product';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { SellerPayload } from '../../models/selllerPayload';
+import { environment } from '../../../environments/environment';
+import { CreateSellerResponse } from '../../models/create-seller-response';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SellerService {
 
-  constructor() { }
+  private readonly apiUrl = `${environment.apiUrl}/api/auth`;
+
+  constructor(private http: HttpClient) { }
+
+  createSeller(payload: SellerPayload): Observable<string> {
+    return this.http.post<CreateSellerResponse>(`${this.apiUrl}/activate-req`, payload).pipe(
+      map(response => response.token),
+      catchError(this.handleError)
+    );
+  }
+
+  private handleError(error: HttpErrorResponse) {
+    // Puedes extender esto para leer mensajes específicos del backend
+    return throwError(() => new Error('Ocurrió un error creando el vendedor'));
+  }
 
   getSeller(sellerid: string): Observable<Seller> {
     const mockFeaturedProducts: Product[] = [
@@ -22,7 +40,7 @@ export class SellerService {
         price: 30000,
         originalPrice: 35000,
         sales: 45,
-        sellerId: "1"
+        seller: "1"
       },
       {
         id: 2,
@@ -33,7 +51,7 @@ export class SellerService {
         price: 15000,
         originalPrice: null,
         sales: 78,
-        sellerId: "1"
+        seller: "1"
       }
     ];
 
@@ -47,7 +65,7 @@ export class SellerService {
         price: 20000,
         originalPrice: 25000,
         sales: 52,
-        sellerId: "1"
+        seller: "1"
       },
       {
         id: 4,
@@ -58,7 +76,7 @@ export class SellerService {
         price: 18000,
         originalPrice: null,
         sales: 30,
-        sellerId: "1"
+        seller: "1"
       },
       {
         id: 5,
@@ -69,7 +87,7 @@ export class SellerService {
         price: 12000,
         originalPrice: null,
         sales: 25,
-        sellerId: "1"
+        seller: "1"
       }
     ];
 
@@ -114,7 +132,7 @@ export class SellerService {
   /** Simula subida de imagen y retorna la URL resultante */
   uploadProfileImage(file: File): Observable<string> {
     // En un caso real harías un POST a un endpoint de archivos.
-    const mockUrl = 'https://via.placeholder.com/150'; 
+    const mockUrl = 'https://via.placeholder.com/150';
     return of(mockUrl);
   }
 }

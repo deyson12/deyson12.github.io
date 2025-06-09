@@ -18,5 +18,5 @@ export interface Product {
     reviews?: number;
     stock?: number;
     images?: string[];
-    sellerId: string;
+    seller: string;
 }

@@ -10,13 +10,15 @@
 
     <div class="layout-topbar-actions">
 
+
         <div class="layout-config-menu">
+            @if (role === '' || role == 'buyer') {
             <a routerLink="/pages/create-seller"
                 class="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors">
                 <i class="pi pi-user-plus text-xl"></i>
-                <span>Eres vendedor?</span>
+                <span>Vendes algun producto o servicio?</span>
             </a>
-
+            }
         </div>
 
         <div class="layout-config-menu">

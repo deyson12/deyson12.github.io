@@ -38,7 +38,7 @@ export class ProductDetailComponent {
       stars: 4.5,
       originalPrice: 50000,
       sales: 5,
-      sellerId: "1"
+      seller: "1"
     },
     {
       id: 3,
@@ -49,7 +49,7 @@ export class ProductDetailComponent {
       stars: 4.5,
       originalPrice: 50000,
       sales: 5,
-      sellerId: "1"
+      seller: "1"
     }
   ]
 

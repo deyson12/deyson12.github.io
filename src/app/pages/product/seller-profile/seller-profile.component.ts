@@ -36,7 +36,7 @@ export class SellerProfileComponent {
         price: 50000,
         originalPrice: 100000,
         note: 'picante',
-        sellerId: "1"
+        seller: "1"
       },
       {
         id: 2,
@@ -47,7 +47,7 @@ export class SellerProfileComponent {
         sales: 8,
         price: 40000,
         originalPrice: 1000000,
-        sellerId: "1"
+        seller: "1"
       },
       {
         id: 3,
@@ -58,7 +58,7 @@ export class SellerProfileComponent {
         sales: 1050,
         price: 19200,
         originalPrice: 38400,
-        sellerId: "1"
+        seller: "1"
       }
     ],
     products: [
@@ -72,7 +72,7 @@ export class SellerProfileComponent {
         price: 50000,
         originalPrice: 100000,
         note: 'picante',
-        sellerId: "1"
+        seller: "1"
       },
       {
         id: 2,
@@ -83,7 +83,7 @@ export class SellerProfileComponent {
         sales: 8,
         price: 40000,
         originalPrice: 1000000,
-        sellerId: "1"
+        seller: "1"
       },
       {
         id: 3,
@@ -94,7 +94,7 @@ export class SellerProfileComponent {
         sales: 1050,
         price: 19200,
         originalPrice: 38400,
-        sellerId: "1"
+        seller: "1"
       },
       {
         id: 3,
@@ -105,7 +105,7 @@ export class SellerProfileComponent {
         sales: 100,
         price: 19200,
         originalPrice: 38400,
-        sellerId: "1"
+        seller: "1"
       }
     ],
     comments: [

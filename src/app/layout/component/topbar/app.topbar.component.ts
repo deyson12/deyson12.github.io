@@ -18,7 +18,9 @@ import { AuthService } from '../../../pages/service/auth.service';
 })
 export class AppTopbarComponent implements OnInit {
 
-    role: 'buyer' | 'seller' | null = null;
+    role: string = '';
+    plan: string = '';
+    userId: string = '';
 
     items!: MenuItem[];
 
@@ -28,7 +30,9 @@ export class AppTopbarComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        this.role = this.auth.getRole();
+        this.role = this.auth.getValueFromToken('role');
+        this.plan = this.auth.getValueFromToken('plan');
+        this.userId = this.auth.getValueFromToken('userId');
     }
 
     toggleDarkMode() {
@@ -36,4 +40,5 @@ export class AppTopbarComponent implements OnInit {
     }
 
     isDarkTheme = computed(() => this.layoutService.layoutConfig().darkTheme);
+
 }

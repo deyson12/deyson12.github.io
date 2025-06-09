@@ -11,6 +11,7 @@
           [alt]="product.name"
           class="w-16 h-16 object-cover cursor-pointer border-2 border-transparent hover:border-blue-500"
           (click)="mainImage = thumb"
+          onerror="this.onerror=null; this.src='assets/img/sin-producto.png';"
         />
       </div>
       <div class="flex-1">
@@ -18,6 +19,7 @@
           [src]="mainImage || product.image"
           [alt]="product.name"
           class="w-full h-auto object-contain"
+          onerror="this.onerror=null; this.src='assets/img/sin-producto.png';"
         />
       </div>
     </div>

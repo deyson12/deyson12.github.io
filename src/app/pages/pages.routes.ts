@@ -27,5 +27,5 @@ export default [
     { path: 'my-sales', component: MySalesComponent },
     { path: 'help', component: PaymentHelpComponent },
     { path: 'create-seller', component: CreateSellerComponent },
-    { path: '**', redirectTo: '/all' }
+    { path: '**', redirectTo: '/pages/all' }
 ] as Routes;
