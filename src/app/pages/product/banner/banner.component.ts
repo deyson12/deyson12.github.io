@@ -27,10 +27,11 @@ export class BannerComponent implements OnInit, OnDestroy {
   private sub?: Subscription;
 
   ngOnInit() {
-    // Si no hay endDate, mostramos banner sin timer
-    if (!this.banner?.endDate) return;
+    console.log(this.banner);
+    // Si no hay endTimerDate, mostramos banner sin timer
+    if (!this.banner?.endTimerDate) return;
 
-    const target = new Date(this.banner?.endDate).getTime();
+    const target = new Date(this.banner?.endTimerDate).getTime();
     // Si la fecha es inválida, pasada o igual al momento actual, ocultamos todo el banner
     if (isNaN(target) || target <= Date.now()) {
       this.showBanner = false;
@@ -49,7 +50,7 @@ export class BannerComponent implements OnInit, OnDestroy {
 
   private updateRemaining() {
     const now = Date.now();
-    const target = new Date(this.banner?.endDate!).getTime();
+    const target = new Date(this.banner?.endTimerDate!).getTime();
     const diff = target - now;
     if (diff <= 0) {
       // Cuando el timer llega a cero, ocultamos todo el banner

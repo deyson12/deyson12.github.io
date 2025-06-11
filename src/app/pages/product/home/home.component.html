@@ -34,12 +34,43 @@
 </ng-container>
 }
 
-<!--app-banner2></app-banner2-->
-
-<app-banner [banner]="banner3" gradientClasses="bg-gradient-to-r from-purple-400 via-violet-500 to-indigo-600"
-  buttonColor="text-purple-600" />
-
 <app-carousel [itemsCarousel]="itemsCarousel"></app-carousel>
+
+<!--app-banner [banner]="banner3" gradientClasses="bg-gradient-to-r from-gray-700 via-gray-900 to-black"
+  buttonColor="text-neutral-700" /-->
+
+
+<!--app-slider [itemsMenu]="itemsMenu"></app-slider-->
+<div class="flex justify-between items-center mb-1">
+  <h3 class="text-lg font-semibold">
+    Productos
+  </h3>
+</div>
+
+<!-- product-list.component.html -->
+<div class="grid grid-cols-12 gap-8">
+  <ng-container *ngFor="let product of products; let i = index">
+
+    @if (((i + 1) % interval === 0) && showBannerProductos(i)) {
+      <app-banner
+        class="col-span-12"
+        [banner]="getBannerForIndex(i)"
+        gradientClasses="bg-gradient-to-r from-gray-700 via-gray-900 to-black"
+        buttonColor="text-neutral-700" >
+      </app-banner>
+    }
+
+    <app-card
+      class="col-span-12 lg:col-span-6 xl:col-span-4"
+      [product]="product">
+    </app-card>
+
+    
+  </ng-container>
+</div>
+
+<!--app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-purple-400 via-violet-500 to-indigo-600"
+  buttonColor="text-purple-600" />
 
 <app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-orange-500 via-red-500 to-pink-500"
   buttonColor="text-pink-600" />
@@ -59,9 +90,7 @@
   buttonColor="text-teal-600" />
 <app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-lime-300 via-green-400 to-emerald-500"
   buttonColor="text-emerald-600" />
-
-<app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-gray-700 via-gray-900 to-black"
-  buttonColor="text-neutral-700" />
+  
 <app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-slate-500 via-gray-600 to-slate-800"
   buttonColor="text-neutral-700" />
 <app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-zinc-300 via-neutral-400 to-stone-500"
@@ -73,33 +102,4 @@
   buttonColor="text-rose-600" />
 
 <app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-600"
-  buttonColor="text-red-600" />
-
-<!--app-slider [itemsMenu]="itemsMenu"></app-slider-->
-<div class="flex justify-between items-center mb-1">
-  <h3 class="text-lg font-semibold">
-    Productos
-  </h3>
-</div>
-
-<!-- product-list.component.html -->
-<div class="grid grid-cols-12 gap-8">
-  <ng-container *ngFor="let product of products; let i = index">
-
-    <ng-container *ngIf="(i + 1) % interval === 0">
-      <app-banner
-        class="col-span-12"
-        [banner]="getBannerForIndex(i)"
-        gradientClasses="bg-gradient-to-r from-purple-400 via-violet-500 to-indigo-600"
-        buttonColor="text-purple-600">
-      </app-banner>
-    </ng-container>
-
-    <app-card
-      class="col-span-12 lg:col-span-6 xl:col-span-4"
-      [product]="product">
-    </app-card>
-
-    
-  </ng-container>
-</div>
+  buttonColor="text-red-600" /-->

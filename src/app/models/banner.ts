@@ -1,9 +1,14 @@
 import { Product } from "./product";
 
 export interface Banner {
-    id: number;
-    subText: string;
-    endDate?: string;
-    type?: string;
+    id: string;
     product: Product;
+    startDate: string;
+    endDate: string;
+    createAt?: string;
+    subtext: string | null;
+    type?: string | null;
+    endTimerDate: string | null;
+    priority: number;
+    
 }

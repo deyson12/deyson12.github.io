@@ -19,13 +19,13 @@ import { BannerService } from '../../service/banner.service';
   selector: 'app-home',
   imports: [
     CommonModule,
-    //SliderComponent,
+    // SliderComponent,
     CarouselComponent,
     BannerComponent,
     CardComponent,
     RouterModule,
-    Banner2Component
-],
+    // Banner2Component
+  ],
   providers: [CartService],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
@@ -33,7 +33,8 @@ import { BannerService } from '../../service/banner.service';
 export class HomeComponent implements OnInit {
 
   products: Product[] = [];
-  
+  banners: Banner[] = [];
+
   showBannerGlobal = true;
   showBanner = false;
 
@@ -41,17 +42,17 @@ export class HomeComponent implements OnInit {
 
   plan: string = '';
   days: number;
-  
+
   interval = 3;
 
   constructor(
-    private route: ActivatedRoute, 
+    private route: ActivatedRoute,
     private productService: ProductService,
     private authService: AuthService,
     private bannerService: BannerService
   ) {
     this.plan = this.authService.getValueFromToken('plan');
-     this.days = this.getDaysRemaining();
+    this.days = this.getDaysRemaining();
   }
 
   ngOnInit() {
@@ -59,10 +60,10 @@ export class HomeComponent implements OnInit {
       this.currentPath = urlSegments.map(segment => segment.path).join('/');
     });
 
-    this.productService.getProductsByCategory(this.currentPath).subscribe((data: Product[]) => {
-      this.products = data;
-      this.bannerService.getBanners().subscribe((data: Banner[]) => {
-        this.banners = [];
+    this.bannerService.getBanners().subscribe((data: Banner[]) => {
+      this.banners = data;
+      this.productService.getProductsByCategory(this.currentPath).subscribe((data: Product[]) => {
+        this.products = data;
         this.interval = Math.floor(this.products.length / this.banners.length);
         console.log('Cantidad productos: ', this.products.length, 'Cantidad Banners: ', this.banners.length, 'Interval: ', this.interval);
       });
@@ -73,18 +74,18 @@ export class HomeComponent implements OnInit {
   }
 
   getDaysRemaining(): number {
-        const endDateStr = this.authService.getValueFromToken('endDate');
-        if (!endDateStr) {
-            return 0;
-        }
-        const [year, month, day] = endDateStr.split('-').map(Number);
-        const end = new Date(year, month - 1, day);
-        const today = new Date();
-        const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-        const diffTime = end.getTime() - startOfToday.getTime();
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        return diffDays;
+    const endDateStr = this.authService.getValueFromToken('endDate');
+    if (!endDateStr) {
+      return 0;
     }
+    const [year, month, day] = endDateStr.split('-').map(Number);
+    const end = new Date(year, month - 1, day);
+    const today = new Date();
+    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const diffTime = end.getTime() - startOfToday.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  }
 
   itemsCarousel: Product[] = [
     {
@@ -107,7 +108,7 @@ export class HomeComponent implements OnInit {
       stars: 3.5,
       sales: 8,
       price: 40000,
-      originalPrice: 1000000,
+      originalPrice: 100000,
       seller: "1"
     },
     {
@@ -134,48 +135,22 @@ export class HomeComponent implements OnInit {
     }
   ];
 
-  banner: Banner = {
-    id: 1,
-    subText: 'Pidela por tiempo limitado',
-    endDate: '2025-05-21T17:14:00',
-    product: this.itemsCarousel[0],
-  };
-
-  banner2: Banner = {
-    id: 1,
-    subText: 'Pidela Ahora!',
-    type: 'mothers-day',
-    endDate: '2025-05-21T17:14:00',
-    product: this.itemsCarousel[1],
-  };
-
-  banner3: Banner = {
-    id: 1,
-    subText: 'Pidela Ahora!',
-    endDate: '2026-05-21T17:14:00',
-    product: this.itemsCarousel[2],
-  };
-
-  banners: Banner[] = [{
-    id: 1,
-    subText: 'Pidela Ahora!',
-    endDate: '2026-05-21T17:14:00',
-    product: this.itemsCarousel[2],
-  }, {
-    id: 1,
-    subText: 'Pidela Ahora!',
-    endDate: '2026-05-21T17:14:00',
-    product: this.itemsCarousel[2],
-  }, {
-    id: 1,
-    subText: 'Pidela Ahora!',
-    endDate: '2026-05-21T17:14:00',
-    product: this.itemsCarousel[2],
-  }];
-
   getBannerForIndex(i: number): Banner {
     const idx = Math.floor((i + 1) / this.interval) - 1;
     return this.banners[idx % this.banners.length];
+  }
+
+  showBannerProductos(i: number): boolean {
+    const banner = this.getBannerForIndex(i);
+
+    if (banner.endTimerDate) {
+      const target = new Date(banner?.endTimerDate).getTime();
+      // Si la fecha es inválida, pasada o igual al momento actual, ocultamos todo el banner
+      if (isNaN(target) || target <= Date.now()) {
+        return false;
+      }
+    }
+    return true;
   }
 
   itemsMenu: Item[] = [

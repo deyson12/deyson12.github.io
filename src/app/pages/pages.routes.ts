@@ -7,6 +7,8 @@ import { ProfileComponent } from './seller/profile/profile.component';
 import { MySalesComponent } from './seller/my-sales/my-sales.component';
 import { PaymentHelpComponent } from './seller/payment-help/payment-help.component';
 import { CreateSellerComponent } from './seller/create-seller/create-seller.component';
+import { LoginComponent } from './auth/login/login.component';
+import { LogoutComponent } from './seller/logout/logout.component';
 
 export default [
     { path: 'all', component: HomeComponent },
@@ -26,6 +28,7 @@ export default [
     { path: 'profile', component: ProfileComponent },
     { path: 'my-sales', component: MySalesComponent },
     { path: 'help', component: PaymentHelpComponent },
+    { path: 'logout', component: LogoutComponent },
     { path: 'create-seller', component: CreateSellerComponent },
     { path: '**', redirectTo: '/pages/all' }
 ] as Routes;

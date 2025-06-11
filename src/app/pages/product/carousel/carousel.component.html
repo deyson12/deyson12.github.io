@@ -15,7 +15,7 @@
     [responsiveOptions]="responsiveOptions" class="!px-0" autoplayInterval="5000" [nextButtonProps]="arrowButton"
     [prevButtonProps]="arrowButton" (mouseenter)="carousel.stopAutoplay()" (mouseleave)="carousel.startAutoplay()">
     <ng-template pTemplate="item" let-item>
-      <a [routerLink]="['/product-detail']" [state]="{ product: item }">
+      <a [routerLink]="['/pages/product-detail']" [state]="{ product: item }">
         <div class="card flex flex-col rounded-lg shadow-sm p-3 mx-2 bg-white h-full">
           <!-- Imagen, badge y carrito -->
           <div class="relative w-full h-32 mb-3">

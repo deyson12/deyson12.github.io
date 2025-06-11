@@ -62,7 +62,7 @@ export class AppLayout {
         const data = localStorage.getItem(this.storageKey);
         this.orders = data ? JSON.parse(data) : [];
         this.updateCartCount();
-        console.log('Orders from localStorage:', this.orders);
+        //console.log('Orders from localStorage:', this.orders);
     }
 
     private onStorageChange(event: StorageEvent) {

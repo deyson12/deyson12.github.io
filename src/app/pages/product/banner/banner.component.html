@@ -2,24 +2,42 @@
 <div *ngIf="banner && showBanner" class="relative overflow-hidden rounded-lg w-full max-w-screen-xl mx-auto
              flex items-center px-4 sm:px-12 lg:px-16 py-8
              shadow-2xl hover:shadow-3xl transform transition-all duration-500 mb-6" [ngClass]="gradientClasses">
-  <img [src]="banner.product.image" alt="promo" class="absolute inset-0 w-full h-full object-cover"
+  @if (banner.product.image) {
+    <img [src]="banner.product.image" alt="promo" class="absolute inset-0 w-full h-full object-cover"
     style="opacity: 0.4;" />
+  }
   <div class="relative z-10 flex-1 text-white">
     <h2 class="text-white text-3xl sm:text-4xl md:text-5xl font-extrabold leading-snug break-words">
-      {{ banner.product.name }} <span class="text-red-500 bg-white rounded-border p-2">{{ getDiscount(banner.product) }} OFF</span>
+      {{ banner.product.name }}
+      @if (banner.product.originalPrice) {
+      <span class="text-red-500 bg-white rounded-border p-2">{{ getDiscount(banner.product) }}
+        OFF
+      </span>
+      }
     </h2>
 
+    @if (banner.subtext) {
     <p class="mt-2 text-base sm:text-lg opacity-90 flex items-center">
-      {{ banner.subText }} &nbsp;
-      <span class="line-through font-bold">
+      {{ banner.subtext }}
+    </p>
+    }
+
+    @if (banner.product.originalPrice) {
+    <p class="mt-2 text-base sm:text-lg opacity-90 flex items-center">
+      <span class="line-through font-bold text-red-500">
         Antes {{ banner.product.originalPrice | currency:'':'symbol':'1.0-0'}}
       </span>
       <span class="ml-4 text-2xl font-extrabold">
         ahora por solo {{ banner.product.price | currency:'':'symbol':'1.0-0'}}
       </span>
     </p>
-
-
+    } @else {
+    <p>
+      <span class="text-2xl font-extrabold">
+        Por solo {{ banner.product.price | currency:'':'symbol':'1.0-0'}}
+      </span>
+    </p>
+    }
 
     <!-- Decoraciones según tipo -->
     <div class="absolute inset-0 pointer-events-none">
