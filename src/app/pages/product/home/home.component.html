@@ -4,7 +4,8 @@
   <div class="w-full bg-orange-500 text-white flex items-center justify-between px-4 py-2 shadow-md z-50 font-semibold">
     @if (showBanner) {
     <div class="text-sm">
-      👉 ¿Quieres vender algún producto o servicio con nosotros? <a routerLink="/pages/create-seller" class="font-semibold underline hover:text-orange-200"><b>Haz clic aqui</b></a> o
+      👉 ¿Quieres vender algún producto o servicio con nosotros? <a routerLink="/pages/create-seller"
+        class="font-semibold underline hover:text-orange-200"><b>Haz clic aqui</b></a> o
       Escríbenos al
       <a href="https://wa.me/573136090247" target="_blank" rel="noopener"
         class="font-semibold underline hover:text-orange-200"><b>WhatsApp: 313 6090247</b></a>
@@ -34,7 +35,9 @@
 </ng-container>
 }
 
-<app-carousel [itemsCarousel]="itemsCarousel"></app-carousel>
+@if (itemsCarousel.length > 0) {
+  <app-carousel [itemsCarousel]="itemsCarousel"></app-carousel>
+}
 
 <!--app-banner [banner]="banner3" gradientClasses="bg-gradient-to-r from-gray-700 via-gray-900 to-black"
   buttonColor="text-neutral-700" /-->
@@ -52,20 +55,15 @@
   <ng-container *ngFor="let product of products; let i = index">
 
     @if (((i + 1) % interval === 0) && showBannerProductos(i)) {
-      <app-banner
-        class="col-span-12"
-        [banner]="getBannerForIndex(i)"
-        gradientClasses="bg-gradient-to-r from-gray-700 via-gray-900 to-black"
-        buttonColor="text-neutral-700" >
-      </app-banner>
+    <app-banner class="col-span-12" [banner]="getBannerForIndex(i)"
+      gradientClasses="bg-gradient-to-r from-gray-700 via-gray-900 to-black" buttonColor="text-neutral-700">
+    </app-banner>
     }
 
-    <app-card
-      class="col-span-12 lg:col-span-6 xl:col-span-4"
-      [product]="product">
+    <app-card class="col-span-12 lg:col-span-6 xlmid:col-span-4" [product]="product">
     </app-card>
 
-    
+
   </ng-container>
 </div>
 
@@ -103,3 +101,24 @@
 
 <app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-600"
   buttonColor="text-red-600" /-->
+
+<div class="fixed bottom-4 right-4 z-45">
+  <div class="relative">
+    <button routerLink="/pages/cart" type="button" class="flex items-center justify-center
+                    bg-blue-100 dark:bg-blue-400/10
+                    rounded-lg
+                    w-14 h-14 sm:w-16 sm:h-16 md:w-18 md:h-18
+                    hover:shadow-lg transition-shadow">
+      <i class="pi pi-shopping-cart text-blue-500
+                        text-3xl sm:text-4xl md:text-5xl"></i>
+    </button>
+    <span *ngIf="cartService.orderCount() > 0" class="absolute -top-2 -right-2
+                    inline-flex items-center justify-center
+                    bg-red-500 text-white font-bold
+                    rounded-full
+                    w-6 h-6 sm:w-8 sm:h-8
+                    text-xs sm:text-sm">
+      {{ getCount(cartService.orders()) }}
+    </span>
+  </div>
+</div>

@@ -3,7 +3,7 @@ import { catchError, map, Observable, of, throwError } from 'rxjs';
 import { Product } from '../../models/product';
 import { environment } from '../../../environments/environment';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { CreateProductResponse } from '../../models/create-seller-response copy';
+import { CreateProductResponse } from '../../models/create-product-response';
 
 @Injectable({
   providedIn: 'root'
@@ -44,6 +44,17 @@ export class ProductService {
     return this.http.get<Product[]>(url);
   }
 
+  getFeaturedProductsByCategory(categoryCode: string): Observable<Product[]> {
+
+    let url = '';
+    if (categoryCode === 'all') {
+      url = `${this.apiUrl}/featured`;
+    } else {
+      url = `${this.apiUrl}/featured/category/:categoryCode`.replace(':categoryCode', categoryCode);
+    }
+    return this.http.get<Product[]>(url);
+  }
+
   getDiscount(product: Product): string {
 
     const price = product.price;
@@ -79,7 +90,7 @@ export class ProductService {
   }
 
   /** Elimina un producto por su ID */
-  deleteProduct(id: number): Observable<void> {
+  deleteProduct(id: string): Observable<void> {
     // En un caso real harías un DELETE al backend.
     return of(undefined);
   }

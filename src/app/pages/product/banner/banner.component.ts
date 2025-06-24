@@ -15,7 +15,7 @@ import { Product } from '../../../models/product';
 })
 export class BannerComponent implements OnInit, OnDestroy {
 
-  constructor(private productService: ProductService) { }
+  constructor(private readonly productService: ProductService) { }
 
   @Input() banner: Banner | null = null;
   @Input() gradientClasses = 'bg-gradient-to-r from-orange-500 via-orange-600 to-yellow-400';
@@ -27,7 +27,6 @@ export class BannerComponent implements OnInit, OnDestroy {
   private sub?: Subscription;
 
   ngOnInit() {
-    console.log(this.banner);
     // Si no hay endTimerDate, mostramos banner sin timer
     if (!this.banner?.endTimerDate) return;
 

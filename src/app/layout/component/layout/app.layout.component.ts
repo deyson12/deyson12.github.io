@@ -6,16 +6,14 @@ import { AppTopbarComponent } from '../topbar/app.topbar.component';
 import { AppSidebar } from '../app.sidebar';
 import { AppFooter } from '../app.footer';
 import { LayoutService } from '../../service/layout.service';
-import { Order } from '../../../models/order';
 
 @Component({
-    selector: 'app-layout',
-    standalone: true,
-    imports: [CommonModule, AppTopbarComponent, AppSidebar, RouterModule, AppFooter],
-    templateUrl: './app.layout.component.html',
+  selector: 'app-layout',
+  standalone: true,
+  imports: [CommonModule, AppTopbarComponent, AppSidebar, RouterModule, AppFooter],
+  templateUrl: './app.layout.component.html',
 })
 export class AppLayout {
-    private storageListener = this.onStorageChange.bind(this);
     cartCount = 0;
 
     overlayMenuOpenSubscription: Subscription;
@@ -26,8 +24,7 @@ export class AppLayout {
 
     @ViewChild(AppTopbarComponent) appTopBar!: AppTopbarComponent;
 
-    private storageKey = 'orders';
-    private orders: Order[] = [];
+    private readonly storageKey = 'orders';
 
     constructor(
         public layoutService: LayoutService,
@@ -35,13 +32,11 @@ export class AppLayout {
         public router: Router
     ) {
         this.overlayMenuOpenSubscription = this.layoutService.overlayOpen$.subscribe(() => {
-            if (!this.menuOutsideClickListener) {
-                this.menuOutsideClickListener = this.renderer.listen('document', 'click', (event) => {
-                    if (this.isOutsideClicked(event)) {
-                        this.hideMenu();
-                    }
-                });
-            }
+            this.menuOutsideClickListener ??= this.renderer.listen('document', 'click', (event) => {
+                if (this.isOutsideClicked(event)) {
+                    this.hideMenu();
+                }
+            });
 
             if (this.layoutService.layoutState().staticMenuMobileActive) {
                 this.blockBodyScroll();
@@ -51,31 +46,6 @@ export class AppLayout {
         this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
             this.hideMenu();
         });
-    }
-
-    ngOnInit() {
-        this.loadFromStorage();
-        window.addEventListener('storage', this.storageListener);
-    }
-
-    private loadFromStorage() {
-        const data = localStorage.getItem(this.storageKey);
-        this.orders = data ? JSON.parse(data) : [];
-        this.updateCartCount();
-        //console.log('Orders from localStorage:', this.orders);
-    }
-
-    private onStorageChange(event: StorageEvent) {
-        if (event.key === this.storageKey) {
-            this.loadFromStorage();
-        }
-    }
-
-    private updateCartCount() {
-        this.cartCount = this.orders
-            .reduce((sum, order) =>
-                sum + order.products.reduce((c, p) => c + p.quantity, 0)
-                , 0);
     }
 
     isOutsideClicked(event: MouseEvent) {
@@ -122,8 +92,6 @@ export class AppLayout {
     }
 
     ngOnDestroy() {
-        window.removeEventListener('storage', this.storageListener);
-
         if (this.overlayMenuOpenSubscription) {
             this.overlayMenuOpenSubscription.unsubscribe();
         }

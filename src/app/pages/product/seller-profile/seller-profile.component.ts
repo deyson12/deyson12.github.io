@@ -27,7 +27,7 @@ export class SellerProfileComponent {
     linkedinUrl: 'https://linkedin.com/in/juanperezartesano',
     featuredProducts: [
       {
-        id: 1,
+        id: '1',
         image: 'https://www.infobae.com/resizer/v2/6N2REW3NAJD6HEVEB6R6QHAM7Q.png?auth=c8e1873a9f3dc0139e79594139cba8788b68465ea02eefde1fc695ddfae5193f&smart=true&width=992&height=661&quality=85',
         name: 'Tamal de Pollo',
         shortDescription: 'ligeramente picante',
@@ -39,7 +39,7 @@ export class SellerProfileComponent {
         seller: "1"
       },
       {
-        id: 2,
+        id: '2',
         image: 'https://www.recetasnestle.com.ec/sites/default/files/srh_recipes/4e4293857c03d819e4ae51de1e86d66a.jpg',
         name: 'Hamburguesa de Carne de Res',
         shortDescription: '',
@@ -50,7 +50,7 @@ export class SellerProfileComponent {
         seller: "1"
       },
       {
-        id: 3,
+        id: '3',
         image: 'https://www.infobae.com/resizer/v2/6N2REW3NAJD6HEVEB6R6QHAM7Q.png?auth=c8e1873a9f3dc0139e79594139cba8788b68465ea02eefde1fc695ddfae5193f&smart=true&width=992&height=661&quality=85',
         name: 'Bacon Honey',
         shortDescription: '',
@@ -63,7 +63,7 @@ export class SellerProfileComponent {
     ],
     products: [
       {
-        id: 1,
+        id: '1',
         image: 'https://www.infobae.com/resizer/v2/6N2REW3NAJD6HEVEB6R6QHAM7Q.png?auth=c8e1873a9f3dc0139e79594139cba8788b68465ea02eefde1fc695ddfae5193f&smart=true&width=992&height=661&quality=85',
         name: 'Tamal de Pollo',
         shortDescription: 'ligeramente picante',
@@ -75,7 +75,7 @@ export class SellerProfileComponent {
         seller: "1"
       },
       {
-        id: 2,
+        id: '2',
         image: 'https://www.recetasnestle.com.ec/sites/default/files/srh_recipes/4e4293857c03d819e4ae51de1e86d66a.jpg',
         name: 'Hamburguesa de Carne de Res',
         shortDescription: '',
@@ -86,7 +86,7 @@ export class SellerProfileComponent {
         seller: "1"
       },
       {
-        id: 3,
+        id: '3',
         image: 'https://www.infobae.com/resizer/v2/6N2REW3NAJD6HEVEB6R6QHAM7Q.png?auth=c8e1873a9f3dc0139e79594139cba8788b68465ea02eefde1fc695ddfae5193f&smart=true&width=992&height=661&quality=85',
         name: 'Bacon Honey',
         shortDescription: '',
@@ -97,7 +97,7 @@ export class SellerProfileComponent {
         seller: "1"
       },
       {
-        id: 3,
+        id: '3',
         image: 'https://www.infobae.com/resizer/v2/6N2REW3NAJD6HEVEB6R6QHAM7Q.png?auth=c8e1873a9f3dc0139e79594139cba8788b68465ea02eefde1fc695ddfae5193f&smart=true&width=992&height=661&quality=85',
         name: 'Bacon Honey',
         shortDescription: '',

@@ -15,7 +15,7 @@
                 <tr *ngFor="let productCart of order.products" class="border-t">
                     <td class="flex items-center gap-3 px-6 py-4">
                         <img [src]="productCart.product.image" alt="{{ productCart.product.name }}"
-                            class="w-12 h-12 rounded-lg object-cover border border-gray-300" />
+                            class="w-12 h-12 rounded-lg object-cover border border-gray-300" onerror="this.onerror=null; this.src='assets/img/sin-producto.png';"/>
                         <span class="font-medium ">{{ productCart.product.name }}</span>
                     </td>
                     <td class="px-6 py-4 font-semibold">{{ productCart.product.price | currency:'':'symbol':'1.0-0' }}

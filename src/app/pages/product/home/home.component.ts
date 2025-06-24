@@ -3,7 +3,6 @@ import { Component, OnInit } from '@angular/core';
 
 import { Product } from '../../../models/product';
 import { Item } from '../../../models/item';
-import { SliderComponent } from "../slider/slider.component";
 import { CarouselComponent } from '../carousel/carousel.component';
 import { BannerComponent } from "../banner/banner.component";
 import { Banner } from '../../../models/banner';
@@ -12,28 +11,26 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { ProductService } from '../../service/product.service';
 import { CartService } from '../../service/cart.service';
 import { AuthService } from '../../service/auth.service';
-import { Banner2Component } from "../banner2/banner2.component";
 import { BannerService } from '../../service/banner.service';
+import { Order } from '../../../models/order';
 
 @Component({
   selector: 'app-home',
   imports: [
     CommonModule,
-    // SliderComponent,
     CarouselComponent,
     BannerComponent,
     CardComponent,
     RouterModule,
-    // Banner2Component
   ],
   providers: [CartService],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
 })
 export class HomeComponent implements OnInit {
-
   products: Product[] = [];
   banners: Banner[] = [];
+  itemsCarousel: Product[] = [];
 
   showBannerGlobal = true;
   showBanner = false;
@@ -46,10 +43,11 @@ export class HomeComponent implements OnInit {
   interval = 3;
 
   constructor(
-    private route: ActivatedRoute,
-    private productService: ProductService,
-    private authService: AuthService,
-    private bannerService: BannerService
+    private readonly route: ActivatedRoute,
+    private readonly productService: ProductService,
+    private readonly authService: AuthService,
+    private readonly bannerService: BannerService,
+    public cartService: CartService
   ) {
     this.plan = this.authService.getValueFromToken('plan');
     this.days = this.getDaysRemaining();
@@ -60,13 +58,18 @@ export class HomeComponent implements OnInit {
       this.currentPath = urlSegments.map(segment => segment.path).join('/');
     });
 
-    this.bannerService.getBanners().subscribe((data: Banner[]) => {
+    this.bannerService.getBannersByCategory(this.currentPath).subscribe((data: Banner[]) => {
       this.banners = data;
       this.productService.getProductsByCategory(this.currentPath).subscribe((data: Product[]) => {
+        console.log('Products for category:', this.currentPath, data);
         this.products = data;
         this.interval = Math.floor(this.products.length / this.banners.length);
-        console.log('Cantidad productos: ', this.products.length, 'Cantidad Banners: ', this.banners.length, 'Interval: ', this.interval);
       });
+    });
+
+    this.productService.getFeaturedProductsByCategory(this.currentPath).subscribe((data: Product[]) => {
+      console.log('Featured products for category:', this.currentPath, data);
+      this.itemsCarousel = data;
     });
 
     this.showBanner = this.authService.getValueFromToken('role') != 'seller';
@@ -86,54 +89,6 @@ export class HomeComponent implements OnInit {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
   }
-
-  itemsCarousel: Product[] = [
-    {
-      id: 1,
-      image: 'https://www.infobae.com/resizer/v2/6N2REW3NAJD6HEVEB6R6QHAM7Q.png?auth=c8e1873a9f3dc0139e79594139cba8788b68465ea02eefde1fc695ddfae5193f&smart=true&width=992&height=661&quality=85',
-      name: 'Tamal de Pollo',
-      shortDescription: 'ligeramente picante',
-      stars: 4.5,
-      sales: 100,
-      price: 50000,
-      originalPrice: 100000,
-      note: 'picante',
-      seller: "1"
-    },
-    {
-      id: 2,
-      image: 'https://www.recetasnestle.com.ec/sites/default/files/srh_recipes/4e4293857c03d819e4ae51de1e86d66a.jpg',
-      name: 'Hamburguesa de Carne de Res',
-      shortDescription: '',
-      stars: 3.5,
-      sales: 8,
-      price: 40000,
-      originalPrice: 100000,
-      seller: "1"
-    },
-    {
-      id: 3,
-      image: 'https://www.infobae.com/resizer/v2/6N2REW3NAJD6HEVEB6R6QHAM7Q.png?auth=c8e1873a9f3dc0139e79594139cba8788b68465ea02eefde1fc695ddfae5193f&smart=true&width=992&height=661&quality=85',
-      name: 'Bacon Honey',
-      shortDescription: '',
-      stars: 2.5,
-      sales: 1050,
-      price: 19200,
-      originalPrice: 38400,
-      seller: "1"
-    },
-    {
-      id: 3,
-      image: 'https://www.infobae.com/resizer/v2/6N2REW3NAJD6HEVEB6R6QHAM7Q.png?auth=c8e1873a9f3dc0139e79594139cba8788b68465ea02eefde1fc695ddfae5193f&smart=true&width=992&height=661&quality=85',
-      name: 'Bacon Honey',
-      shortDescription: '',
-      stars: 4.5,
-      sales: 100,
-      price: 19200,
-      originalPrice: 38400,
-      seller: "1"
-    }
-  ];
 
   getBannerForIndex(i: number): Banner {
     const idx = Math.floor((i + 1) / this.interval) - 1;
@@ -161,5 +116,12 @@ export class HomeComponent implements OnInit {
     { id: 1, icon: 'assets/img/manicure.png', label: 'Manicure' }
   ];
 
+
+  getCount(orders: Order[]) {
+    return orders
+      .reduce((sum, order) =>
+        sum + order.products.reduce((c, p) => c + p.quantity, 0)
+        , 0)
+  }
 
 }

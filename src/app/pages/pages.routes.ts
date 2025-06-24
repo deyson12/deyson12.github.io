@@ -9,6 +9,8 @@ import { PaymentHelpComponent } from './seller/payment-help/payment-help.compone
 import { CreateSellerComponent } from './seller/create-seller/create-seller.component';
 import { LoginComponent } from './auth/login/login.component';
 import { LogoutComponent } from './seller/logout/logout.component';
+import { TestComponent } from './admin/test/test.component';
+import { DashboardComponent } from './admin/dashboard/dashboard.component';
 
 export default [
     { path: 'all', component: HomeComponent },
@@ -30,5 +32,7 @@ export default [
     { path: 'help', component: PaymentHelpComponent },
     { path: 'logout', component: LogoutComponent },
     { path: 'create-seller', component: CreateSellerComponent },
+    { path: 'test', component: TestComponent },
+    { path: 'dashboard', component: DashboardComponent },
     { path: '**', redirectTo: '/pages/all' }
 ] as Routes;

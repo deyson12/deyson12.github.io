@@ -24,6 +24,8 @@ export class AppTopbarComponent implements OnInit {
 
     items!: MenuItem[];
 
+    isMobile = /Mobi|Android/i.test(navigator.userAgent);
+
     constructor(
         public layoutService: LayoutService,
         private auth: AuthService

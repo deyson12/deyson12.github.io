@@ -30,7 +30,7 @@ export class ProductDetailComponent {
 
   relatedProducts: Product[] = [
     {
-      id: 2,
+      id: '2',
       name: 'Uñas',
       shortDescription: 'Uñas Acrilicas',
       price: 30000,
@@ -41,7 +41,7 @@ export class ProductDetailComponent {
       seller: "1"
     },
     {
-      id: 3,
+      id: '3',
       name: 'Tramites Visa',
       shortDescription: 'Tramites de Visa para Estados Unidos',
       price: 25000,
@@ -54,7 +54,6 @@ export class ProductDetailComponent {
   ]
 
   getSalesDetail(sales: number | undefined): string {
-    console.log('Sales detail:', sales);
     return this.productService.getSalesDetail(sales);
   }
 

@@ -12,9 +12,9 @@ export class PaymentHelpComponent implements OnInit {
   currentPlan: string | null = null; 
   nextPlan = 'Adicional';        // texto para el mensaje de WhatsApp
   whatsAppNumber = '573136090247';
-  qrCodeUrl = 'assets/img/qr-pago.png';  // ruta de la imagen QR
+  qrCodeUrl = 'https://res.cloudinary.com/dsnijmtqf/image/upload/v1750429659/qr-code_adb3ed.jpg';  // ruta de la imagen QR
   bankName = 'Bancolombia';
-  accountNumber = '000123456789';
+  accountNumber = '353-860566-07';
   endDate = '';
 
   constructor(private autService: AuthService){}

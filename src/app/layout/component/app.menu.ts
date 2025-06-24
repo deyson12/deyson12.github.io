@@ -33,6 +33,14 @@ export class AppMenu implements OnInit {
 
     this.role = this.auth.getValueFromToken('role');
 
+    const adminGroup: MenuItem = {
+      label: 'Administrador',
+      items: [
+        { label: 'Dashboard', icon: 'mdi:view-grid', routerLink: ['/pages/dashboard'] },
+        { label: 'Pruebas', icon: 'mdi:test-tube', routerLink: ['/pages/test'] },
+      ]
+    };
+
     const profileGroup: MenuItem = {
       label: 'Perfil vendedor',
       items: [
@@ -71,7 +79,8 @@ export class AppMenu implements OnInit {
 
 
         this.model = [
-          ...(this.role === 'seller' ? [profileGroup] : []),
+          ...(this.role === 'admin' ? [adminGroup] : []),
+          ...(this.role === 'seller' || this.role === 'admin' ? [profileGroup] : []),
           categoriesGroup,
           // sellersGroup
         ];

@@ -11,7 +11,13 @@ export class UserService {
 
   private readonly apiUrl = `${environment.apiUrl}/api/users`;
 
-  constructor(private http: HttpClient) { }
+  constructor(private readonly http: HttpClient) { }
+
+  /** Obtiene solo las categorías activas, ordenadas */
+  getUsers(): Observable<User[]> {
+    let url = this.apiUrl;
+    return this.http.get<User[]>(url);
+  }
 
   /** Obtiene solo las categorías activas, ordenadas */
   getUserById(userId: string): Observable<User> {

@@ -1,0 +1,14 @@
+<div class="card">
+    <form [formGroup]="form">
+
+        <h4>Subramos</h4>
+
+        <!-- Componente visual de tags -->
+        <p-chips formControlName="tagsArray" [separator]="','" [addOnBlur]="true"
+            placeholder="Escribe y pulsa Enter o ,">
+        </p-chips>
+
+        <!-- Hidden input con el CSV que enviarás al backend -->
+        <input type="hidden" formControlName="tagsCsv" />
+    </form>
+</div>

@@ -1,73 +1,87 @@
 @if (product) {
-<a [class.disabled]="!puedeNavegar" [routerLink]="puedeNavegar ? ['/pages/product-detail'] : null"
-    [state]="{ product: product }" (click)="!puedeNavegar && $event.preventDefault()">
-    <!-- Restaurante Card -->
-    <div class="card mb-0 p-4 flex items-start rounded-border shadow-sm hover:shadow-md transition-shadow h-60">
-        <!-- Imagen del producto -->
-        <img [src]="product.image" [alt]="product.name" [title]="product.name"
-            class="w-40 h-full object-cover rounded-lg flex-shrink-0 mr-4" onerror="this.onerror=null; this.src='assets/img/sin-producto.png';"/>
+  <a
+    [class.disabled]="!puedeNavegar"
+    [routerLink]="puedeNavegar ? ['/pages/product-detail'] : null"
+    [state]="{ product: product }"
+    (click)="!puedeNavegar && $event.preventDefault()"
+  >
+    <div class="card mb-0 p-4 rounded-border shadow-sm hover:shadow-md transition-shadow h-full flex">
+      
+      <!-- Imagen al 100% de altura con overlay de descuento -->
+      <div class="relative w-40 h-full flex-shrink-0 mr-4">
+        <img
+          [src]="product.image"
+          [alt]="product.name"
+          [title]="product.name"
+          class="w-full h-full object-cover rounded-lg"
+          onerror="this.onerror=null; this.src='assets/img/sin-producto.png';"
+        />
+        @if (product.originalPrice && product.originalPrice > product.price) {
+          <span
+            class="absolute top-2 left-2 inline-block bg-orange-100 text-orange-700 text-xs font-medium px-2 py-1 rounded"
+          >
+            Ahorra {{ getDiscount(product) }}
+          </span>
+        }
+      </div>
 
-        <!-- Contenido principal -->
-        <div class="flex-1 flex flex-col justify-between h-full">
-            <!-- Título y rating -->
+      <!-- Contenido principal -->
+      <div class="flex-1 flex flex-col justify-between h-full">
+        <div>
+          <div class="flex justify-between items-start">
             <div>
-                <div class="flex justify-between items-start">
-                    <div>
-                        <h5 class="text-surface-900 dark:text-surface-0 font-medium text-lg">
-                            {{product.name}}
-                            @if (product.shortDescription) {
-                            <span class="text-muted-color text-sm font-normal">
-                                ({{product.shortDescription}})
-                            </span>
-                            }
-                        </h5>
-                        <div class="flex flex-wrap items-center mt-1 space-x-2 text-sm">
-                            <i class="pi pi-star-fill text-yellow-500"></i>
-                            <span class="font-medium">{{product.stars}} ({{getSalesDetail(product.sales)}})</span>
-                        </div>
-                    </div>
-                    <div>
-                        <a href="javascript:void(0)" (click)="$event.preventDefault();$event.stopPropagation();addProductToCart(product)" 
-                        class="flex items-center justify-center bg-blue-100 dark:bg-blue-400/10 rounded-border w-10 h-10">
-                            <div>
-                                <i class="pi pi-shopping-cart text-blue-500 text-xl"></i>
-                            </div>
-                        </a>
-                    </div>
-                </div>
-
-                <div class="flex items-center mt-3">
-                    <div class="flex items-baseline space-x-2">
-                        <span class="text-base font-semibold">
-                            {{ product.price | currency:'':'symbol':'1.0-0'}}
-                        </span>
-                        @if (product.originalPrice) {
-                        <span class="text-xs text-muted-color line-through">
-                            {{ product.originalPrice | currency:'':'symbol':'1.0-0'}}
-                        </span>
-                        }
-
-                    </div>
-                </div>
-
-                <div class="flex items-center mt-3 text-sm">
-                    @if (product.originalPrice) {
-                    <span class="inline-block bg-orange-100 text-orange-700 text-xs font-medium px-2 py-1 rounded">
-                        Ahorra hasta un {{getDiscount( product )}}
-                    </span>
-                    }
-                </div>
+              <h5 class="text-surface-900 dark:text-surface-0 font-medium text-lg">
+                {{ product.name }}
+                @if (product.note) {
+                  <span class="text-muted-color text-sm font-normal">
+                    ({{ product.note }})
+                  </span>
+                }
+              </h5>
+              <p> {{product.description}} </p>
+              <div class="flex items-center mt-1 space-x-2 text-sm">
+                <i class="pi pi-star-fill text-yellow-500"></i>
+                <span class="font-medium">
+                  {{ product.stars }} ({{ getSalesDetail(product.sales) }})
+                </span>
+              </div>
             </div>
+          </div>
 
-            @if (product.note) {
-            <!-- Nota adicional -->
-            <div class="flex items-center text-sm text-muted-color mt-3">
-                <i class="pi pi-thumbs-up text-orange-500 mr-2"></i>
-                <span> {{product.note}} </span>
-            </div>
+          <!-- Precios -->
+          <div class="flex items-baseline mt-3 space-x-2 text-base">
+            <span class="font-semibold">
+              {{ product.price | currency:'':'symbol':'1.0-0' }}
+            </span>
+            @if (product.originalPrice) {
+              <span class="text-xs text-muted-color line-through">
+                {{ product.originalPrice | currency:'':'symbol':'1.0-0' }}
+              </span>
             }
-
+          </div>
         </div>
+
+        <!-- Nota y botón Agregar al carrito -->
+        <div>
+          <!-- @if (product.note) {
+            <div class="flex items-center text-sm text-muted-color mt-3">
+              <i class="pi pi-thumbs-up text-orange-500 mr-2"></i>
+              <span>{{ product.note }}</span>
+            </div>
+        } -->
+          <div class="mt-3">
+            <a
+              href="javascript:void(0)"
+              (click)="$event.preventDefault(); $event.stopPropagation(); addProductToCart(product)"
+              class="inline-flex items-center justify-center bg-blue-100 dark:bg-blue-400/10 rounded-border px-3 py-2"
+            >
+              <i class="pi pi-shopping-cart text-blue-500 text-xl"></i>
+              <span class="ml-2 text-sm">Agregar al carrito</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
     </div>
-</a>
+  </a>
 }

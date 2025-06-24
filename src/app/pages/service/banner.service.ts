@@ -11,9 +11,14 @@ export class BannerService {
 
   private readonly apiUrl = `${environment.apiUrl}/api/banners`;
 
-  constructor(private http: HttpClient) { }
+  constructor(private readonly http: HttpClient) { }
 
   getBanners(): Observable<Banner[]> {
     return this.http.get<Banner[]>(this.apiUrl);
+  }
+
+  getBannersByCategory(categoryCode: string): Observable<Banner[]> {
+    const url = `${this.apiUrl}/category/:categoryCode`.replace(':categoryCode', categoryCode);
+    return this.http.get<Banner[]>(url);
   }
 }

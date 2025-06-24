@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { SellerService } from '../../service/seller.service';
 import { ProductService } from '../../service/product.service';
-import { Seller } from '../../../models/selller';
+import { v4 as uuidv4 } from 'uuid';
 import { Product } from '../../../models/product';
 import { CardComponent } from '../../product/card/card.component';
 import { CartService } from '../../service/cart.service';
@@ -14,10 +14,11 @@ import { ToastService } from '../../service/toast.service';
 import { CloudinaryService } from '../../service/cloudinary.service';
 import { Category } from '../../../models/category';
 import { CategoryService } from '../../service/category.service';
+import { ChipsModule } from 'primeng/chips';
 
 @Component({
   selector: 'app-profile',
-  imports: [CommonModule, CardComponent, ReactiveFormsModule],
+  imports: [CommonModule, CardComponent, ReactiveFormsModule, FormsModule, ChipsModule],
   providers: [CartService, ToastService, UserService],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss'
@@ -37,20 +38,22 @@ export class ProfileComponent implements OnInit {
   categories: Category[] = [];
 
   constructor(
-    private fb: FormBuilder,
-    private sellerService: SellerService,
-    private userService: UserService,
-    private authService: AuthService,
-    private toastService: ToastService,
-    private productService: ProductService,
-    private cloudinaryService: CloudinaryService,
-    private categoryService: CategoryService
+    private readonly fb: FormBuilder,
+    private readonly sellerService: SellerService,
+    private readonly userService: UserService,
+    private readonly authService: AuthService,
+    private readonly toastService: ToastService,
+    private readonly productService: ProductService,
+    private readonly cloudinaryService: CloudinaryService,
+    private readonly categoryService: CategoryService
   ) { }
 
   ngOnInit(): void {
     this.profileForm = this.fb.group({
       name: ['', Validators.required],
+      businessName: ['', Validators.required],
       description: [''],
+      image: [''],
       facebookUrl: [''],
       instagramUrl: [''],
       twitterUrl: [''],
@@ -62,6 +65,10 @@ export class ProfileComponent implements OnInit {
 
     this.loadSeller();
     this.loadProducts();
+
+    this.productForm.get('tagsArray')!.valueChanges.subscribe((arr: string[]) => {
+      this.productForm.get('tags')!.setValue(arr.join(','));
+    });
   }
 
   private loadCategories(): void {
@@ -88,31 +95,20 @@ export class ProfileComponent implements OnInit {
       category: [null, Validators.required],
       note: ['', Validators.maxLength(50)],
       tags: [''],
-      stock: [null, Validators.min(0)]
+      tagsArray: [[], Validators.maxLength(5)],
+      stock: [null, [Validators.min(0), Validators.max(10000)]],
     });
   }
 
   loadSeller(): void {
-    /*this.sellerService.getSeller('').subscribe(seller => {
-      this.seller = seller;
-      this.profileForm.patchValue({
-        name: seller.name,
-        description: seller.description,
-        facebookUrl: seller.facebookUrl,
-        instagramUrl: seller.instagramUrl,
-        twitterUrl: seller.twitterUrl,
-        linkedinUrl: seller.linkedinUrl
-      });
-
-      this.loadProducts();
-    });*/
-
     this.userService.getUserById(this.authService.getValueFromToken('userId')).subscribe({
       next: (response: User) => {
         this.user = response;
         this.profileForm.patchValue({
           name: response.name,
-          description: '',
+          description: response.description,
+          businessName: response.businessName,
+          image: response.image,
           facebookUrl: response.facebookUrl,
           instagramUrl: response.instagramUrl,
           twitterUrl: response.twitterUrl,
@@ -132,23 +128,33 @@ export class ProfileComponent implements OnInit {
   }
 
   saveProfile(): void {
-    /*if (this.profileForm.invalid) return;
-    const updatedSeller: Seller = {
-      ...this.seller,
+    if (this.profileForm.invalid) return;
+    const updatedSeller: User = {
       ...this.profileForm.value
     };
+    console.log('Updated Seller:', updatedSeller);
     this.sellerService.updateSeller(updatedSeller).subscribe(res => {
-      this.seller = res;
-    });*/
+      this.user = res;
+    });
   }
 
   onProfileImageChange(event: Event): void {
-    console.log('hola');
     const file = (event.target as HTMLInputElement).files?.[0];
     if (file) {
       this.cloudinaryService.uploadImage(file, this.user.id, 'seller').subscribe(url => {
         this.user.image = url;
         this.profileForm.patchValue({
+          image: url,
+        });
+      });
+    }
+  }
+
+  onProductImageChange(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (file) {
+      this.cloudinaryService.uploadImage(file, uuidv4(), 'product').subscribe(url => {
+        this.productForm.patchValue({
           image: url,
         });
       });
@@ -171,28 +177,25 @@ export class ProfileComponent implements OnInit {
   }
 
   editProduct(product: Product): void {
-    // Lógica para editar producto (modal o navegación)
     this.isEditMode = true;
-    this.productForm.patchValue({ ...product });
+    const tagsArray = product.tags
+      ? product.tags.split(',').map(tag => tag.trim())
+      : [];
+    this.productForm.patchValue({
+      ...product,
+      tagsArray
+    });
     this.displayProductDialog = true;
   }
 
   saveProduct(): void {
     if (this.productForm.invalid) return;
     const prod = this.productForm.value as Product;
-    if (this.isEditMode) {
-      this.productService.saveOrUpdateProduct(prod).subscribe(() => {
-        this.loadProducts();
-        this.displayProductDialog = false;
-      });
-    } else {
-      // añade sellerId si tu API lo requiere
-      prod.seller = this.authService.getValueFromToken('userId');
-      this.productService.saveOrUpdateProduct(prod).subscribe(() => {
-        this.loadProducts();
-        this.displayProductDialog = false;
-      });
-    }
+    prod.seller = this.authService.getValueFromToken('userId');
+    this.productService.saveOrUpdateProduct(prod).subscribe(() => {
+      this.loadProducts();
+      this.displayProductDialog = false;
+    });
   }
 
   deleteProduct(product: Product): void {

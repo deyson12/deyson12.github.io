@@ -15,7 +15,7 @@ export class CloudinaryService {
   
   private readonly apiUrl = `${environment.apiUrl}/api/images/upload`;
   
-  constructor(private http: HttpClient) { }
+  constructor(private readonly http: HttpClient) { }
 
   uploadImage(file: File, name: string, folder: string = 'otros'): Observable<string> {
     const formData = new FormData();

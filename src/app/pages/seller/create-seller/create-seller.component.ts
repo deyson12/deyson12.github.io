@@ -14,6 +14,9 @@ import { VerifyCodeResponse } from '../../../models/verifyCodeResponse';
 import { CloudinaryService } from '../../service/cloudinary.service';
 import { CheckboxModule } from 'primeng/checkbox';
 import { DialogModule } from 'primeng/dialog';
+import { ResendCodeResponse } from '../../../models/resendCodeResponse';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 
 @Component({
   selector: 'app-create-seller',
@@ -26,7 +29,9 @@ import { DialogModule } from 'primeng/dialog';
     ButtonModule, 
     FormsModule,
     CheckboxModule,
-    DialogModule
+    DialogModule,
+    IconFieldModule,
+    InputIconModule
   ],
   providers: [ToastService],
   templateUrl: './create-seller.component.html',
@@ -57,6 +62,7 @@ export class CreateSellerComponent implements OnInit, OnDestroy {
   public countdown: number = 60;   // segundos iniciales
   public showResend: boolean = false;
   private intervalId: any;
+  public creationButtonDisabled = false;
 
   @ViewChildren('codeInput') codeInputs!: QueryList<ElementRef<HTMLInputElement>>;
 
@@ -66,7 +72,7 @@ export class CreateSellerComponent implements OnInit, OnDestroy {
     private sellerService: SellerService,
     private toastService: ToastService,
     private cloudinaryService: CloudinaryService,
-    private router: Router
+    private router: Router,
   ) {
     this.userId = this.authService.getValueFromToken('userId');
     this.role = this.authService.getValueFromToken('role');
@@ -193,8 +199,18 @@ export class CreateSellerComponent implements OnInit, OnDestroy {
     if (this.resendAttempts >= this.maxAttempts) return;
     this.resendAttempts++;
     // Aquí va la llamada a tu servicio para volver a enviar el código:
-    // e.g. this.authService.sendVerificationCode(this.sellerForm.get('email')?.value).subscribe(...)
-    console.log(`Reenviando código (intento ${this.resendAttempts})`);
+    this.authService.sendVerificationCode(this.authService.getValueFromToken('userId') || this.uuid).subscribe({
+      next: (response: ResendCodeResponse) => {
+        if (response.status) {
+          this.toastService.showInfo('Exito', 'Código verificado correctamente');
+        } else {
+          this.toastService.showError('Error', 'Código ingresado erroneo, por favor validar');
+        }
+      },
+      error: (err: Error) => {
+        this.toastService.showError('Error', 'Ocurrió un error al enviar email. Por favor, inténtalo de nuevo más tarde.');
+      }
+    })
 
     // Reiniciar timer solo si no se alcanzó el máximo
     if (this.resendAttempts < this.maxAttempts) {
@@ -280,16 +296,18 @@ export class CreateSellerComponent implements OnInit, OnDestroy {
   }
 
   // Método que se invoca al enviar el formulario
-  onSubmit(): void {
+  onSubmit(activateCallback: (step: number) => void): void {
     if (this.sellerForm.invalid) {
       this.sellerForm.markAllAsTouched();
       return;
     }
-    this.callCreateSeller();
+    this.creationButtonDisabled = true;
+    this.startTimer();
+    this.callCreateSeller(activateCallback);
   }
 
   // Aquí se construye el payload y se invoca el servicio
-  private callCreateSeller(): void {
+  private callCreateSeller(activateCallback: (step: number) => void): void {
     const raw = this.sellerForm.getRawValue();
 
     const payload: SellerPayload = {
@@ -311,11 +329,12 @@ export class CreateSellerComponent implements OnInit, OnDestroy {
         if (this.isBuyer) {
           this.sellerForm.get('email')?.disable();
         }
+        activateCallback(2);
       },
       error: (err) => {
-        // Manejo de error (puedes adaptar a tu MessageService de PrimeNG, por ejemplo)
-        console.error('Error al crear vendedor:', err);
-        alert('Ocurrió un error al registrarte. Por favor, inténtalo de nuevo más tarde.');
+        console.log(err)
+        this.toastService.showError('Error', err.message);
+        this.creationButtonDisabled = false;
       }
     });
   }

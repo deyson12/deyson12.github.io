@@ -1,0 +1,379 @@
+<div class="card mb-8">
+  <!-- admin-dashboard.component.html -->
+
+  <ng-template #captionFilter>
+    <div class="flex">
+      <p-iconfield iconPosition="left" class="ml-auto">
+        <p-inputicon>
+          <i class="pi pi-search"></i>
+        </p-inputicon>
+        <input
+          pInputText
+          type="text"
+          placeholder="Search keyword"
+        />
+      </p-iconfield>
+    </div>
+  </ng-template>
+
+  <!-- Sección Vendedores -->
+  <section class="mb-6">
+    <h2 class="text-xl font-semibold mb-8">Vendedores</h2>
+    <p-table
+      #dt
+      [value]="users"
+      dataKey="id"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[10,25,50]"
+      [globalFilterFields]="['name','businessName','email','phone','role','status']"
+      [tableStyle]="{ 'min-width': '60rem' }"
+    >
+      <ng-template #caption>
+        <ng-container *ngTemplateOutlet="captionFilter"></ng-container>
+      </ng-template>
+      <ng-template #header>
+        <tr>
+          <th>Name</th>
+          <th>Business</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Role</th>
+          <th>Status</th>
+          <th>Acciones</th>
+        </tr>
+        <tr>
+          <th><p-columnFilter type="text" field="name"></p-columnFilter></th>
+          <th><p-columnFilter type="text" field="businessName"></p-columnFilter></th>
+          <th><p-columnFilter type="text" field="email"></p-columnFilter></th>
+          <th><p-columnFilter type="text" field="phone"></p-columnFilter></th>
+          <th><p-columnFilter type="text" field="role"></p-columnFilter></th>
+          <th>
+            <p-columnFilter field="status" matchMode="equals" [showMenu]="false">
+              <ng-template #filter let-value let-filter="filterCallback">
+                <p-dropdown
+                  [options]="userStatuses"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Estado"
+                  [ngModel]="value"
+                  (ngModelChange)="filter($event)"
+                  [showClear]="true"
+                ></p-dropdown>
+              </ng-template>
+            </p-columnFilter>
+          </th>
+          <th></th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-user>
+        <tr>
+          <td>{{ user.name }}</td>
+          <td>{{ user.businessName }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.phone }}</td>
+          <td>{{ user.role }}</td>
+          <td><p-tag [value]="user.status" [severity]="getSeverity(user.status)"></p-tag></td>
+          <td>
+            <button
+              pButton
+              icon="pi pi-power-off"
+              class="p-button-text p-button-sm"
+              (click)="toggleUser(user)"
+            ></button>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </section>
+
+  </div>
+  <div class="card mb-2">
+
+
+  <!-- Sección Banners -->
+  <section class="mb-6">
+    <h2 class="text-xl font-semibold mb-8">Banners</h2>
+    <p-table
+      #dt2
+      [value]="banners"
+      dataKey="id"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[10,25,50]"
+      [globalFilterFields]="['product.name','subtext','type','priority']"
+      [tableStyle]="{ 'min-width': '60rem' }"
+    >
+      <ng-template #caption>
+        <ng-container *ngTemplateOutlet="captionFilter"></ng-container>
+      </ng-template>
+      <ng-template #header>
+        <tr>
+          <th>Product</th>
+          <th>Subtext</th>
+          <th>Type</th>
+          <th>Priority</th>
+          <th>Inicio</th>
+          <th>Fin</th>
+          <th>Timer End</th>
+          <th>Acciones</th>
+        </tr>
+        <tr>
+          <th><p-columnFilter type="text" field="product.name"></p-columnFilter></th>
+          <th><p-columnFilter type="text" field="subtext"></p-columnFilter></th>
+          <th><p-columnFilter type="text" field="type"></p-columnFilter></th>
+          <th><p-columnFilter type="numeric" field="priority"></p-columnFilter></th>
+          <th><p-columnFilter field="startDate" matchMode="dateIs"></p-columnFilter></th>
+          <th><p-columnFilter field="endDate" matchMode="dateIs"></p-columnFilter></th>
+          <th><p-columnFilter field="endTimerDate" matchMode="dateIs"></p-columnFilter></th>
+          <th></th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-banner>
+        <tr>
+          <td>{{ banner.product.name }}</td>
+          <td>{{ banner.subtext || '-' }}</td>
+          <td>{{ banner.type || '-' }}</td>
+          <td>{{ banner.priority }}</td>
+          <td>{{ banner.startDate }}</td>
+          <td>{{ banner.endDate }}</td>
+          <td>{{ banner.endTimerDate }}</td>
+          <td>
+            <button
+              pButton
+              icon="pi pi-trash"
+              class="p-button-text p-button-sm"
+              (click)="deleteBanner(banner)"
+            ></button>
+            <button
+              pButton
+              icon="pi pi-check"
+              class="p-button-text p-button-sm"
+              (click)="saveBanner(banner)"
+            ></button>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </section>
+  </div>
+  <div class="card mb-2">
+  <!-- Sección Categorías -->
+  <section class="mb-6">
+    <h2 class="text-xl font-semibold mb-8">Categorías</h2>
+    <p-table
+      #dt3
+      [value]="categories"
+      dataKey="id"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[10,25,50]"
+      [globalFilterFields]="['name','icon','code','order','status']"
+      [tableStyle]="{ 'min-width': '60rem' }"
+    >
+      <ng-template #caption>
+        <div class="flex justify-between">
+          <button
+            pButton
+            label="Nueva Categoría"
+            icon="pi pi-plus"
+            (click)="addCategory()"
+          ></button>
+          <ng-container *ngTemplateOutlet="captionFilter"></ng-container>
+        </div>
+      </ng-template>
+      <ng-template #header>
+        <tr>
+          <th>Name</th>
+          <th>Icon</th>
+          <th>Code</th>
+          <th>Order</th>
+          <th>Status</th>
+          <th>Acciones</th>
+        </tr>
+        <tr>
+          <th><p-columnFilter type="text" field="name"></p-columnFilter></th>
+          <th><p-columnFilter type="text" field="icon"></p-columnFilter></th>
+          <th><p-columnFilter type="text" field="code"></p-columnFilter></th>
+          <th><p-columnFilter type="numeric" field="order"></p-columnFilter></th>
+          <th><p-columnFilter type="boolean" field="status"></p-columnFilter></th>
+          <th></th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-cat>
+        <tr>
+          <td>{{ cat.name }}</td>
+          <td>
+            <iconify-icon [icon]="cat.icon" width="18" height="18" class="layout-menuitem-icon"></iconify-icon>
+          </td>
+          <td>{{ cat.code }}</td>
+          <td>{{ cat.order }}</td>
+          <td>
+            <i
+              class="pi"
+              [ngClass]="{
+                'pi-check-circle text-green-500': cat.status,
+                'pi-times-circle text-red-500': !cat.status
+              }"
+            ></i>
+          </td>
+          <td>
+            <button
+              pButton
+              icon="pi pi-trash"
+              class="p-button-text p-button-sm"
+              (click)="toggleCategory(cat)"
+            ></button>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </section>
+  </div>
+  <div class="card mb-2">
+  <!-- Sección Planes -->
+  <section class="mb-6">
+    <h2 class="text-xl font-semibold mb-8">Planes</h2>
+    <p-table
+      #dt4
+      [value]="plans"
+      dataKey="id"
+      editable="true"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[10,25,50]"
+      [globalFilterFields]="['name','price','durtationDays','productLimit','featuredLimit','prioritySearch','isDefault']"
+      [tableStyle]="{ 'min-width': '75rem' }"
+    >
+      <ng-template #caption>
+        <div class="flex justify-between">
+          <button
+            pButton
+            label="Nuevo Plan"
+            icon="pi pi-plus"
+            (click)="addPlan()"
+          ></button>
+          <ng-container *ngTemplateOutlet="captionFilter"></ng-container>
+        </div>
+      </ng-template>
+      <ng-template #header>
+        <tr>
+          <th>Name</th>
+          <th>Price</th>
+          <th>Duration</th>
+          <th>Product Limit</th>
+          <th>Featured Limit</th>
+          <th>Priority Search</th>
+          <th>Default</th>
+          <th>Acciones</th>
+        </tr>
+        <tr>
+          <th><p-columnFilter type="text" field="name"></p-columnFilter></th>
+          <th><p-columnFilter type="numeric" field="price"></p-columnFilter></th>
+          <th><p-columnFilter type="numeric" field="durtationDays"></p-columnFilter></th>
+          <th><p-columnFilter type="numeric" field="productLimit"></p-columnFilter></th>
+          <th><p-columnFilter type="numeric" field="featuredLimit"></p-columnFilter></th>
+          <th><p-columnFilter type="numeric" field="prioritySearch"></p-columnFilter></th>
+          <th><p-columnFilter type="boolean" field="isDefault"></p-columnFilter></th>
+          <th></th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-plan>
+        <tr>
+          <td>{{ plan.name }}</td>
+          <td>{{ plan.price | currency:'COP':'symbol':'1.0-0' }}</td>
+          <td>{{ plan.durtationDays }}</td>
+          <td>{{ plan.productLimit }}</td>
+          <td>{{ plan.featuredLimit }}</td>
+          <td>{{ plan.prioritySearch }}</td>
+          <td>
+            <i
+              class="pi"
+              [ngClass]="{
+                'pi-check-circle text-green-500': plan.isDefault,
+                'pi-times-circle text-red-500': !plan.isDefault
+              }"
+            ></i>
+          </td>
+          <td>
+            <button
+              pButton
+              icon="pi pi-trash"
+              class="p-button-text p-button-sm"
+              (click)="deletePlan(plan)"
+            ></button>
+            <button
+              pButton
+              icon="pi pi-check"
+              class="p-button-text p-button-sm"
+              (click)="savePlan(plan)"
+            ></button>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </section>
+  </div>
+  <div class="card mb-2">
+  <!-- Sección Subscripciones -->
+  <section class="mb-6">
+    <h2 class="text-xl font-semibold mb-8">Subscripciones</h2>
+    <p-table
+      #dt5
+      [value]="subscriptions"
+      dataKey="id"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[10,25,50]"
+      [globalFilterFields]="['user.name','plan.name','startDate','endDate','isActive']"
+      [tableStyle]="{ 'min-width': '60rem' }"
+    >
+      <ng-template #caption>
+        <ng-container *ngTemplateOutlet="captionFilter"></ng-container>
+      </ng-template>
+      <ng-template #header>
+        <tr>
+          <th>Usuario</th>
+          <th>Plan</th>
+          <th>Inicio</th>
+          <th>Fin</th>
+          <th>Activa</th>
+          <th>Acciones</th>
+        </tr>
+        <tr>
+          <th><p-columnFilter type="text" field="user.name"></p-columnFilter></th>
+          <th><p-columnFilter type="text" field="plan.name"></p-columnFilter></th>
+          <th><p-columnFilter field="startDate" matchMode="dateIs"></p-columnFilter></th>
+          <th><p-columnFilter field="endDate" matchMode="dateIs"></p-columnFilter></th>
+          <th><p-columnFilter type="boolean" field="isActive"></p-columnFilter></th>
+          <th></th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-sub>
+        <tr>
+          <td>{{ sub.user.name }}</td>
+          <td>{{ sub.plan.name }}</td>
+          <td>{{ sub.startDate }}</td>
+          <td>{{ sub.endDate }}</td>
+          <td>
+            <i
+              class="pi"
+              [ngClass]="{
+                'pi-check-circle text-green-500': sub.isActive,
+                'pi-times-circle text-red-500': !sub.isActive
+              }"
+            ></i>
+          </td>
+          <td>
+            <button
+              pButton
+              icon="pi pi-power-off"
+              class="p-button-text p-button-sm"
+              (click)="toggleSubscription(sub)"
+            ></button>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </section>
+</div>

@@ -5,6 +5,7 @@ import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { VerifyCodeResponse } from '../../models/verifyCodeResponse';
+import { ResendCodeResponse } from '../../models/resendCodeResponse';
 
 interface LoginResponse {
   token: string;
@@ -35,6 +36,14 @@ export class AuthService {
   verifyCode(userId: string, code: string): Observable<VerifyCodeResponse> {
     const url = `${this.apiUrl}/verify-code`;
     return this.http.post<VerifyCodeResponse>(url, { userId, code }).pipe(
+      map(response => response),
+      catchError(this.verifyCodeHandleError)
+    );
+  }
+
+  sendVerificationCode(userId: string): Observable<ResendCodeResponse> {
+    const url = `${this.apiUrl}/resend-code`;
+    return this.http.post<ResendCodeResponse>(url, { userId }).pipe(
       map(response => response),
       catchError(this.verifyCodeHandleError)
     );

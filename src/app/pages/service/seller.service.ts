@@ -7,6 +7,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { SellerPayload } from '../../models/selllerPayload';
 import { environment } from '../../../environments/environment';
 import { CreateSellerResponse } from '../../models/create-seller-response';
+import { User } from '../../models/user';
 
 @Injectable({
   providedIn: 'root'
@@ -26,13 +27,14 @@ export class SellerService {
 
   private handleError(error: HttpErrorResponse) {
     // Puedes extender esto para leer mensajes específicos del backend
-    return throwError(() => new Error('Ocurrió un error creando el vendedor'));
+    console.log('Error M: ', error.message);
+    return throwError(() => new Error(error.error.message));
   }
 
   getSeller(sellerid: string): Observable<Seller> {
     const mockFeaturedProducts: Product[] = [
       {
-        id: 1,
+        id: '1',
         name: 'Artesanía de Madera',
         shortDescription: 'Figura tallada a mano en madera de cedro.',
         stars: 4.8,
@@ -43,7 +45,7 @@ export class SellerService {
         seller: "1"
       },
       {
-        id: 2,
+        id: '2',
         name: 'Pulsera Tejida',
         shortDescription: 'Pulsera hecha con hilo artesanal.',
         stars: 4.5,
@@ -57,7 +59,7 @@ export class SellerService {
 
     const mockProducts: Product[] = [
       {
-        id: 3,
+        id: '3',
         name: 'Collar de Cuentas',
         shortDescription: 'Collar de cuentas de cerámica pintada a mano.',
         stars: 4.2,
@@ -68,7 +70,7 @@ export class SellerService {
         seller: "1"
       },
       {
-        id: 4,
+        id: '4',
         name: 'Portavasos en Madera',
         shortDescription: 'Set de 4 portavasos con diseño geométrico.',
         stars: 4.6,
@@ -79,7 +81,7 @@ export class SellerService {
         seller: "1"
       },
       {
-        id: 5,
+        id: '5',
         name: 'Broche de Tela',
         shortDescription: 'Broche decorativo de tela reciclada.',
         stars: 4.4,
@@ -124,7 +126,7 @@ export class SellerService {
   }
 
   /** Actualiza el perfil del vendedor y retorna el objeto actualizado */
-  updateSeller(updated: Seller): Observable<Seller> {
+  updateSeller(updated: User): Observable<User> {
     // En un caso real harías un PUT al backend.
     return of(updated);
   }

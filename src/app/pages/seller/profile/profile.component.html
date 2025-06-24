@@ -14,11 +14,16 @@
             {{ user.name[0] | uppercase }}
           </div>
         </ng-template>
-        <input type="file" accept="image/*" (change)="onProfileImageChange($event)" class="w-full sm:w-auto border rounded p-2" />
+        <input type="file" accept="image/*" (change)="onProfileImageChange($event)"
+          class="w-full sm:w-auto border rounded p-2" />
       </div>
       <div>
         <label class="block font-medium mb-1">Nombre</label>
         <input formControlName="name" type="text" class="w-full border rounded p-2" />
+      </div>
+      <div>
+        <label class="block font-medium mb-1">Nombre negocio</label>
+        <input formControlName="businessName" type="text" class="w-full border rounded p-2" />
       </div>
       <div>
         <label class="block font-medium mb-1">Descripción</label>
@@ -40,6 +45,14 @@
         <div>
           <label class="block font-medium mb-1">LinkedIn URL</label>
           <input formControlName="linkedinUrl" type="url" class="w-full border rounded p-2" />
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Email</label>
+          <input [value]="user.email" type="url" class="w-full border rounded p-2" disabled />
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Celular</label>
+          <input [value]="user.phone" type="url" class="w-full border rounded p-2" disabled />
         </div>
       </div>
       <button type="submit" class="w-full sm:w-auto px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark">
@@ -151,22 +164,29 @@
       <!-- Formulario -->
       <form [formGroup]="productForm" (ngSubmit)="saveProduct()" class="space-y-4">
         <div>
-          <label class="block font-medium mb-1">Nombre</label>
+          <label for="productImage" class="block font-medium mb-1">Imagen</label>
+          <img [src]="productForm.get('image')?.value" alt="Producto" class="w-24 h-24 rounded-full object-cover" onerror="this.onerror=null; this.src='assets/img/sin-producto.png';"/>
+          <input id="productImage" type="file" accept="image/*" (change)="onProductImageChange($event)"
+            class="w-full sm:w-auto border rounded p-2" />
+        </div>
+
+        <div>
+          <label for="name" class="block font-medium mb-1">Nombre</label>
           <input formControlName="name" type="text" class="w-full border rounded p-2" />
         </div>
 
         <div>
-          <label class="block font-medium mb-1">Descripción</label>
+          <label for="description" class="block font-medium mb-1">Descripción</label>
           <textarea formControlName="description" rows="3" class="w-full border rounded p-2"></textarea>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="block font-medium mb-1">Precio</label>
+            <label for="price" class="block font-medium mb-1">Precio</label>
             <input formControlName="price" type="number" class="w-full border rounded p-2" />
           </div>
           <div>
-            <label class="block font-medium mb-1">Precio original</label>
+            <label for="originalPrice" class="block font-medium mb-1">Precio original</label>
             <input formControlName="originalPrice" type="number" class="w-full border rounded p-2" />
           </div>
         </div>
@@ -176,14 +196,9 @@
           <label for="featured" class="font-medium">Destacado</label>
         </div>
 
-        <div>
-          <label class="block font-medium mb-1">URL de imagen</label>
-          <input formControlName="image" type="url" class="w-full border rounded p-2" />
-        </div>
-
         <!-- Categoría -->
         <div>
-          <label class="block font-medium mb-1">Categoría</label>
+          <label for="category" class="block font-medium mb-1">Categoría</label>
           <select formControlName="category" class="w-full border rounded p-2">
             <option [ngValue]="null" disabled>-- Selecciona --</option>
             <option *ngFor="let c of categories" [value]="c.id">{{ c.name }}</option>
@@ -192,21 +207,27 @@
 
         <!-- Nota -->
         <div>
-          <label class="block font-medium mb-1">Nota <span class="text-sm text-gray-500">(opcional)</span></label>
+          <label for="note" class="block font-medium mb-1">Nota <span class="text-sm text-gray-500">(opcional)</span></label>
           <input formControlName="note" type="text" maxlength="50" placeholder="Ejemplo: picante"
             class="w-full border rounded p-2" />
         </div>
 
         <!-- Tags -->
         <div>
-          <label class="block font-medium mb-1">Tags <span class="text-sm text-gray-500">(opcional)</span></label>
-          <input formControlName="tags" type="text" placeholder="Ejm: #hamburguesa #regalo"
-            class="w-full border rounded p-2" />
+          <label for="tagsArray" class="block font-medium mb-1">Tags <span class="text-sm text-gray-500">(opcional) se usa para
+              busquedas por usuarios, maximo 5 tags</span></label>
+          <p-chips formControlName="tagsArray" [separator]="','" [addOnBlur]="true"
+            placeholder="Ejm: hamburguesa regalo. Enter o ,">
+          </p-chips>
+          <div *ngIf="productForm.get('tagsArray')!.hasError('maxlength')">
+            <span class="text-red-500">Sólo puedes ingresar hasta 5 tags.</span>
+          </div>
+          <input formControlName="tags" type="hidden" class="w-full border rounded p-2" />
         </div>
 
         <!-- Stock -->
         <div>
-          <label class="block font-medium mb-1">Stock <span class="text-sm text-gray-500">(opcional)</span></label>
+          <label for="stock" class="block font-medium mb-1">Stock <span class="text-sm text-gray-500">(opcional)</span></label>
           <input formControlName="stock" type="number" min="0" class="w-full border rounded p-2" />
         </div>
 
@@ -217,7 +238,7 @@
             Cancelar
           </button>
           <button type="submit" [disabled]="productForm.invalid"
-            class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+            class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed">
             {{ isEditMode ? 'Actualizar' : 'Crear' }}
           </button>
         </div>
