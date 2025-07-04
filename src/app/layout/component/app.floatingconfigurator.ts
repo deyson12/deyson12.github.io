@@ -9,7 +9,7 @@ import { LayoutService } from '../service/layout.service';
     imports: [ButtonModule, StyleClassModule, AppConfigurator],
     template: `
         <div class="fixed flex gap-4 top-8 right-8">
-            <p-button type="button" (onClick)="toggleDarkMode()" [rounded]="true" [icon]="isDarkTheme() ? 'pi pi-moon' : 'pi pi-sun'" severity="secondary" />
+            <!--p-button type="button" (onClick)="toggleDarkMode()" [rounded]="true" [icon]="isDarkTheme() ? 'pi pi-moon' : 'pi pi-sun'" severity="secondary" /-->
             <div class="relative">
                 <app-configurator />
             </div>

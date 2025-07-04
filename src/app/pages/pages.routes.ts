@@ -7,10 +7,10 @@ import { ProfileComponent } from './seller/profile/profile.component';
 import { MySalesComponent } from './seller/my-sales/my-sales.component';
 import { PaymentHelpComponent } from './seller/payment-help/payment-help.component';
 import { CreateSellerComponent } from './seller/create-seller/create-seller.component';
-import { LoginComponent } from './auth/login/login.component';
 import { LogoutComponent } from './seller/logout/logout.component';
 import { TestComponent } from './admin/test/test.component';
 import { DashboardComponent } from './admin/dashboard/dashboard.component';
+import { AllFilteredComponent } from './product/all-filtered/all-filtered.component';
 
 export default [
     { path: 'all', component: HomeComponent },
@@ -25,7 +25,8 @@ export default [
     { path: 'pets', component: HomeComponent },
     { path: 'services', component: HomeComponent },
     { path: 'cart', component: CartComponent },
-    { path: 'product-detail', component: ProductDetailComponent },
+    { path: 'product-detail/:uuid', component: ProductDetailComponent },
+    { path: 'all-filtered/:q', component: AllFilteredComponent },
     { path: 'seller-profile', component: SellerProfileComponent },
     { path: 'profile', component: ProfileComponent },
     { path: 'my-sales', component: MySalesComponent },

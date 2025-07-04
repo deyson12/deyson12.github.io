@@ -1,68 +1,123 @@
 <div class="layout-topbar">
-    <div class="layout-topbar-logo-container">
-        <button class="layout-menu-button layout-topbar-action" (click)="layoutService.onMenuToggle()">
-            <i class="pi pi-bars"></i>
-        </button>
-        <a class="layout-topbar-logo h-full" routerLink="/">
-            <img class="h-full" [src]="isDarkTheme() ? './assets/img/logo-dark.png' : './assets/img/logo.png'"
-                alt="">
-        </a>
+  <div class="layout-topbar-logo-container">
+    <button class="layout-menu-button layout-topbar-action" (click)="layoutService.onMenuToggle()">
+      <i class="pi pi-bars"></i>
+    </button>
+    <a class="layout-topbar-logo h-full" routerLink="/">
+      <img class="h-full hidden md:block" [src]="isDarkTheme() ? './assets/img/logo-dark.png' : './assets/img/logo.png'"
+        alt="">
+      <img class="h-full block md:hidden"
+        [src]="isDarkTheme() ? './assets/img/logo-sm-dark.png' : './assets/img/logo-sm.png'" alt="">
+    </a>
+  </div>
+
+  <div class="layout-topbar-actions">
+
+    <div class="md:block relative">
+      <p-inputgroup>
+        <p-inputgroup-addon class="!bg-orange-500">
+          <i class="pi pi-search text-white"></i>
+        </p-inputgroup-addon>
+        <input type="text" [formControl]="searchCtrl" placeholder="Buscar productos..." pInputText class="w-full" />
+      </p-inputgroup>
+
+      <ul *ngIf="filteredProducts.length"
+        class="absolute bg-white shadow-lg border rounded-lg w-full mt-1 overflow-auto z-50">
+        <li *ngFor="let p of filteredProducts" (click)="onProductSelect(p)"
+          class="flex items-center px-3 py-2 hover:bg-gray-100 cursor-pointer">
+          <img [src]="p.image" alt="{{ p.name }}" class="w-8 h-8 object-cover rounded mr-2" />
+          <span class="truncate">{{ p.name }}</span>
+        </li>
+
+        <!-- “Ver todos…” al final -->
+        <li *ngIf="filteredProducts.length" (click)="viewAll()"
+          class="px-3 py-2 hover:bg-gray-100 cursor-pointer text-blue-600 font-semibold">
+          Ver todos…
+        </li>
+      </ul>
     </div>
 
-    <div class="layout-topbar-actions">
+    <!-- Visible sólo en pantallas ≥ md (>=768px) -->
+    <div *ngIf="role === '' || role === 'buyer' || role === 'admin'" class="hidden md:block">
+      <!-- Sólo Admin -->
+      <div *ngIf="role === 'admin'" class="inline">
+        <a routerLink="/pages/create-seller" class="inline-flex items-center gap-2 px-4 py-2
+              bg-indigo-500 text-white rounded-lg
+              hover:bg-indigo-600 transition-colors">
+          <i class="pi pi-user text-xl"></i>
+          <span>ADMIN</span>
+        </a>
+      </div>&nbsp;
 
-        @if ((role === '' || role == 'buyer' || role == 'admin') && !isMobile) {
+      <!-- Vendes algo? -->
+      <div class="inline">
+        <a routerLink="/pages/create-seller" class="inline-flex items-center gap-2 px-4 py-2
+              bg-orange-500 text-white rounded-lg
+              hover:bg-orange-600 transition-colors">
+          <i class="pi pi-user-plus text-xl"></i>
+          <span>¿Vendes algún producto o servicio?</span>
+        </a>
+      </div>
+    </div>
 
-        @if (role == 'admin') {
-            <div class="layout-config-menu">
-                <a routerLink="/pages/create-seller"
-                class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors">
-                <i class="pi pi-user text-xl"></i>
-                <span>ADMIN</span>
-            </a>
-            </div>
-        }
 
-        <div class="layout-config-menu">
-            <a routerLink="/pages/create-seller"
-                class="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors">
-                <i class="pi pi-user-plus text-xl"></i>
-                <span>Vendes algun producto o servicio?</span>
-            </a>
-
-        </div>
-        }
-
-        <div class="layout-config-menu">
-            <button type="button" class="layout-topbar-action" (click)="toggleDarkMode()">
+    <div class="layout-config-menu">
+      <!--button type="button" class="layout-topbar-action" (click)="toggleDarkMode()">
                 <i
                     [ngClass]="{ 'pi ': true, 'pi-moon': layoutService.isDarkTheme(), 'pi-sun': !layoutService.isDarkTheme() }"></i>
-            </button>
-            <div class="relative" style="display: none;">
-                <button class="layout-topbar-action layout-topbar-action-highlight" pStyleClass="@next"
-                    enterFromClass="hidden" enterActiveClass="animate-scalein" leaveToClass="hidden"
-                    leaveActiveClass="animate-fadeout" [hideOnOutsideClick]="true">
-                    <i class="pi pi-palette"></i>
-                </button>
-                <app-configurator />
-            </div>
-        </div>
+            </button-->
+      <div class="relative" style="display: none;">
+        <button class="layout-topbar-action layout-topbar-action-highlight" pStyleClass="@next" enterFromClass="hidden"
+          enterActiveClass="animate-scalein" leaveToClass="hidden" leaveActiveClass="animate-fadeout"
+          [hideOnOutsideClick]="true">
+          <i class="pi pi-palette"></i>
+        </button>
+        <app-configurator />
+      </div>
+    </div>
 
-        <!--button class="layout-topbar-menu-button layout-topbar-action" pStyleClass="@next" enterFromClass="hidden" enterActiveClass="animate-scalein" leaveToClass="hidden" leaveActiveClass="animate-fadeout" [hideOnOutsideClick]="true">
+    <!--button class="layout-topbar-menu-button layout-topbar-action" pStyleClass="@next" enterFromClass="hidden" enterActiveClass="animate-scalein" leaveToClass="hidden" leaveActiveClass="animate-fadeout" [hideOnOutsideClick]="true">
                 <i class="pi pi-ellipsis-v"></i>
             </button-->
 
-        <div class="layout-topbar-menu hidden lg:block">
-            <div class="layout-topbar-menu-content">
-                <button type="button" class="layout-topbar-action">
-                    <i class="pi pi-shopping-cart"></i>
-                    <span>Messages</span>
-                </button>
-                <button type="button" class="layout-topbar-action">
-                    <i class="pi pi-user"></i>
-                    <span>Profile</span>
-                </button>
+    <div class="layout-topbar-menu hidden lg:block">
+      <div class="layout-topbar-menu-content">
+
+        <button type="button" routerLink="/pages/cart" class="layout-topbar-action relative">
+          <i class="pi pi-shopping-cart text-xl"></i>
+
+          <!-- badge -->
+          <span *ngIf="cartService.orderCount() > 0" class="cart-badge">
+            {{ cartService.getCount(cartService.orders()) }}
+          </span>
+        </button>
+
+        <button type="button" class="layout-topbar-action" (click)="toggle($event)">
+          <i class="pi pi-user"></i>
+          <span>Profile</span>
+        </button>
+
+        <p-popover #op>
+          <div class="flex flex-col gap-4">
+            <div>
+              @if (userId) {
+              <ul class="list-none p-0 m-0 flex flex-col">
+                <li>
+                  <b>{{ name }}</b> <br /><br />
+                </li>
+                <li>
+                  <button pButton type="button" icon="pi pi-power-off" label="Cerrar Sesión" routerLink="/pages/logout">
+                  </button>
+                </li>
+              </ul>
+              } @else {
+              <button pButton type="button" icon="pi pi-power-off" label="Iniciar Sesión" routerLink="/auth/login">
+              </button>
+              }
             </div>
-        </div>
+          </div>
+        </p-popover>
+      </div>
     </div>
+  </div>
 </div>

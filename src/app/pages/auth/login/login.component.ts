@@ -33,8 +33,8 @@ export class LoginComponent {
     errorMessage: string = '';
 
     constructor(
-        private authService: AuthService,
-        private router: Router
+        private readonly authService: AuthService,
+        private readonly router: Router
     ){}
 
     onSubmit(form: NgForm) {

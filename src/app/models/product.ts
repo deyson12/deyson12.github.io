@@ -1,5 +1,3 @@
-import { Seller } from "./selller";
-
 export interface Product {
     id: string;
     name: string;
@@ -10,6 +8,7 @@ export interface Product {
     originalPrice: number | null;
     sales: number;
     note?: string;
+    active?: boolean;
     featured?: boolean;
     description?: string;
     category?: string;

@@ -12,7 +12,15 @@ export class ProductService {
 
   private readonly apiUrl = `${environment.apiUrl}/api/products`;
 
-  constructor(private http: HttpClient) { }
+  constructor(private readonly http: HttpClient) { }
+
+  getProductById(id: string): Observable<Product> {
+    return this.http.get<Product>(`${this.apiUrl}/${id}`).pipe(
+      catchError((error: HttpErrorResponse) => {
+        return throwError(() => new Error('Ocurrió un error al obtener el producto'));
+      })
+    );
+  }
 
   saveOrUpdateProduct(product: Product): Observable<string> {
     console.log('Vamos a crear: ', product);
@@ -23,13 +31,22 @@ export class ProductService {
   }
 
   private handleError(error: HttpErrorResponse) {
-    // Puedes extender esto para leer mensajes específicos del backend
     return throwError(() => new Error('Ocurrió un error creando el producto'));
   }
 
   /** Obtiene todas las categorías */
   getAllProducts(): Observable<Product[]> {
     return this.http.get<Product[]>(this.apiUrl);
+  }
+
+  getAllProductsByQuery(query: string): Observable<Product[]> {
+    // Busca productos por nombre, descripción o categoría
+    return this.http.get<Product[]>(`${this.apiUrl}/search/${query}`).pipe(
+      catchError((error: HttpErrorResponse) => {
+        console.error('Error fetching products by query:', error);
+        return throwError(() => new Error('Ocurrió un error al buscar productos'));
+      })
+    );
   }
 
   /** Obtiene solo las categorías activas, ordenadas */
@@ -91,8 +108,12 @@ export class ProductService {
 
   /** Elimina un producto por su ID */
   deleteProduct(id: string): Observable<void> {
-    // En un caso real harías un DELETE al backend.
-    return of(undefined);
+    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
+      catchError((error: HttpErrorResponse) => {
+        console.error('Error deleting product:', error);
+        return throwError(() => new Error('Ocurrió un error al eliminar el producto'));
+      })
+    );
   }
 
   /** Actualiza un producto y retorna el objeto actualizado */

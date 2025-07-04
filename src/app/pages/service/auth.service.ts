@@ -6,6 +6,8 @@ import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { VerifyCodeResponse } from '../../models/verifyCodeResponse';
 import { ResendCodeResponse } from '../../models/resendCodeResponse';
+import { UserPayload } from '../../models/selllerPayload';
+import { CreateSellerResponse } from '../../models/create-seller-response';
 
 interface LoginResponse {
   token: string;
@@ -17,7 +19,23 @@ interface LoginResponse {
 export class AuthService {
   private readonly apiUrl = `${environment.apiUrl}/api/auth`;
 
-  constructor(private http: HttpClient) { }
+  private readonly frontUrl = environment.frontUrl;
+  private readonly backUrl = environment.apiUrl;
+
+  constructor(private readonly http: HttpClient) { }
+
+  createClient(payload: UserPayload): Observable<string> {
+    return this.http.post<CreateSellerResponse>(`${this.apiUrl}/register`, payload).pipe(
+      map(response => response.token),
+      catchError(this.handleError)
+    );
+  }
+
+  private handleError(error: HttpErrorResponse) {
+    // Puedes extender esto para leer mensajes específicos del backend
+    console.log('Error M: ', error.message);
+    return throwError(() => new Error(error.error.message));
+  }
 
   /** Envía email y password, devuelve el token en el observable */
   login(email: string, password: string): Observable<string> {
@@ -43,7 +61,7 @@ export class AuthService {
 
   sendVerificationCode(userId: string): Observable<ResendCodeResponse> {
     const url = `${this.apiUrl}/resend-code`;
-    return this.http.post<ResendCodeResponse>(url, { userId }).pipe(
+    return this.http.post<ResendCodeResponse>(url, { userId, frontUrl: this.frontUrl, backUrl: this.backUrl }).pipe(
       map(response => response),
       catchError(this.verifyCodeHandleError)
     );

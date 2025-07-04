@@ -14,6 +14,7 @@ export class CartTabComponent {
 
   
   @Input() orders: Order[] = []; // Assuming orders is an array of objects
+  @Input() tab: string = '';
 
   // return true if there is ay order with products
   anyOrderWithProducts(): boolean {

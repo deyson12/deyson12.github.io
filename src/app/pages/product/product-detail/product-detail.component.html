@@ -1,41 +1,61 @@
 <div class="max-w-7xl mx-auto p-6 flex">
   <!-- Ahora es flex y el hijo flex-1 -->
   <div *ngIf="product" class="flex-1 card rounded-lg shadow-lg p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
-    
+
     <!-- Galería de imágenes -->
     <div class="flex">
-      <div *ngIf="product.images && product.images?.length" class="flex flex-col space-y-2 mr-4">
-        <img
-          *ngFor="let thumb of product.images"
-          [src]="thumb"
-          [alt]="product.name"
+      <!--div class="flex flex-col space-y-2 mr-4">
+        <img *ngFor="let thumb of [product.image]" [src]="thumb" [alt]="product.name"
           class="w-16 h-16 object-cover cursor-pointer border-2 border-transparent hover:border-blue-500"
-          (click)="mainImage = thumb"
-          onerror="this.onerror=null; this.src='assets/img/sin-producto.png';"
-        />
-      </div>
+          (click)="mainImage = thumb" onerror="this.onerror=null; this.src='assets/img/sin-producto.png';" />
+      </div-->
       <div class="flex-1">
-        <img
-          [src]="mainImage || product.image"
-          [alt]="product.name"
-          class="w-full h-auto object-contain"
-          onerror="this.onerror=null; this.src='assets/img/sin-producto.png';"
-        />
+        <img [src]="mainImage || product.image" [alt]="product.name" class="w-full h-auto object-contain"
+          onerror="this.onerror=null; this.src='assets/img/sin-producto.png';" />
       </div>
+
+      <!--p-galleria [value]="[product.image]" [responsiveOptions]="galleriaResponsiveOptions"
+        [containerStyle]="{ 'max-width': '640px' }" [numVisible]="5">
+        <ng-template #item let-item>
+          <div class="relative inline-block">
+            <button type="button" class="p-0 border-none bg-transparent cursor-pointer" aria-label="Ver imagen ampliada"
+              (click)="openZoom(item)"><img [src]="item" style="width:100%" class="block max-w-full" /></button>
+          </div>
+
+        </ng-template>
+        <ng-template #thumbnail let-item>
+          <img [src]="item" style="width: 50px;" />
+        </ng-template>
+      </p-galleria-->
+
+      <p-dialog header="Vista ampliada" [(visible)]="displayZoom" modal="true"
+        [style]="{ width: '80vw', height: '80vh' }" [contentStyle]="{ padding: '0', overflow: 'hidden' }"
+        closeOnEscape="true" [dismissableMask]="true" (onHide)="zoomImage = null">
+        <div class="w-full h-full flex items-center justify-center overflow-hidden bg-gray-50" #container
+          (mousemove)="onZoomMove($event, container)" (mouseleave)="onZoomLeave(container)">
+          <img *ngIf="zoomImage" [src]="zoomImage" [ngStyle]="zoomStyles" class="object-contain" alt="Zoom" />
+        </div>
+      </p-dialog>
+
+
     </div>
 
     <!-- Detalles del producto -->
     <div>
       <p class="text-sm text-gray-600 mb-2">
-        Nuevo | {{ product.sales }} vendidos
+        Nuevo
       </p>
       <h1 class="text-2xl font-semibold mb-3">
         {{ product.name }}
       </h1>
 
+      <p class="mb-3">
+        {{ product.description }}
+      </p>
+
       <!-- Valoración -->
       <div class="flex items-center mb-4">
-      
+
         <span class="ml-2 text-blue-500 font-medium">
           <i class="pi pi-star-fill text-yellow-500"></i> ({{ product.stars }})
         </span>
@@ -46,65 +66,60 @@
         <span class="text-3xl font-bold">
           {{ product.price | currency:'':'symbol':'1.0-0' }}
         </span>
-        <span
-          *ngIf="product.originalPrice"
-          class="text-lg line-through text-gray-500"
-        >
+        <span *ngIf="product.originalPrice" class="text-lg line-through text-gray-500">
           {{ product.originalPrice | currency:'':'symbol':'1.0-0' }}
         </span>
-        <span
-          *ngIf="product.originalPrice"
-          class="text-green-600 font-semibold"
-        >
+        <span *ngIf="product.originalPrice" class="text-green-600 font-semibold">
           {{
-            ((product.originalPrice - product.price) / product.originalPrice * 100)
-            | number:'1.0-0'
+          ((product.originalPrice - product.price) / product.originalPrice * 100)
+          | number:'1.0-0'
           }}%
           OFF
         </span>
       </div>
 
       <!-- Cuotas -->
-      <p class="text-sm text-gray-700 mb-4">
+      <!--p class="text-sm text-gray-700 mb-4">
         en 12 cuotas de
         {{ (product.price / 12) | currency:'':'symbol':'1.0-0' }}
         con 0% interés
         <a href="#" class="text-blue-500 underline ml-1">
           Ver medios de pago
         </a>
-      </p>
+      </p-->
 
       <!-- Envío -->
-      <p class="text-sm text-gray-700 mb-4">
+      <!--p class="text-sm text-gray-700 mb-4">
         <span class="font-medium text-green-600">Llega gratis mañana</span>
         <a href="#" class="text-blue-500 underline ml-1">Más formas de entrega</a>
       </p>
       <p class="text-sm text-gray-700 mb-4">
         <span class="font-medium text-green-600">Retira gratis</span> mañana
         <a href="#" class="text-blue-500 underline ml-1">Ver en el mapa</a>
-      </p>
+      </p-->
 
       <!-- Color -->
-      <div class="mb-6">
+      <!--div class="mb-6">
         <span class="font-medium mr-2">Color:</span>
-        <button
-          *ngFor="let color of ['bg-gray-300','bg-pink-300','bg-blue-300']"
+        <button *ngFor="let color of ['bg-gray-300','bg-pink-300','bg-blue-300']"
           [ngClass]="color + ' w-6 h-6 rounded-full border-2 border-gray-200 mr-1'"
-          (click)="selectedColor = color"
-        ></button>
-      </div>
+          (click)="selectedColor = color"></button>
+      </div-->
 
       <!-- Stock -->
+      @if (product.stock) {
       <p class="mb-6">
-        <span class="font-medium">Stock disponible:</span> 1 unidad
+        <span class="font-medium">Stock disponible:</span> {{product.stock}} unidad
       </p>
+      }
+
 
       <!-- Botones -->
       <div class="flex space-x-4 mb-6">
-        <button class="flex-1 bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg">
+        <button class="flex-1 bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg" (click)="buyProduct(product)">
           <i class="pi pi-whatsapp"></i> Comprar ahora
         </button>
-        <button class="flex-1 border border-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-100">
+        <button class="flex-1 border border-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-100" (click)="addProductToCart(product)">
           <i class="pi pi-shopping-cart"></i> Agregar al carrito
         </button>
       </div>
@@ -112,21 +127,11 @@
       <!-- Vendedor y políticas -->
       <p class="text-sm text-gray-600 mb-2">
         Vendido por
-        <a href="#" class="text-blue-500 underline">DISTRIBUCIONES NADI</a>
-      </p>
-      <p class="text-sm text-gray-600 mb-2">
-        <a href="#" class="inline-flex items-center underline">
-          <i class="fas fa-undo mr-1"></i>
-          Devolución gratis · 30 días
-        </a>
-      </p>
-      <p class="text-sm text-gray-600">
-        <a href="#" class="inline-flex items-center underline">
-          <i class="fas fa-shield-alt mr-1"></i>
-          Compra Protegida
-        </a>
+        <span class="text-blue-500 underline"> {{user?.businessName}} - ({{user?.name}})</span>
       </p>
     </div>
 
   </div>
 </div>
+
+<app-fixed-cart></app-fixed-cart>

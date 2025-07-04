@@ -12,7 +12,7 @@ import { ProductService } from '../../service/product.service';
 import { CartService } from '../../service/cart.service';
 import { AuthService } from '../../service/auth.service';
 import { BannerService } from '../../service/banner.service';
-import { Order } from '../../../models/order';
+import { FixedCartComponent } from '../fixed-cart/fixed-cart.component';
 
 @Component({
   selector: 'app-home',
@@ -22,6 +22,7 @@ import { Order } from '../../../models/order';
     BannerComponent,
     CardComponent,
     RouterModule,
+    FixedCartComponent
   ],
   providers: [CartService],
   templateUrl: './home.component.html',
@@ -46,8 +47,7 @@ export class HomeComponent implements OnInit {
     private readonly route: ActivatedRoute,
     private readonly productService: ProductService,
     private readonly authService: AuthService,
-    private readonly bannerService: BannerService,
-    public cartService: CartService
+    private readonly bannerService: BannerService
   ) {
     this.plan = this.authService.getValueFromToken('plan');
     this.days = this.getDaysRemaining();
@@ -61,14 +61,12 @@ export class HomeComponent implements OnInit {
     this.bannerService.getBannersByCategory(this.currentPath).subscribe((data: Banner[]) => {
       this.banners = data;
       this.productService.getProductsByCategory(this.currentPath).subscribe((data: Product[]) => {
-        console.log('Products for category:', this.currentPath, data);
         this.products = data;
         this.interval = Math.floor(this.products.length / this.banners.length);
       });
     });
 
     this.productService.getFeaturedProductsByCategory(this.currentPath).subscribe((data: Product[]) => {
-      console.log('Featured products for category:', this.currentPath, data);
       this.itemsCarousel = data;
     });
 
@@ -115,13 +113,5 @@ export class HomeComponent implements OnInit {
     { id: 1, icon: 'assets/img/helado.png', label: 'Helado' },
     { id: 1, icon: 'assets/img/manicure.png', label: 'Manicure' }
   ];
-
-
-  getCount(orders: Order[]) {
-    return orders
-      .reduce((sum, order) =>
-        sum + order.products.reduce((c, p) => c + p.quantity, 0)
-        , 0)
-  }
 
 }

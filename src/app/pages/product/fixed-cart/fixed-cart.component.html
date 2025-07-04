@@ -1,0 +1,20 @@
+<div class="fixed bottom-4 right-4 z-45">
+  <div class="relative">
+    <button routerLink="/pages/cart" type="button" class="flex items-center justify-center
+                    bg-blue-100 dark:bg-blue-400/10
+                    rounded-lg
+                    w-14 h-14 sm:w-16 sm:h-16 md:w-18 md:h-18
+                    hover:shadow-lg transition-shadow">
+      <i class="pi pi-shopping-cart text-blue-500
+                        text-3xl sm:text-4xl md:text-5xl"></i>
+    </button>
+    <span *ngIf="cartService.orderCount() > 0" class="absolute -top-2 -right-2
+                    inline-flex items-center justify-center
+                    bg-red-500 text-white font-bold
+                    rounded-full
+                    w-6 h-6 sm:w-8 sm:h-8
+                    text-xs sm:text-sm">
+      {{ cartService.getCount(cartService.orders()) }}
+    </span>
+  </div>
+</div>

@@ -15,10 +15,27 @@ import { CloudinaryService } from '../../service/cloudinary.service';
 import { Category } from '../../../models/category';
 import { CategoryService } from '../../service/category.service';
 import { ChipsModule } from 'primeng/chips';
+import { Table, TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { TagModule } from 'primeng/tag';
+import { PaginatorModule } from 'primeng/paginator';
+import { SelectModule } from 'primeng/select';
 
 @Component({
   selector: 'app-profile',
-  imports: [CommonModule, CardComponent, ReactiveFormsModule, FormsModule, ChipsModule],
+  imports: [
+    CommonModule,
+    SelectModule,
+    CardComponent,
+    ReactiveFormsModule,
+    FormsModule,
+    ChipsModule,
+    TableModule,
+    ButtonModule,
+    InputTextModule,
+    TagModule,
+    PaginatorModule],
   providers: [CartService, ToastService, UserService],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss'
@@ -27,7 +44,7 @@ export class ProfileComponent implements OnInit {
   profileForm!: FormGroup;
   user!: User;
   products: Product[] = [];
-  productLimit = 3; // Ajusta según el plan actual
+  productLimit = 0;
   displayPreview = false;
   selectedProduct!: Product;
   bannerVisible = true;
@@ -36,6 +53,16 @@ export class ProfileComponent implements OnInit {
   displayProductDialog = false;
   isEditMode = false;
   categories: Category[] = [];
+
+  featured = [
+    { label: 'Si', value: 'Si' },
+    { label: 'No', value: 'No' },
+  ];
+
+  statuses = [
+    { label: 'Activo', value: 'Activo' },
+    { label: 'Inactivo', value: 'Inactivo' },
+  ];
 
   constructor(
     private readonly fb: FormBuilder,
@@ -67,8 +94,16 @@ export class ProfileComponent implements OnInit {
     this.loadProducts();
 
     this.productForm.get('tagsArray')!.valueChanges.subscribe((arr: string[]) => {
+      console.log('Tags array changed:', arr);
       this.productForm.get('tags')!.setValue(arr.join(','));
     });
+
+    const limit = this.authService.getValueFromToken('planProductLimit');
+    this.productLimit = limit == 'unlimited' ? -1 : (parseInt(limit, 10) || 0);
+  }
+
+  onGlobalFilter(table: Table, event: Event) {
+    table.filterGlobal((event.target as HTMLInputElement).value, 'contains');
   }
 
   private loadCategories(): void {
@@ -103,6 +138,7 @@ export class ProfileComponent implements OnInit {
   loadSeller(): void {
     this.userService.getUserById(this.authService.getValueFromToken('userId')).subscribe({
       next: (response: User) => {
+        console.log('Seller data:', response);
         this.user = response;
         this.profileForm.patchValue({
           name: response.name,
@@ -171,7 +207,9 @@ export class ProfileComponent implements OnInit {
       price: 0,
       originalPrice: 0,
       featured: false,
-      image: ''
+      image: '',
+      tagsArray: [],
+      tags: '',
     });
     this.displayProductDialog = true;
   }

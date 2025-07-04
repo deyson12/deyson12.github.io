@@ -18,6 +18,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { UserService } from '../../service/user.service';
 import { CategoryService } from '../../service/category.service';
 import { BannerService } from '../../service/banner.service';
+import { PlanService } from '../../service/plan.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -43,27 +44,11 @@ users: User[] = [];
   constructor(
     private readonly userService: UserService,
     private readonly categoryService: CategoryService,
-    private readonly bannerService: BannerService
+    private readonly bannerService: BannerService,
+    private readonly planService: PlanService
   ) { }
 
   ngOnInit(): void {
-    // TODO: Reemplazar con llamadas a tus servicios
-    this.users = [
-      { id:'1', name:'Juan', businessName:'Panadería la 7', description: '', email:'juan@ejemplo.com', phone:'3001234567', role:'seller', image:'', status:'active', facebookUrl:'', instagramUrl:'', twitterUrl:'', linkedinUrl:'' }
-    ];
-    
-    this.banners = [
-      { id:'1', product:{id:'p1',name:'Hamburguesa',shortDescription:'Hamburguesa', stars:3, image:'Hamburguesa', price:3000, originalPrice: 4000, sales: 4, seller: ''}, startDate:'2025-06-01', endDate:'2025-06-30', subtext:'Promo 2x1', type:'sale', endTimerDate:'2025-06-30', priority:1 }
-    ];
-    this.categories = [
-      { id:'1', name:'Comidas', icon:'pi pi-cutlery', status:true, code:'FOOD', order:1 }
-    ];
-    this.plans = [
-      { id:'1', name:'Básico', price:30000, durtationDays:30, productLimit:10, featuredLimit:1, prioritySearch:0, isDefault:true }
-    ];
-    this.subscriptions = [
-      { id:'1', user:this.users[0], plan:this.plans[0], startDate:'2025-06-01', endDate:'2025-06-30', isActive:true }
-    ];
 
     // Cargados desde BD
     this.userService.getUsers().subscribe(users => {
@@ -76,6 +61,15 @@ users: User[] = [];
 
     this.bannerService.getBanners().subscribe(banners => {
       this.banners = banners;
+    });
+
+    this.planService.getPlans().subscribe(plans => {
+      this.plans = plans;
+
+      this.subscriptions = [
+      { id:'1', user:this.users[0], plan:this.plans[0], startDate:'2025-06-01', endDate:'2025-06-30', isActive:true }
+    ];
+
     });
   }
 

@@ -11,27 +11,24 @@
   </div>
 
   <!-- Carousel PrimeNG -->
-  <p-carousel #carousel [value]="itemsCarousel" [numVisible]="3" [numScroll]="1" [circular]="false"
+  <p-carousel #carousel [value]="itemsCarousel" [numVisible]="4" [numScroll]="1" [circular]="false"
     [responsiveOptions]="responsiveOptions" class="!px-0" autoplayInterval="5000" [nextButtonProps]="arrowButton"
     [prevButtonProps]="arrowButton" (mouseenter)="carousel.stopAutoplay()" (mouseleave)="carousel.startAutoplay()">
-    <ng-template pTemplate="item" let-item>
-      <a [routerLink]="['/pages/product-detail']" [state]="{ product: item }">
+    <ng-template pTemplate="product" let-product>
+      <a [routerLink]="['/pages/product-detail', product.id]" [state]="{ product }">
         <div class="card flex flex-col rounded-lg shadow-sm p-3 mx-2 bg-white h-full">
           <!-- Imagen, badge y carrito -->
           <div class="relative w-full h-32 mb-3">
-            <img [src]="item.image" alt="{{ item.name }}" class="w-full h-full object-cover rounded-lg" />
+            <img [src]="product.image" alt="{{ product.name }}" class="w-full h-full object-cover rounded-lg"
+              onerror="this.onerror=null; this.src='assets/img/sin-producto.png';" />
+            @if (product.originalPrice && product.originalPrice > product.price) {
             <span class="absolute top-2 left-2 bg-red-600 text-xs text-white font-semibold px-2 py-1 rounded">
-              {{ getDiscount(item) }} OFF
+              {{ getDiscount(product) }} OFF
             </span>
-            <a
-        href="javascript:void(0)"
-        (click)="
-          $event.preventDefault();
-          $event.stopPropagation();
-          addProductToCart(item)
-        "
-        class="absolute top-2 right-2 flex items-center justify-center bg-blue-100 dark:bg-blue-400/10 rounded-border w-10 h-10 z-50"
-      >
+            }
+
+            <a href="javascript:void(0)" (click)="$event.preventDefault();$event.stopPropagation();addProductToCart(product)" 
+            class="absolute top-2 right-2 flex items-center justify-center bg-blue-100 dark:bg-blue-400/10 rounded-border w-10 h-10 z-50">
               <div>
                 <i class="pi pi-shopping-cart text-blue-500 text-xl"></i>
               </div>
@@ -41,10 +38,10 @@
 
           <!-- Nombre y subtítulo -->
           <h4 class="text-sm font-medium mb-1">
-            {{ item.name }}
-            @if (item.shortDescription) {
-              <span class="text-xs font-normal text-muted-color">
-              ({{ item.shortDescription }})
+            {{ product.name }}
+            @if (product.shortDescription) {
+            <span class="text-xs font-normal text-muted-color">
+              ({{ product.shortDescription }})
             </span>
             }
           </h4>
@@ -52,26 +49,29 @@
           <!-- Valoración -->
           <div class="flex items-center space-x-1 mb-2 text-yellow-500">
             <i class="pi pi-star-fill"></i>
-            <span class="text-sm font-semibold"> {{item.stars}} </span>
-            <span class="text-xs text-muted-color">({{getSalesDetail(item.sales)}})</span>
+            <span class="text-sm font-semibold"> {{product.stars}} </span>
+            <span class="text-xs text-muted-color">({{getSalesDetail(product.sales)}})</span>
           </div>
 
           <!-- Precio actual y tachado -->
           <div class="flex items-baseline space-x-2 mb-2">
             <span class="text-lg font-bold">
-              {{ item.price | currency:'':'symbol':'1.0-0' }}
+              {{ product.price | currency:'':'symbol':'1.0-0' }}
             </span>
+            @if (product.originalPrice && product.originalPrice > product.price) {
             <span class="text-xs text-muted-color line-through">
-              {{ item.originalPrice | currency:'':'symbol':'1.0-0' }}
+              {{ product.originalPrice | currency:'':'symbol':'1.0-0' }}
             </span>
+            }
+
           </div>
 
-          @if (item.note && item.note.length > 0) {
+          @if (product.note && product.note.length > 0) {
           <!-- Descripción -->
           <div class="flex items-baseline space-x-2 mb-2">
             <p class="text-sm mb-2 sm:mb-0">
               <i class="pi pi-thumbs-up text-green-500 mr-1"></i>
-              {{ item.note }}
+              {{ product.note }}
             </p>
           </div>
           }

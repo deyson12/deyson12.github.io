@@ -5,17 +5,22 @@ import { CommonModule } from '@angular/common';
 import { interval, Subscription } from 'rxjs';
 import { ProductService } from '../../service/product.service';
 import { Product } from '../../../models/product';
+import { RouterModule } from '@angular/router';
+import { CartService } from '../../service/cart.service';
 
 @Component({
   selector: 'app-banner',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './banner.component.html',
   styleUrls: ['./banner.component.scss']
 })
 export class BannerComponent implements OnInit, OnDestroy {
 
-  constructor(private readonly productService: ProductService) { }
+  constructor(
+    private readonly productService: ProductService,
+    private readonly cartService: CartService
+  ) { }
 
   @Input() banner: Banner | null = null;
   @Input() gradientClasses = 'bg-gradient-to-r from-orange-500 via-orange-600 to-yellow-400';
@@ -67,5 +72,9 @@ export class BannerComponent implements OnInit, OnDestroy {
 
   getDiscount(product: Product): string {
     return this.productService.getDiscount(product);
+  }
+
+  addProductToCart(product: Product) {
+    this.cartService.addProductToCart(product);
   }
 }

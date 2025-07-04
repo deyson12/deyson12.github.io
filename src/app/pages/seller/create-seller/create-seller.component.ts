@@ -5,7 +5,7 @@ import { InputMaskModule } from 'primeng/inputmask';
 import { AuthService } from '../../service/auth.service';
 import { v4 as uuidv4 } from 'uuid';
 import { SellerService } from '../../service/seller.service';
-import { SellerPayload } from '../../../models/selllerPayload';
+import { UserPayload } from '../../../models/selllerPayload';
 import { Router, RouterModule } from '@angular/router';
 import { StepperModule } from 'primeng/stepper';
 import { ButtonModule } from 'primeng/button';
@@ -17,6 +17,10 @@ import { DialogModule } from 'primeng/dialog';
 import { ResendCodeResponse } from '../../../models/resendCodeResponse';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
+import { appConfig } from '../../../config/constants';
+import { PlanService } from '../../service/plan.service';
+import { Plan } from '../../../models/plan';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-create-seller',
@@ -44,7 +48,8 @@ export class CreateSellerComponent implements OnInit, OnDestroy {
   role: string | null = null;
   isBuyer: boolean = false;
   displayTerms = false;
-  tycEmail = 'legal@ventas7lunas.com';
+  tycEmail = appConfig.email;
+  tycPhone = appConfig.phone;
 
   uuid: string = uuidv4();
   userId: string | null = null;
@@ -59,20 +64,23 @@ export class CreateSellerComponent implements OnInit, OnDestroy {
   /** Controles de reenvío */
   public resendAttempts: number = 0;
   public maxAttempts: number = 3;
-  public countdown: number = 60;   // segundos iniciales
+  public countdown: number = 2;   // segundos iniciales
   public showResend: boolean = false;
   private intervalId: any;
   public creationButtonDisabled = false;
 
+  plans: Plan[] = [];
+
   @ViewChildren('codeInput') codeInputs!: QueryList<ElementRef<HTMLInputElement>>;
 
   constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private sellerService: SellerService,
-    private toastService: ToastService,
-    private cloudinaryService: CloudinaryService,
-    private router: Router,
+    private readonly fb: FormBuilder,
+    private readonly authService: AuthService,
+    private readonly sellerService: SellerService,
+    private readonly toastService: ToastService,
+    private readonly cloudinaryService: CloudinaryService,
+    private readonly router: Router,
+    private readonly planService: PlanService
   ) {
     this.userId = this.authService.getValueFromToken('userId');
     this.role = this.authService.getValueFromToken('role');
@@ -89,6 +97,12 @@ export class CreateSellerComponent implements OnInit, OnDestroy {
       } else {
         this.activeStep = 3;
       }
+    }
+
+    if (this.activeStep == 1) {
+       this.planService.getPlans().subscribe(plans => {
+      this.plans = plans;
+    });
     }
 
     let image = this.authService.getValueFromToken('image');
@@ -131,7 +145,7 @@ export class CreateSellerComponent implements OnInit, OnDestroy {
   /** Inicializa o reinicia el contador */
   startTimer() {
     this.showResend = false;
-    this.countdown = 60; // duracion en segundos
+    this.countdown = 3; // duracion en segundos
     this.clearTimer();
     this.intervalId = setInterval(() => {
       this.countdown--;
@@ -310,7 +324,7 @@ export class CreateSellerComponent implements OnInit, OnDestroy {
   private callCreateSeller(activateCallback: (step: number) => void): void {
     const raw = this.sellerForm.getRawValue();
 
-    const payload: SellerPayload = {
+    const payload: UserPayload = {
       userId: this.uuid,
       name: raw.ownerName,
       businessName: raw.businessName,
@@ -318,12 +332,14 @@ export class CreateSellerComponent implements OnInit, OnDestroy {
       email: raw.email,
       phone: raw.phone,
       password: raw.password,
-      exist: this.isBuyer
+      exist: this.isBuyer,
+      frontUrl: environment.frontUrl,
+      backUrl: environment.apiUrl
     };
 
     this.sellerService.createSeller(payload).subscribe({
-      next: (res) => {
-        localStorage.setItem('token', res);
+      next: (token) => {
+        localStorage.setItem('token', token);
         this.sellerForm.reset();
         this.avatarUrl = './assets/img/avatar-default.png';
         if (this.isBuyer) {

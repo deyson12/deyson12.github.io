@@ -1,16 +1,15 @@
 
 import { ProductCart } from "./product-cart";
-import { Person } from "./person";
-import { Seller } from "./selller";
 
 export interface Order {
-  order: string;
+  id: string;
   sellerId: string;
-  buyer: Person;
+  buyerId: string;
   products: ProductCart[];
   status: string;
   address: string;
   paymentType: string;
   changeFrom: number;
+  location: [number, number];
 }
   

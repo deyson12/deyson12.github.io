@@ -1,15 +1,19 @@
 <p-tabs value="0">
     <p-tablist>
         <p-tab value="0">Pendientes</p-tab>
-        <p-tab value="1">Finalizadas</p-tab>
+        <p-tab value="1">Confirmadas</p-tab>
+        <p-tab value="2">Cancelado</p-tab>
     </p-tablist>
     <p-tabpanels>
 
         <p-tabpanel value="0">
-            <app-cart-tab [orders]="orders"></app-cart-tab>
+            <app-cart-tab [orders]="orders" tab="PENDIENTE"></app-cart-tab>
         </p-tabpanel>
         <p-tabpanel value="1">
-            <app-cart-tab [orders]="ordersOld"></app-cart-tab>
+            <app-cart-tab [orders]="ordersOld" tab="CONFIRMADO"></app-cart-tab>
+        </p-tabpanel>
+        <p-tabpanel value="2">
+            <app-cart-tab [orders]="ordersOld" tab="CANCELADO"></app-cart-tab>
         </p-tabpanel>
     </p-tabpanels>
 </p-tabs>

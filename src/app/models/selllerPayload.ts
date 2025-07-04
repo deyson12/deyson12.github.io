@@ -1,4 +1,4 @@
-export interface SellerPayload {
+export interface UserPayload {
   userId: string;
   name: string;
   businessName: string;
@@ -7,4 +7,6 @@ export interface SellerPayload {
   phone: string;
   password: string;
   exist: boolean;
+  frontUrl: string;
+  backUrl: string;
 }

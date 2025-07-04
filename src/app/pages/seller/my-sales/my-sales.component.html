@@ -1,14 +1,75 @@
 <p-fluid class="grid grid-cols-12 gap-8">
-      <div class="col-span-12 xl:col-span-6">
-        <div class="card">
-          <div class="font-semibold text-xl mb-4">Ventas Mensuales</div>
-          <p-chart type="line" [data]="lineData" [options]="lineOptions"></p-chart>
-        </div>
+  <!-- bloque de tarjetas -->
+  <div class="col-span-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+    
+    <!-- Ventas del día -->
+    <div class="card flex items-center justify-between p-4 col-span-1 card-data">
+      <div>
+        <div class="text-sm text-gray-500">Ventas del día</div>
+        <div class="text-2xl font-bold">{{ dailySales }}</div>
       </div>
-      <div class="col-span-12 xl:col-span-6">
-        <div class="card">
-          <div class="font-semibold text-xl mb-4">Ventas por Producto</div>
-          <p-chart type="bar" [data]="barData" [options]="barOptions"></p-chart>
-        </div>
+      <div class="bg-blue-100 text-blue-500 rounded-full p-3">
+        <i class="pi pi-calendar text-xl"></i>
       </div>
-    </p-fluid>
+    </div>
+
+    <!-- Ventas del mes -->
+    <div class="card flex items-center justify-between p-4 col-span-1 card-data">
+      <div>
+        <div class="text-sm text-gray-500">Ventas del mes</div>
+        <div class="text-2xl font-bold">{{ monthlySales }}</div>
+      </div>
+      <div class="bg-green-100 text-green-500 rounded-full p-3">
+        <i class="pi pi-calendar-plus text-xl"></i>
+      </div>
+    </div>
+
+    <!-- Ventas del año -->
+    <div class="card flex items-center justify-between p-4 col-span-1 card-data">
+      <div>
+        <div class="text-sm text-gray-500">Ventas del año</div>
+        <div class="text-2xl font-bold">{{ yearlySales }}</div>
+      </div>
+      <div class="bg-purple-100 text-purple-500 rounded-full p-3">
+        <i class="pi pi-calendar text-xl"></i>
+      </div>
+    </div>
+
+    <!-- Pendientes de confirmar -->
+    <div class="card flex items-center justify-between p-4 col-span-1 card-data">
+      <div>
+        <div class="text-sm text-gray-500">Pendientes de confirmar</div>
+        <div class="text-2xl font-bold">{{ pendingSales }}</div>
+      </div>
+      <div class="bg-yellow-100 text-yellow-500 rounded-full p-3">
+        <i class="pi pi-clock text-xl"></i>
+      </div>
+    </div>
+
+    <!-- Ventas canceladas -->
+    <div class="card flex items-center justify-between p-4 col-span-1 card-data">
+      <div>
+        <div class="text-sm text-gray-500">Ventas canceladas</div>
+        <div class="text-2xl font-bold">{{ canceledSales }}</div>
+      </div>
+      <div class="bg-red-100 text-red-500 rounded-full p-3">
+        <i class="pi pi-times-circle text-xl"></i>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Gráficos -->
+  <div class="col-span-12 2xl:col-span-6">
+    <div class="card">
+      <div class="font-semibold text-xl mb-4">Ventas Mensuales ultimos 6 meses</div>
+      <p-chart type="line" [data]="lineData" [options]="lineOptions"></p-chart>
+    </div>
+  </div>
+  <div class="col-span-12 2xl:col-span-6">
+    <div class="card">
+      <div class="font-semibold text-xl mb-4">Ventas por Producto de los ultimos 6 meses</div>
+      <p-chart type="bar" [data]="barData" [options]="barOptions"></p-chart>
+    </div>
+  </div>
+</p-fluid>

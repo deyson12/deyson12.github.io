@@ -13,7 +13,10 @@ import { CartService } from '../../service/cart.service';
 })
 export class CardComponent {
 
-  constructor(private productService: ProductService, private cartService: CartService) { }
+  constructor(
+    private readonly productService: ProductService, 
+    private readonly cartService: CartService
+  ) { }
 
   @Input() product: Product | null = null;
   @Input() puedeNavegar = true;
@@ -27,6 +30,8 @@ export class CardComponent {
   }
 
   addProductToCart(product: Product) {
+    if(!this.puedeNavegar)
+      return;
     this.cartService.addProductToCart(product);
   }
 

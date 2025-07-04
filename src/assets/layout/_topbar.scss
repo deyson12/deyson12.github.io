@@ -71,6 +71,23 @@
             background-color: var(--primary-color);
             color: var(--primary-contrast-color);
         }
+
+        .cart-badge {
+            display: inline-flex !important;
+            position: absolute;
+            top: 0.125rem; // antes 0.25rem
+            right: 0.125rem; // antes 0.25rem
+            width: 1rem; // antes 1.25rem
+            height: 1rem; // antes 1.25rem
+            font-size: 0.625rem; // antes 0.75rem
+            font-weight: 700;
+            align-items: center;
+            justify-content: center;
+            background-color: #dc2626;
+            color: #fff;
+            border-radius: 50%;
+            z-index: 999;
+        }
     }
 
     .layout-menu-button {

@@ -1,0 +1,10 @@
+<div class="grid grid-cols-12 gap-8">
+  <ng-container *ngFor="let product of products; let i = index">
+
+
+    <app-card class="col-span-12 lg:col-span-6 xlmid:col-span-4" [product]="product">
+    </app-card>
+
+
+  </ng-container>
+</div>

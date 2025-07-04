@@ -5,9 +5,16 @@ import { MessageService } from 'primeng/api';
 import { Order } from '../../models/order';
 import { ProductCart } from '../../models/product-cart';
 import { Product } from '../../models/product';
+import { environment } from '../../../environments/environment';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { catchError, map, Observable, throwError } from 'rxjs';
+import { ConfirmOrderResponse } from '../../models/confirmOrderResponse';
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
+
+  private readonly apiUrl = `${environment.apiUrl}/api/orders`;
+
   private readonly storageKey = 'orders';
 
   // 1) Señal interna con el arreglo de órdenes
@@ -18,8 +25,18 @@ export class CartService {
   // (opcional) un contador de órdenes
   readonly orderCount = computed(() => this.ordersSignal().length);
 
-  constructor(private readonly messageService: MessageService) {
+  constructor(
+    private readonly messageService: MessageService,
+    private readonly http: HttpClient
+  ) {
     this.loadOrders();
+  }
+
+  getCount(orders: Order[]) {
+    return orders
+      .reduce((sum, order) =>
+        sum + order.products.reduce((c, p) => c + p.quantity, 0)
+        , 0)
   }
 
   // Carga inicial desde localStorage
@@ -40,23 +57,27 @@ export class CartService {
   }
 
   addProductToCart(product: Product): void {
-    const pending = this.ordersSignal().find(o => o.sellerId === product.seller && o.status === 'Pendiente');
 
-    const cartItem: ProductCart = { id: 1, product, quantity: 1 };
+    console.log('Agregando producto al carrito:', product);
+
+    const pending = this.ordersSignal().find(o => o.sellerId === product.seller && o.status === 'PENDIENTE');
+
+    const cartItem: ProductCart = { product, quantity: 1 };
 
     if (pending) {
-      this.addProduct(pending.order, cartItem);
+      this.addProduct(pending.id, cartItem);
     } else {
-      const newOrder: Omit<Order, 'order' | 'products'> = {
+      const newOrder: Omit<Order, 'id' | 'products'> = {
         sellerId: product.seller,
-        buyer: { name: 'Cliente Anónimo', cellphone: '123' },
-        status: 'Pendiente',
-        address: 'Dirección del cliente',
-        paymentType: 'Efectivo',
-        changeFrom: 0
+        buyerId: '',
+        status: 'PENDIENTE',
+        address: '',
+        paymentType: 'EFECTIVO',
+        changeFrom: 0,
+        location: [0, 0]
       };
       const created = this.create(newOrder);
-      this.addProduct(created.order, cartItem);
+      this.addProduct(created.id, cartItem);
     }
 
     this.messageService.add({
@@ -72,20 +93,21 @@ export class CartService {
   }
 
   getById(orderId: string): Order | undefined {
-    return this.ordersSignal().find(o => o.order === orderId);
+    return this.ordersSignal().find(o => o.id === orderId);
   }
 
-  create(data: Omit<Order, 'order' | 'products'> & { products?: ProductCart[] }): Order {
+  create(data: Omit<Order, 'id' | 'products'> & { products?: ProductCart[] }): Order {
     const id = uuidv4();
     const order: Order = {
-      order: id,
+      id: id,
       sellerId: data.sellerId,
-      buyer: data.buyer,
+      buyerId: data.buyerId,
       products: data.products ?? [],
       status: data.status,
       address: data.address,
       paymentType: data.paymentType,
-      changeFrom: data.changeFrom
+      changeFrom: data.changeFrom,
+      location: data.location || [0, 0]
     };
     this.updateOrders(list => [...list, order]);
     return order;
@@ -94,7 +116,7 @@ export class CartService {
   addProduct(orderId: string, product: ProductCart): void {
     this.updateOrders(list =>
       list.map(o => {
-        if (o.order === orderId) {
+        if (o.id === orderId) {
           const exist = o.products.find(p => p.product.id === product.product.id);
           if (exist) {
             exist.quantity++;
@@ -110,7 +132,7 @@ export class CartService {
   updateProductQty(orderId: string, productId: string, qty: number): void {
     this.updateOrders(list =>
       list.map(o => {
-        if (o.order === orderId) {
+        if (o.id === orderId) {
           o.products = o.products
             .map(p => p.product.id === productId ? { ...p, quantity: qty } : p)
             .filter(p => p.quantity > 0);
@@ -121,7 +143,7 @@ export class CartService {
   }
 
   deleteOrder(orderId: string): void {
-    this.updateOrders(list => list.filter(o => o.order !== orderId));
+    this.updateOrders(list => list.filter(o => o.id !== orderId));
   }
 
   getTotal(orderId: string): number {
@@ -129,5 +151,35 @@ export class CartService {
     return ord
       ? ord.products.reduce((sum, p) => sum + p.product.price * p.quantity, 0)
       : 0;
+  }
+
+  sendOrder(order: Order): Observable<Order> {
+    console.log('Enviando orden al back:', order);
+    return this.http.post<Order>(this.apiUrl, order).pipe(
+      map(response => response),
+      catchError(this.handleError)
+    );
+  }
+
+  getOrderById(orderId: string): Observable<Order> {
+    return this.http.get<Order>(`${this.apiUrl}/${orderId}`).pipe(
+      map(response => response),
+      catchError(this.handleError)
+    );
+  }
+
+  private handleError(error: HttpErrorResponse) {
+    return throwError(() => new Error('Ocurrió un error creando la orden'));
+  }
+
+  confirmOrder(orderId: string, userId: string): Observable<ConfirmOrderResponse> {
+    return this.http.post<ConfirmOrderResponse>(`${this.apiUrl}/${orderId}/confirm`, { userId }).pipe(
+      map(response => response),
+      catchError(this.handleConfirmError)
+    );
+  }
+
+  private handleConfirmError(error: HttpErrorResponse) {
+    return throwError(() => new Error('Ocurrió un error confirmando la orden'));
   }
 }

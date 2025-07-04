@@ -4,22 +4,44 @@ import { Seller } from '../../models/selller';
 import { Comment } from '../../models/coment';
 import { Product } from '../../models/product';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { SellerPayload } from '../../models/selllerPayload';
+import { UserPayload } from '../../models/selllerPayload';
 import { environment } from '../../../environments/environment';
 import { CreateSellerResponse } from '../../models/create-seller-response';
 import { User } from '../../models/user';
+import { SalesSummary } from '../../models/salesSummary';
+import { SalesLastMonths } from '../../models/salesLastMonths';
+import { ProductSales } from '../../models/productSales';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SellerService {
 
-  private readonly apiUrl = `${environment.apiUrl}/api/auth`;
+  private readonly apiAuthUrl = `${environment.apiUrl}/api/auth`;
+  private readonly apUrl = `${environment.apiUrl}/api/sellers`;
 
-  constructor(private http: HttpClient) { }
+  constructor(private readonly http: HttpClient) { }
 
-  createSeller(payload: SellerPayload): Observable<string> {
-    return this.http.post<CreateSellerResponse>(`${this.apiUrl}/activate-req`, payload).pipe(
+  getSalesSumary(sellerId: string): Observable<SalesSummary> {
+    return this.http.get<SalesSummary>(`${this.apUrl}/${sellerId}/sales-summary`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  getSalesLastMonths(sellerId: string): Observable<SalesLastMonths[]> {
+    return this.http.get<SalesLastMonths[]>(`${this.apUrl}/${sellerId}/revenue-last-months`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  getSalesByProductLastMonths(sellerId: string): Observable<ProductSales> {
+    return this.http.get<ProductSales>(`${this.apUrl}/${sellerId}/sales-by-product-last-months`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  createSeller(payload: UserPayload): Observable<string> {
+    return this.http.post<CreateSellerResponse>(`${this.apiAuthUrl}/activate-req`, payload).pipe(
       map(response => response.token),
       catchError(this.handleError)
     );

@@ -15,7 +15,8 @@
                 <tr *ngFor="let productCart of order.products" class="border-t">
                     <td class="flex items-center gap-3 px-6 py-4">
                         <img [src]="productCart.product.image" alt="{{ productCart.product.name }}"
-                            class="w-12 h-12 rounded-lg object-cover border border-gray-300" onerror="this.onerror=null; this.src='assets/img/sin-producto.png';"/>
+                            class="w-12 h-12 rounded-lg object-cover border border-gray-300"
+                            onerror="this.onerror=null; this.src='assets/img/sin-producto.png';" />
                         <span class="font-medium ">{{ productCart.product.name }}</span>
                     </td>
                     <td class="px-6 py-4 font-semibold">{{ productCart.product.price | currency:'':'symbol':'1.0-0' }}
@@ -43,7 +44,7 @@
                 <tr class="border-t font-semibold">
                     <td colspan="5" class="px-6 py-4 text-right">
                         @if (getTotalDiscount(order.products) > 0) {
-                        <span class="text-red-500">Total Ahorro: {{ getTotalDiscount(order.products) |
+                        <span class="text-red-500 line-through">Total Ahorro: {{ getTotalDiscount(order.products) |
                             currency:'':'symbol':'1.0-0' }} &nbsp;</span>
                         }
                         <span class="font-semibold text-xl">Total: {{ getTotal(order.products) |
@@ -84,16 +85,16 @@
     <div class="flex flex-col sm:flex-row justify-between items-center px-6 py-4 border-t">
         <!-- Izquierda: vendedor -->
         <p class="text-sm font-medium">
-            <b>Vendedor:</b>&nbsp;<span>{{ seller.name }}</span>
+            <b>Vendedor:</b>&nbsp;<span>{{seller?.businessName}} ({{ seller?.name }})</span>
         </p>
 
         <!-- Derecha: acciones -->
         <div class="flex gap-4">
             <!-- Botón según estado -->
-            <ng-container *ngIf="order.status === 'Pendiente'; else volverAPedir">
+            <ng-container *ngIf="order.status === 'PENDIENTE'; else volverAPedir">
                 <button type="button"
                     class="bg-green-500 hover:bg-green-600 text-white rounded-full px-4 py-2 text-sm shadow-md flex items-center"
-                    (click)="finishOrder()">
+                    (click)="openFinishOrder()">
                     <i class="pi pi-whatsapp mr-2"></i> Finalizar compra
                 </button>
             </ng-container>
@@ -114,6 +115,197 @@
         </div>
     </div>
 
+    <div *ngIf="displayFinishOrder"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-auto overflow-hidden">
+            <!-- Header -->
+            <div class="bg-green-500 text-white p-6 flex justify-between items-center">
+                <h3 class="text-2xl font-semibold text-white">Detalles de entrega</h3>
+                <button (click)="closePreview()" class="text-white hover:opacity-75">
+                    <i class="pi pi-times text-2xl"></i>
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="p-6">
+                <form #form="ngForm" novalidate
+                    (ngSubmit)="form.valid && (!createAccount || password === confirmPassword) && finishOrder()"
+                    class="space-y-6">
+                    <!-- Dirección de entrega -->
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-gray-700">
+                            Dirección de entrega
+                        </label>
+                        <input type="text" pInputText placeholder="Dirección completa incluido apartamento o piso"
+                            [(ngModel)]="order.address" name="address" required #addressCtrl="ngModel"
+                            class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-400" />
+                        <div *ngIf="addressCtrl.invalid && (addressCtrl.dirty || form.submitted)"
+                            class="text-red-600 text-sm">
+                            <div *ngIf="addressCtrl.errors?.['required']">
+                                La dirección es obligatoria.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tipo de Pago -->
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-gray-700">Tipo de Pago</label>
+                        <p-dropdown [options]="paymentTypes" placeholder="Selecciona..." [(ngModel)]="order.paymentType"
+                            name="paymentType" required #paymentTypeCtrl="ngModel" class="w-full"></p-dropdown>
+                        <div *ngIf="paymentTypeCtrl.invalid && form.submitted" class="text-red-600 text-sm">
+                            <div *ngIf="paymentTypeCtrl.errors?.['required']">
+                                Selecciona un método de pago.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cambio de (solo si efectivo) -->
+                    <div *ngIf="order.paymentType === 'EFECTIVO'" class="space-y-1">
+                        <label class="block text-sm font-medium text-gray-700">Necesitas cambio de</label>
+                        
+                        <p-inputgroup>
+                            <p-inputgroup-addon>$</p-inputgroup-addon>
+                            <p-inputNumber [(ngModel)]="order.changeFrom" name="changeFrom" mode="decimal"
+                            thousandSeparator="." required [min]="0" #changeFromCtrl="ngModel"
+                            class="w-full"></p-inputNumber>
+                            <p-inputgroup-addon>COP</p-inputgroup-addon>
+                        </p-inputgroup>
+                        <div *ngIf="changeFromCtrl.invalid && form.submitted" class="text-red-600 text-sm">
+                            <div *ngIf="changeFromCtrl.errors?.['required']">
+                                Debes indicar el monto de cambio.
+                            </div>
+                            <div *ngIf="changeFromCtrl.errors?.['min']">
+                                El monto mínimo es $0.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Crear cuenta? -->
+                    <div *ngIf="role === ''" class="flex items-center space-x-2">
+                        <p-checkbox [(ngModel)]="createAccount" name="createAccount" binary="true"></p-checkbox>
+                        <label class="text-sm text-gray-700">¿Quieres crear cuenta?</label>
+                    </div>
+
+                    <!-- Campos adicionales si crear cuenta -->
+                    <div *ngIf="createAccount" class="space-y-4 pl-6 border-l-2 border-green-200">
+                        <!-- Nombre -->
+                        <div class="space-y-1">
+                            <label class="block text-sm font-medium text-gray-700">Nombre</label>
+                            <input type="text" pInputText [(ngModel)]="name" name="name" required #nameCtrl="ngModel"
+                                class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-400" />
+                            <div *ngIf="nameCtrl.invalid && (nameCtrl.dirty || form.submitted)"
+                                class="text-red-600 text-sm">
+                                <div *ngIf="nameCtrl.errors?.['required']">
+                                    El nombre es obligatorio.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="space-y-1">
+                            <label class="block text-sm font-medium text-gray-700">Email</label>
+                            <input type="email" pInputText [(ngModel)]="email" name="email" required email
+                                #emailCtrl="ngModel"
+                                class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-400" />
+                            <div *ngIf="emailCtrl.invalid && (emailCtrl.dirty || form.submitted)"
+                                class="text-red-600 text-sm">
+                                <div *ngIf="emailCtrl.errors?.['required']">
+                                    El email es obligatorio.
+                                </div>
+                                <div *ngIf="emailCtrl.errors?.['email']">
+                                    Ingresa un email válido.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Celular -->
+                        <div class="space-y-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Celular
+                            </label>
+                            <div class="flex items-center">
+                                <div
+                                    class="border border-gray-300 bg-white mr-1 h-[32px] rounded-[0.25rem] flex items-center px-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 3 2">
+                                        <rect width="3" height="1" fill="#FCD116" />
+                                        <rect y="1" width="3" height="0.5" fill="#003893" />
+                                        <rect y="1.5" width="3" height="0.5" fill="#CE1126" />
+                                    </svg>
+                                    &nbsp;+57
+                                </div>
+                                <p-inputMask [(ngModel)]="phone" name="phone" mask="(999) 999-9999" required
+                                    #phoneCtrl="ngModel"
+                                    class="w-full rounded-[0.25rem] focus:outline-none px-2 py-1"></p-inputMask>
+                            </div>
+                            <div *ngIf="phoneCtrl.invalid && (phoneCtrl.dirty || form.submitted)"
+                                class="text-red-600 text-sm">
+                                <div *ngIf="phoneCtrl.errors?.['required']">
+                                    El teléfono es obligatorio.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contraseña -->
+                        <div class="space-y-1">
+                            <label class="block text-sm font-medium text-gray-700">Contraseña</label>
+                            <input type="password" pInputText [(ngModel)]="password" name="password" required
+                                minlength="6" #passwordCtrl="ngModel" placeholder="Mínimo 6 caracteres"
+                                class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-300" />
+                            <div *ngIf="passwordCtrl.invalid && (passwordCtrl.dirty || form.submitted)"
+                                class="text-red-600 text-sm">
+                                <div *ngIf="passwordCtrl.errors?.['required']">
+                                    La contraseña es obligatoria.
+                                </div>
+                                <div *ngIf="passwordCtrl.errors?.['minlength']">
+                                    Mínimo 6 caracteres.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Confirmar contraseña -->
+                        <div class="space-y-1">
+                            <label class="block text-sm font-medium text-gray-700">
+                                Confirmar contraseña (Diferentes? {{password !== confirmPassword}})
+                            </label>
+                            <input type="password" pInputText [(ngModel)]="confirmPassword" name="confirmPassword"
+                                required minlength="6" #confirmPasswordCtrl="ngModel"
+                                placeholder="Confirma la contraseña"
+                                class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-300" />
+                            <div class="text-red-600 text-sm">
+                                <div *ngIf="confirmPasswordCtrl.errors?.['required']">
+                                    Confirmar contraseña es obligatorio.
+                                </div>
+                                <div *ngIf="confirmPasswordCtrl.errors?.['minlength']">
+                                    Mínimo 6 caracteres.
+                                </div>
+                                <div *ngIf="password !== confirmPassword">
+                                    Las contraseñas no coinciden.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recordar dirección -->
+                    <div class="flex items-center space-x-2">
+                        <p-checkbox [(ngModel)]="rememberAddress" name="rememberAddress" binary="true"></p-checkbox>
+                        <label class="text-sm text-gray-700">
+                            Recordar esta dirección para una próxima compra
+                        </label>
+                    </div>
+
+                    <!-- Botón Finalizar -->
+                    <div class="pt-4 border-t border-gray-200">
+                        <button type="submit"
+                            [disabled]="form.invalid || (createAccount && password !== confirmPassword)"
+                            class="w-full flex justify-center items-center bg-green-500 hover:bg-green-600 text-white rounded-full py-3 font-medium transition disabled:opacity-50 disabled:cursor-not-allowed">
+                            <i class="pi pi-whatsapp mr-3 text-lg"></i>
+                            Finalizar compra
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
 </div>
 }

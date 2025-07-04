@@ -1,56 +1,96 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { ProductCart } from '../../../../models/product-cart';
 import { Order } from '../../../../models/order';
 import { LocationService } from '../../../service/location.service';
-import { Seller } from '../../../../models/selller';
 import { CartService } from '../../../service/cart.service';
-import { Product } from '../../../../models/product';
-import { SellerService } from '../../../service/seller.service';
+import { User } from '../../../../models/user';
+import { UserService } from '../../../service/user.service';
+import { AuthService } from '../../../service/auth.service';
+import { FormsModule } from '@angular/forms';
+import { InputTextModule } from 'primeng/inputtext';
+import { DropdownModule } from 'primeng/dropdown';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { CheckboxModule } from 'primeng/checkbox';
+import { InputMaskModule } from 'primeng/inputmask';
+import { InputGroupModule } from 'primeng/inputgroup';
+import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
+import { UserPayload } from '../../../../models/selllerPayload';
+import { v4 as uuidv4 } from 'uuid';
+import { ToastService } from '../../../service/toast.service';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-cart-card',
-  imports: [CommonModule],
-  providers: [CartService],
+  imports: [
+    CommonModule, FormsModule, InputTextModule, DropdownModule, 
+    InputNumberModule, CheckboxModule, InputMaskModule,
+  InputGroupModule, InputGroupAddonModule],
+  providers: [CartService, ToastService],
   templateUrl: './cart-card.component.html',
   styleUrl: './cart-card.component.scss'
 })
-export class CartCardComponent {
-
-  constructor(
-    private locationService: LocationService,
-    private cartService: CartService,
-    private sellerService: SellerService
-  ) {
-    this.sellerService.getSeller('123').subscribe((seller: Seller) => {
-      this.seller = seller;
-    });
-  }
+export class CartCardComponent implements OnInit {
 
   @Input() order: Order = {
-    order: '',
+    id: '',
     products: [],
     address: '',
     paymentType: '',
     changeFrom: 0,
     sellerId: '',
     status: '',
-    buyer: {
-      name: '',
-      cellphone: ''
-    }
+    buyerId: '',
+    location: [0, 0]
   };
 
-  seller: Seller = {
-    id: '',
-    name: '',
-    cellphone: '',
-    profileImage: '',
-    description: '',
-    rating: 0,
-    featuredProducts: [],
-    products: [],
-    comments: [],
+  paymentTypes = [
+    { label: 'Efectivo', value: 'EFECTIVO' },
+    { label: 'Transferencia', value: 'TRANSFERENCIA' }
+  ];
+
+  createAccount = false;
+  rememberAddress = true;
+
+  name = '';
+  email = '';
+  phone = '';
+  password = '';
+  confirmPassword = '';
+
+  seller: User | null = null;
+
+  displayFinishOrder: boolean = false;
+
+  role: string = '';
+
+  constructor(
+    private readonly locationService: LocationService,
+    private readonly cartService: CartService,
+    private readonly userService: UserService,
+    private readonly authService: AuthService,
+    private readonly toastService: ToastService
+  ) { }
+
+
+  ngOnInit(): void {
+
+    this.role = this.authService.getValueFromToken('role');
+    this.order.address = localStorage.getItem('address') || '';
+
+    this.userService.getUserById(this.order.sellerId).subscribe({
+      next: (response: User) => {
+        this.seller = response;
+      }
+    });
+  }
+
+  closePreview(): void {
+    this.displayFinishOrder = false;
+  }
+
+  openFinishOrder(): void {
+    this.displayFinishOrder = true;
   }
 
   getTotal(productsCart: ProductCart[]) {
@@ -71,7 +111,7 @@ export class CartCardComponent {
 
   increase(product: ProductCart) {
     product.quantity++;
-    this.cartService.updateProductQty(this.order.order, product.product.id, product.quantity);
+    this.cartService.updateProductQty(this.order.id, product.product.id, product.quantity);
   }
 
   decrease(product: ProductCart) {
@@ -79,7 +119,7 @@ export class CartCardComponent {
     if (product.quantity <= 0) {
       this.order.products = this.order.products.filter(p => p.product.id !== product.product.id);
     }
-    this.cartService.updateProductQty(this.order.order, product.product.id, product.quantity);
+    this.cartService.updateProductQty(this.order.id, product.product.id, product.quantity);
   }
 
   repeatOrder() {
@@ -88,20 +128,79 @@ export class CartCardComponent {
 
   finishOrder() {
 
+    if (this.rememberAddress) {
+      localStorage.setItem('address', this.order.address);
+    } else {
+      localStorage.removeItem('address');
+    }
+
+    if (this.createAccount) {
+      console.log('Crear cuenta nueva');
+      const payload: UserPayload = {
+        userId: uuidv4(),
+        name: this.name,
+        businessName: '',
+        image: '',
+        email: this.email,
+        phone: this.phone,
+        password: this.password,
+        exist: false,
+        frontUrl: environment.frontUrl,
+        backUrl: environment.apiUrl
+      };
+      this.authService.createClient(payload).subscribe({
+        next: (token: string) => {
+          localStorage.setItem('token', token);
+          this.role = 'buyer';
+          this.finishOrderAndSendWhatsApp();
+        },
+        error: (err) => {
+          this.toastService.showError('Error', err.message);
+        }
+      });
+    } else {
+      this.order.buyerId = this.authService.getValueFromToken('userId');
+      this.finishOrderAndSendWhatsApp();
+    }
+  }
+
+  finishOrderAndSendWhatsApp() {
     this.getLocation()
       .then((location) => {
-        const urlWhatsApp = this.generarMensajeWhatsApp(this.order, location);
-
-        window.open(urlWhatsApp, '_blank')
-
+        this.order.location = location;
+        this.continueOrder();
       })
       .catch((error) => {
-        console.error('Error al obtener la ubicación:', error);
+        this.continueOrder();
       });
   }
 
+  continueOrder() {
+    const urlWhatsApp = this.generarMensajeWhatsApp(this.order);
+
+    // Enviar orden al backend
+    this.cartService.sendOrder(this.order).subscribe({
+      next: (response) => {
+        this.cartService.deleteOrder(this.order.id);
+        this.openWhatsApp(urlWhatsApp);
+      },
+      error: (err) => {
+        console.error(err);
+        this.openWhatsApp(urlWhatsApp);
+      }
+    });
+  }
+
+  openWhatsApp(urlWhatsApp: string) {
+    window.open(urlWhatsApp, '_blank')
+
+    this.displayFinishOrder = false;
+
+    window.location.reload();
+  }
+
   deleteOrder() {
-    this.cartService.deleteOrder(this.order.order);
+    this.cartService.deleteOrder(this.order.id);
     this.order.products = [];
   }
 
@@ -115,7 +214,7 @@ export class CartCardComponent {
   }
 
 
-  generarMensajeWhatsApp(order: Order, location: [number, number]): string {
+  generarMensajeWhatsApp(order: Order): string {
     const products = order.products
       .map(
         (productCart) =>
@@ -125,22 +224,22 @@ export class CartCardComponent {
 
     let payment = `*Pago por:* ${order.paymentType}`;
 
-    if (order.paymentType === 'Efectivo') {
+    if (order.paymentType === 'EFECTIVO') {
       payment += `\n*Cambio de:* ${this.formatCurrency(order.changeFrom)}`;
     }
 
     let address = ``;
 
-    if (location[0] != 0 && location[1] != 0) {
+    if (order.location[0] != 0 && order.location[1] != 0) {
       address = `
-*Ubicación:* 
-https://maps.google.com/?q=${location[0]},${location[1]}\n`;
+*Ubicación (Aproximada):* 
+https://maps.google.com/?q=${order.location[0]},${order.location[1]}\n`;
     }
 
     const mensaje = `
-*${this.seller.name}*
+*${this.seller?.name}*
 
-*Orden Número:* #${order.order}
+*Orden:* ${order.id}
 
 ${products}
 *Total:* ${this.formatCurrency(order.products.reduce((acc, productCart) => acc + productCart.product.price * productCart.quantity, 0))}
@@ -149,6 +248,9 @@ ${payment}
 
 *Dirección:* ${order.address}
 ${address}
+
+*Confirmar orden:*
+${environment.frontUrl}/auth/confirm/${order.id}\n
 Gracias por tu compra.`.trim();
 
     // Generar enlace para WhatsApp
@@ -156,9 +258,9 @@ Gracias por tu compra.`.trim();
     const isMobile = this.isMobileDevice();
 
     if (isMobile) {
-      return `whatsapp://send?phone=${this.seller.cellphone}&text=${encodeURIComponent(mensaje)}`;
+      return `whatsapp://send?phone=${this.seller?.phone}&text=${encodeURIComponent(mensaje)}`;
     } else {
-      return `https://wa.me/${this.seller.cellphone}?text=${encodeURIComponent(mensaje)}`;
+      return `https://wa.me/${this.seller?.phone}?text=${encodeURIComponent(mensaje)}`;
     }
 
   }
