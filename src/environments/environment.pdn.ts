@@ -1,5 +1,5 @@
 export const environment = {
-  production: false,
+  production: true,
   apiUrl: 'https://ventas-7-lunas-back-241033954184.southamerica-east1.run.app',
-  frontUrl: 'http://localhost:4200',
+  frontUrl: 'https://deyson12.github.io/ventas-7-lunas',
 };

@@ -17,6 +17,7 @@
                 "build": {
                     "builder": "@angular-devkit/build-angular:application",
                     "options": {
+                        "baseHref": "/ventas-7-lunas/",
                         "outputPath": "dist/ventas-7-lunas",
                         "index": "src/index.html",
                         "browser": "src/main.ts",
@@ -57,6 +58,14 @@
                             "optimization": false,
                             "extractLicenses": false,
                             "sourceMap": true
+                        },
+                        "pdn": {
+                            "fileReplacements": [
+                                {
+                                    "replace": "src/environments/environment.ts",
+                                    "with": "src/environments/environment.pdn.ts"
+                                }
+                            ]
                         }
                     },
                     "defaultConfiguration": "production"
@@ -69,6 +78,9 @@
                         },
                         "development": {
                             "buildTarget": "sakai-ng:build:development"
+                        },
+                        "pdn": {
+                            "buildTarget": "sakai-ng:build:pdn"
                         }
                     },
                     "defaultConfiguration": "development"
@@ -101,6 +113,6 @@
         }
     },
     "cli": {
-      "analytics": false
+        "analytics": false
     }
 }
