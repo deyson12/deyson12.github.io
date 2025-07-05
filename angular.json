@@ -17,8 +17,8 @@
                 "build": {
                     "builder": "@angular-devkit/build-angular:application",
                     "options": {
-                        "baseHref": "/ventas-7-lunas/",
-                        "outputPath": "dist/ventas-7-lunas",
+                        "baseHref": "/",
+                        "outputPath": "docs",
                         "index": "src/index.html",
                         "browser": "src/main.ts",
                         "polyfills": [
