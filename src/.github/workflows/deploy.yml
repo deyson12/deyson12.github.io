@@ -32,8 +32,8 @@ jobs:
 
       - name: Move build into docs
         run: |
-          rm -rf docs/*
-          cp -R docs/browser/* docs/
+          mv -R docs/browser/* docs/
+          rm -rf docs/browser
           
 
       # 5. Copiar fallback 404 para SPA routing
