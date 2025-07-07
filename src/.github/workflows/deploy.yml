@@ -1,38 +1,44 @@
-name: Deploy Ventas 7 Lunas App to GitHub Pages
+name: CI/CD Angular → GitHub Pages
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    branches:
+      - main
+    # evitar bucle cuando solo cambien los archivos de docs
+    paths-ignore:
+      - 'docs/browser/'
 
 jobs:
-  build-and-deploy:
+  build-and-publish:
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '22'  # Ajusta según tu versión de Node.js
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Build Angular app
-      run: ng build --configuration=pdn
-    
-    - name: Copy index.html to 404.html
-      run: cp docs/browser/index.html docs/browser/404.html
-    
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      if: github.ref == 'refs/heads/main'  # Solo despliega en push a main
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./docs/browser
-        destination_dir: docs  # Esto coloca los archivos en la carpeta docs en la rama gh-pages
+      # 1. Clona tu repo
+      - uses: actions/checkout@v3
+
+      # 2. Node.js (ajusta versión si hace falta)
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          cache: 'npm'
+
+      # 3. Dependencias
+      - name: Install deps
+        run: npm ci
+
+      # 4. Build en modo “pdn” (ya pone salida en docs/browser)
+      - name: Build PDN
+        run: npm run build --configuration=pdn
+
+      # 5. Copiar fallback 404 para SPA routing
+      - name: Add 404 fallback
+        run: cp docs/browser/index.html docs/browser/404.html
+
+      # 6. Commit & push de la carpeta docs/browser
+      - name: Commit & Push docs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/browser
+          git diff --staged --quiet || git commit -m "chore: deploy docs [skip ci]"
+          git push
