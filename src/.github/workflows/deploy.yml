@@ -26,19 +26,24 @@ jobs:
       - name: Install deps
         run: npm ci
 
+      - name: Clean previous docs
+        run: rm -rf docs
+
       # 4. Build en modo “pdn” (ya pone salida en docs/browser)
       - name: Build PDN
-        run: npm run build --configuration=pdn
+        run: npm run build -- --configuration=pdn
 
       - name: Move build into docs
         run: |
-          mv -R docs/browser/* docs/
+          mv docs/browser/* docs/
           rm -rf docs/browser
-          
 
       # 5. Copiar fallback 404 para SPA routing
       - name: Add 404 fallback
         run: cp docs/index.html docs/404.html
+
+      - name: Debug: listar docs
+        run: ls -R docs/
 
       # 6. Commit & push de la carpeta docs/browser
       - name: Commit & Push docs
