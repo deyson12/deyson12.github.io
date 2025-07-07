@@ -33,7 +33,8 @@ jobs:
       - name: Move build into docs
         run: |
           rm -rf docs/*
-          cp -R dist/browser/* docs/
+          cp -R docs/browser/* docs/
+          
 
       # 5. Copiar fallback 404 para SPA routing
       - name: Add 404 fallback
