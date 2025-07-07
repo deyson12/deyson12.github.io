@@ -1,0 +1,39 @@
+name: Build and deploy Ventas 7 Lunas
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build PDN into docs
+        run: npm run build -- --configuration=pdn --output-path=docs
+
+      - name: Create SPA fallback and disable Jekyll
+        run: |
+          cp docs/index.html docs/404.html
+          touch docs/.nojekyll
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: docs
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/deploy-pages@v1
