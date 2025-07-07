@@ -1,15 +1,20 @@
-name: Build and deploy Ventas 7 Lunas
+name: Build and Deploy Ventas 7 Lunas
 
 on:
   push:
     branches:
       - main
 
+permissions:
+  contents: read        # sólo lectura de repo
+  pages: write          # publicar en Pages
+  id-token: write       # necesario para deploy-pages
+
 jobs:
-  build:
+  build-and-publish:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repo
         uses: actions/checkout@v3
 
       - name: Setup Node.js
@@ -37,8 +42,8 @@ jobs:
         with:
           path: docs
 
-  deploy:
-    needs: build
+  deploy-pages:
+    needs: build-and-publish
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to GitHub Pages
