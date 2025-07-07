@@ -34,7 +34,7 @@ jobs:
       - name: Create SPA fallback & disable Jekyll
         run: |
           cp docs/index.html docs/404.html
-      #    touch docs/.nojekyll
+          touch docs/.nojekyll
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
