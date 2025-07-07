@@ -4,44 +4,40 @@ on:
   push:
     branches:
       - main
-    # evitar bucle cuando solo cambien los archivos de docs
     paths-ignore:
-      - 'docs'
+      - 'docs/**'
 
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
     steps:
-      # 1. Clona tu repo
       - uses: actions/checkout@v3
 
-      # 2. Node.js (ajusta versión si hace falta)
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '22'
           cache: 'npm'
 
-      # 3. Dependencias
       - name: Install deps
         run: npm ci
 
       - name: Clean previous docs
-        run: rm -rf docs
+        run: rm -rf docs/*
 
-      # 4. Build en modo “pdn” (ya pone salida en docs/browser)
       - name: Build PDN
         run: npm run build -- --configuration=pdn
 
-      # 5. Copiar fallback 404 para SPA routing
-      - name: Add 404 fallback
+      - name: Disable Jekyll
+        run: touch docs/.nojekyll
+
+      - name: Add SPA fallback
         run: cp docs/index.html docs/404.html
 
-      # 6. Commit & push de la carpeta docs/browser
       - name: Commit & Push docs
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add docs
-          git diff --staged --quiet || git commit -m "chore: deploy docs [skip ci]"
+          git diff --staged --quiet || git commit -m "ci: deploy docs [skip ci]"
           git push
