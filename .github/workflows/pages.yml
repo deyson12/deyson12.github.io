@@ -31,9 +31,9 @@ jobs:
       - name: Build PDN into docs
         run: npm run build -- --configuration=pdn --output-path=docs
 
-      #- name: Create SPA fallback & disable Jekyll
-      #  run: |
-      #    cp docs/index.html docs/404.html
+      - name: Create SPA fallback & disable Jekyll
+        run: |
+          cp docs/index.html docs/404.html
       #    touch docs/.nojekyll
 
       - name: Upload Pages artifact
