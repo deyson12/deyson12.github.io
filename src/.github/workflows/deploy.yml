@@ -30,9 +30,14 @@ jobs:
       - name: Build PDN
         run: npm run build --configuration=pdn
 
+      - name: Move build into docs
+        run: |
+          rm -rf docs/*
+          cp -R dist/browser/* docs/
+
       # 5. Copiar fallback 404 para SPA routing
       - name: Add 404 fallback
-        run: cp docs/browser/index.html docs/browser/404.html
+        run: cp docs/index.html docs/404.html
 
       # 6. Commit & push de la carpeta docs/browser
       - name: Commit & Push docs
