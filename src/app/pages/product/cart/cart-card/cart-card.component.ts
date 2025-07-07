@@ -75,6 +75,11 @@ export class CartCardComponent implements OnInit {
 
   ngOnInit(): void {
 
+    //Solicitamos acceso a la ubicación del usuario
+    this.locationService.requestPermission().catch((error) => {
+      console.error('Error al solicitar permiso de ubicación:', error);
+    });
+
     this.role = this.authService.getValueFromToken('role');
     this.order.address = localStorage.getItem('address') || '';
 

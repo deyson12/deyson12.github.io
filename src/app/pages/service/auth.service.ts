@@ -33,8 +33,8 @@ export class AuthService {
 
   private handleError(error: HttpErrorResponse) {
     // Puedes extender esto para leer mensajes específicos del backend
-    console.log('Error M: ', error.message);
-    return throwError(() => new Error(error.error.message));
+    console.log('Error M: ', error?.error?.message ?? 'Error desconocido');
+    return throwError(() => new Error(error?.error?.message ?? 'Error desconocido'));
   }
 
   /** Envía email y password, devuelve el token en el observable */
