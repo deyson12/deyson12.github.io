@@ -6,7 +6,7 @@ on:
       - main
     # evitar bucle cuando solo cambien los archivos de docs
     paths-ignore:
-      - 'docs/browser/'
+      - 'docs'
 
 jobs:
   build-and-publish:
@@ -19,7 +19,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '22'
           cache: 'npm'
 
       # 3. Dependencias
