@@ -67,8 +67,8 @@
       class="w-full bg-orange-500 text-white flex items-center justify-between px-4 py-2 shadow-md z-50 font-semibold">
       <div class="text-sm">
         Has llegado al máximo de productos permitido. Para añadir nuevos ítems, actualiza tu plan. Escríbenos por
-        <a href="https://wa.me/573136090247" target="_blank" class="font-semibold underline">
-          WhatsApp: 3136090247
+        <a [href]="whatsappLink()"  target="_blank" class="font-semibold underline">
+          WhatsApp: {{whatsAppNumber}}
         </a>
       </div>
       <button type="button" class="p-1 focus:outline-none" aria-label="Cerrar banner" (click)="closeBanner()">

@@ -7,7 +7,7 @@
       👉 ¿Quieres vender algún producto o servicio con nosotros? <a routerLink="/pages/create-seller"
         class="font-semibold underline hover:text-orange-200"><b>Haz clic aqui</b></a> o
       Escríbenos al
-      <a href="https://wa.me/573136090247" target="_blank" rel="noopener"
+      <a [href]="whatsappLink()" target="_blank" rel="noopener"
         class="font-semibold underline hover:text-orange-200"><b>WhatsApp: 313 6090247</b></a>
     </div>
     } @else {
@@ -52,21 +52,42 @@
 </div>
 
 <!-- product-list.component.html -->
-<div class="grid grid-cols-12 gap-8">
-  <ng-container *ngFor="let product of products; let i = index">
+<!-- Si hay productos -->
+<ng-container *ngIf="products && products.length > 0; else sinProductos">
+  <div class="grid grid-cols-12 gap-8">
 
-    @if (((i + 1) % interval === 0) && showBannerProductos(i)) {
-    <app-banner class="col-span-12" [banner]="getBannerForIndex(i)"
-      gradientClasses="bg-gradient-to-r from-gray-700 via-gray-900 to-black" buttonColor="text-neutral-700">
-    </app-banner>
-    }
+    <ng-container *ngFor="let product of products; let i = index">
 
-    <app-card class="col-span-12 lg:col-span-6 xlmid:col-span-4" [product]="product">
+      <!-- Banner cada interval y si corresponde -->
+      <ng-container *ngIf="((i + 1) % interval === 0) && showBannerProductos(i)">
+        <app-banner class="col-span-12" [banner]="getBannerForIndex(i)"
+          gradientClasses="bg-gradient-to-r from-gray-700 via-gray-900 to-black" buttonColor="text-neutral-700">
+        </app-banner>
+      </ng-container>
+
+      <!-- Tarjeta de producto -->
+      <app-card class="col-span-12 lg:col-span-6 xlmid:col-span-4" [product]="product">
+      </app-card>
+
+    </ng-container>
+  </div>
+</ng-container>
+
+<!-- Si no hay productos -->
+<ng-template #sinProductos>
+  @if (noProducts) {
+  <div class="flex justify-center items-center p-6">
+    <p class="text-gray-500">No hay productos para mostrar.</p>
+  </div>
+  } @else {
+  <div class="grid grid-cols-12 gap-8">
+    @for (skeleton of [1,2,3,4,5,6]; track $index) {
+    <app-card class="col-span-12 lg:col-span-6 xlmid:col-span-4" [product]="null">
     </app-card>
-
-
-  </ng-container>
-</div>
+    }
+  </div>
+  }
+</ng-template>
 
 <!--app-banner [banner]="banner" gradientClasses="bg-gradient-to-r from-purple-400 via-violet-500 to-indigo-600"
   buttonColor="text-purple-600" />

@@ -21,6 +21,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TagModule } from 'primeng/tag';
 import { PaginatorModule } from 'primeng/paginator';
 import { SelectModule } from 'primeng/select';
+import { appConfig } from '../../../config/constants';
 
 @Component({
   selector: 'app-profile',
@@ -63,6 +64,8 @@ export class ProfileComponent implements OnInit {
     { label: 'Activo', value: 'Activo' },
     { label: 'Inactivo', value: 'Inactivo' },
   ];
+
+  whatsAppNumber = appConfig.whatsAppNumber;
 
   constructor(
     private readonly fb: FormBuilder,
@@ -260,5 +263,10 @@ export class ProfileComponent implements OnInit {
 
   closeBanner(): void {
     this.bannerVisible = false;
+  }
+
+  whatsappLink(): string {
+    const message = `Hola, alcancé el máximo de mis productos y deseo actualizar mi plan!`;
+    return `https://wa.me/${this.whatsAppNumber}?text=${encodeURIComponent(message)}`;
   }
 }

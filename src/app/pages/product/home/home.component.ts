@@ -13,6 +13,7 @@ import { CartService } from '../../service/cart.service';
 import { AuthService } from '../../service/auth.service';
 import { BannerService } from '../../service/banner.service';
 import { FixedCartComponent } from '../fixed-cart/fixed-cart.component';
+import { appConfig } from '../../../config/constants';
 
 @Component({
   selector: 'app-home',
@@ -43,6 +44,10 @@ export class HomeComponent implements OnInit {
 
   interval = 3;
 
+  whatsAppNumber = appConfig.whatsAppNumber;
+
+  noProducts = false;
+
   constructor(
     private readonly route: ActivatedRoute,
     private readonly productService: ProductService,
@@ -62,6 +67,7 @@ export class HomeComponent implements OnInit {
       this.banners = data;
       this.productService.getProductsByCategory(this.currentPath).subscribe((data: Product[]) => {
         this.products = data;
+        this.noProducts = this.products.length <= 0;
         this.interval = Math.floor(this.products.length / this.banners.length);
       });
     });
@@ -104,6 +110,11 @@ export class HomeComponent implements OnInit {
       }
     }
     return true;
+  }
+
+  whatsappLink(): string {
+    const message = `Hola, deseo actualizar mi plan!`;
+    return `https://wa.me/${this.whatsAppNumber}?text=${encodeURIComponent(message)}`;
   }
 
   itemsMenu: Item[] = [

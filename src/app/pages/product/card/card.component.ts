@@ -4,10 +4,11 @@ import { Product } from '../../../models/product';
 import { ProductService } from '../../service/product.service';
 import { RouterModule } from '@angular/router';
 import { CartService } from '../../service/cart.service';
+import { SkeletonModule } from 'primeng/skeleton';
 
 @Component({
   selector: 'app-card',
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, SkeletonModule],
   templateUrl: './card.component.html',
   styleUrl: './card.component.scss'
 })

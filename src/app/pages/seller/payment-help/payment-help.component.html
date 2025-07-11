@@ -1,15 +1,27 @@
 <!-- payment-guide.component.html -->
-<div class="bg-orange-500 text-white p-4 flex justify-between items-center rounded-md shadow">
+@if (endDate) {
+  @if (futureEndDate()) {
+    <div class="bg-orange-500 text-white p-4 flex justify-between items-center rounded-md shadow mb-8 ">
     <span class="font-semibold">
-        Tu plan actual es <b>{{ currentPlan }} </b> y vence el <b>{{ endDate }} </b>
+      Tu plan actual es <b>{{ currentPlan }} </b> y vence el <b>{{ endDate }} </b>
     </span>
-    <a [href]="whatsappLink()" target="_blank"
-        class="text-orange-600 bg-white px-4 py-2 rounded transition">
-        Actualizar plan
+    <a [href]="whatsappLink('actualizar')" target="_blank" class="text-orange-600 bg-white px-4 py-2 rounded transition">
+      Actualizar plan
     </a>
-</div>
+  </div>
+  } @else {
+    <div class="bg-red-500 text-white p-4 flex justify-between items-center rounded-md shadow mb-8 ">
+    <span class="font-semibold">
+      Tu plan actual es <b>{{ currentPlan }} </b> y venció el <b>{{ endDate }} </b>
+    </span>
+    <a [href]="whatsappLink('activar')" target="_blank" class="text-orange-600 bg-white px-4 py-2 rounded transition">
+      Actualizar y Activar plan
+    </a>
+  </div>
+  }
+}
 
-<div class="card flex flex-col items-center mt-10 space-y-6">
+<div class="card flex flex-col items-center space-y-6">
 
     <div class="p-4 w-full text-center">
         <p class="mb-2">
@@ -28,7 +40,7 @@
         Escanea el código para realizar el pago directamente
     </p>
 
-    <a [href]="qrCodeUrl" download="qr-pago.png"
+    <a [href]="qrCodeUrl" target="_blank" download="qr-pago.png"
         class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-700 transition">
         Descargar código QR
     </a>

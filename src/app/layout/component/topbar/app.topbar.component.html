@@ -87,9 +87,9 @@
           <i class="pi pi-shopping-cart text-xl"></i>
 
           <!-- badge -->
-          <span *ngIf="cartService.orderCount() > 0" class="cart-badge">
+          <!--span *ngIf="cartService.orderCount() > 0" class="cart-badge">
             {{ cartService.getCount(cartService.orders()) }}
-          </span>
+          </span-->
         </button>
 
         <button type="button" class="layout-topbar-action" (click)="toggle($event)">
