@@ -19,11 +19,14 @@ import { UserService } from '../../service/user.service';
 import { CategoryService } from '../../service/category.service';
 import { BannerService } from '../../service/banner.service';
 import { PlanService } from '../../service/plan.service';
+import { Invoice } from '../../../models/invoice';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-dashboard',
   imports: [CommonModule, TableModule, InputTextModule, ButtonModule, TagModule, CalendarModule, TabViewModule, FormsModule, IconFieldModule, InputIconModule, DropdownModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  providers: [DatePipe],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
@@ -33,6 +36,15 @@ users: User[] = [];
   categories: Category[] = [];
   plans: Plan[] = [];
   subscriptions: Subscription[] = [];
+
+
+  invoices: Invoice[] = [
+    {
+      id: '123',
+      sellerName: 'Nombre',
+      month: 'Julio 2025'
+    }
+  ];
 
   userStatuses = [
     { label: 'Inicial', value: 'INICIAL', color: 'warn' },
@@ -45,7 +57,8 @@ users: User[] = [];
     private readonly userService: UserService,
     private readonly categoryService: CategoryService,
     private readonly bannerService: BannerService,
-    private readonly planService: PlanService
+    private readonly planService: PlanService,
+    private readonly datePipe: DatePipe
   ) { }
 
   ngOnInit(): void {
@@ -128,6 +141,19 @@ users: User[] = [];
 
   toggleSubscription(sub: Subscription): void {
     sub.isActive = !sub.isActive;
+  }
+
+  getWhatsAppLink(invoice: Invoice): string {
+    // Mensaje crudo con saltos de línea
+    const rawMessage = 
+      `¡Hola ${invoice.sellerName}!\n` +
+      `Tienes pendiente la factura (ID: ${invoice.id}) del mes de ` +
+      `${this.datePipe.transform(invoice.month, 'MMMM yyyy')}.\n` +
+      `Por favor, realiza el pago lo antes posible.\n` +
+      `¡Gracias!`;
+
+    const encoded = encodeURIComponent(rawMessage);
+    return `https://wa.me/573136090247?text=${encoded}`;
   }
 
 }

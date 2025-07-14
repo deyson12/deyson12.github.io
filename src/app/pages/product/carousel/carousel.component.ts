@@ -6,17 +6,24 @@ import { ButtonProps } from 'primeng/button';
 import { ProductService } from '../../service/product.service';
 import { RouterModule } from '@angular/router';
 import { CartService } from '../../service/cart.service';
+import { OptimizeCloudinaryPipe } from '../../../pipes/optimize-cloudinary.pipe';
+import { CloudinarySrcsetPipe } from '../../../pipes/cloudinary-srcset.pipe';
+import { CloudinaryPlaceholderPipe } from '../../../pipes/cloudinary-placeholder.pipe';
 
 @Component({
   selector: 'app-carousel',
-  imports: [CarouselModule, CommonModule, RouterModule],
+  imports: [CarouselModule, CommonModule, RouterModule,
+    OptimizeCloudinaryPipe, CloudinarySrcsetPipe, CloudinaryPlaceholderPipe
+  ],
   templateUrl: './carousel.component.html',
   styleUrl: './carousel.component.scss'
 })
 export class CarouselComponent {
 
-  constructor(private productService: ProductService,
-              private cartService: CartService
+  loaded = false;
+
+  constructor(private readonly productService: ProductService,
+              private readonly cartService: CartService
   ) { }
 
     responsiveOptions = [

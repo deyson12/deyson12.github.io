@@ -3,7 +3,7 @@
     "version": 1,
     "newProjectRoot": "projects",
     "projects": {
-        "sakai-ng": {
+        "ventas-7-lunas": {
             "projectType": "application",
             "schematics": {
                 "@schematics/angular:component": {
@@ -77,13 +77,13 @@
                     "builder": "@angular-devkit/build-angular:dev-server",
                     "configurations": {
                         "production": {
-                            "buildTarget": "sakai-ng:build:production"
+                            "buildTarget": "ventas-7-lunas:build:production"
                         },
                         "development": {
-                            "buildTarget": "sakai-ng:build:development"
+                            "buildTarget": "ventas-7-lunas:build:development"
                         },
                         "pdn": {
-                            "buildTarget": "sakai-ng:build:pdn"
+                            "buildTarget": "ventas-7-lunas:build:pdn"
                         }
                     },
                     "defaultConfiguration": "development"

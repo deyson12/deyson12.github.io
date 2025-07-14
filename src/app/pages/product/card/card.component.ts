@@ -5,14 +5,20 @@ import { ProductService } from '../../service/product.service';
 import { RouterModule } from '@angular/router';
 import { CartService } from '../../service/cart.service';
 import { SkeletonModule } from 'primeng/skeleton';
+import { OptimizeCloudinaryPipe } from '../../../pipes/optimize-cloudinary.pipe';
+import { CloudinarySrcsetPipe } from '../../../pipes/cloudinary-srcset.pipe';
+import { CloudinaryPlaceholderPipe } from '../../../pipes/cloudinary-placeholder.pipe';
 
 @Component({
   selector: 'app-card',
-  imports: [CommonModule, RouterModule, SkeletonModule],
+  imports: [CommonModule, RouterModule, SkeletonModule, 
+    OptimizeCloudinaryPipe, CloudinarySrcsetPipe, CloudinaryPlaceholderPipe],
   templateUrl: './card.component.html',
   styleUrl: './card.component.scss'
 })
 export class CardComponent {
+
+  loaded = false;
 
   constructor(
     private readonly productService: ProductService, 
