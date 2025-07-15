@@ -145,12 +145,13 @@ users: User[] = [];
 
   getWhatsAppLink(invoice: Invoice): string {
     // Mensaje crudo con saltos de línea
-    const rawMessage = 
-      `¡Hola ${invoice.sellerName}!\n` +
-      `Tienes pendiente la factura (ID: ${invoice.id}) del mes de ` +
-      `${this.datePipe.transform(invoice.month, 'MMMM yyyy')}.\n` +
-      `Por favor, realiza el pago lo antes posible.\n` +
-      `¡Gracias!`;
+    const rawMessage =
+    `Hola ${invoice.sellerName},\n\n` +
+    `Este es un recordatorio de que tienes pendiente la factura *ID: ${invoice.id}* ` +
+    `correspondiente al mes de *${this.datePipe.transform(invoice.month, 'MMMM yyyy')}*.\n\n` +
+    `Por favor, realiza el pago en un plazo máximo de 10 días hábiles. ` +
+    `Si no lo recibimos antes de ese plazo, tu cuenta se deshabilitará temporalmente.\n\n` +
+    `Quedamos atentos a tu confirmación y agradecemos tu confianza. ¡Saludos!`;
 
     const encoded = encodeURIComponent(rawMessage);
     return `https://wa.me/573136090247?text=${encoded}`;
