@@ -41,12 +41,12 @@
     <div *ngIf="role === '' || role === 'buyer' || role === 'admin'" class="hidden md:block">
       <!-- Sólo Admin -->
       <div *ngIf="role === 'admin'" class="inline">
-        <a routerLink="/pages/create-seller" class="inline-flex items-center gap-2 px-4 py-2
+        <div class="inline-flex items-center gap-2 px-4 py-2
               bg-indigo-500 text-white rounded-lg
               hover:bg-indigo-600 transition-colors">
           <i class="pi pi-user text-xl"></i>
           <span>ADMIN</span>
-        </a>
+        </div>
       </div>&nbsp;
 
       <!-- Vendes algo? -->

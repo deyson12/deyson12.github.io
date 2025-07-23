@@ -1,0 +1,49 @@
+<!-- dropshipping-calculator.component.html -->
+<div class="grid grid-cols-12 gap-8">
+  <div class="card col-span-12 p-4">
+    <h2 class="text-xl font-semibold mb-4">Dropshipping Calculadora</h2>
+
+    <!-- Costo del producto con template ref -->
+    <div class="mb-4">
+      <label class="block text-sm font-medium mb-1">Costo del producto (COP)</label>
+      <input
+        #costInput
+        type="text"
+        [value]="costStr"
+        (input)="onCostInput(costInput.value)"
+        class="w-full border rounded p-2"
+        placeholder="Ej. 50.000"
+      />
+    </div>
+
+    <!-- Envío (solo lectura) -->
+    <div class="mb-4">
+      <label class="block text-sm font-medium mb-1">Envío (COP)</label>
+      <input
+        type="text"
+        [value]="shippingCostStr"
+        disabled
+        class="w-full border rounded p-2"
+      />
+    </div>
+
+    <!-- Margen (solo lectura) -->
+    <div class="mb-4">
+      <label class="block text-sm font-medium mb-1">Margen (%)</label>
+      <input
+        type="text"
+        [value]="marginRate * 100"
+        disabled
+        class="w-full border rounded p-2"
+      />
+    </div>
+
+    <!-- Resultado -->
+    <div class="mt-6">
+      <p class="font-semibold">
+        Precio sugerido:
+        <span class="text-2xl">{{ getPrice() | number:'1.0-0' }} COP</span>
+      </p>
+    </div>
+  </div>
+</div>

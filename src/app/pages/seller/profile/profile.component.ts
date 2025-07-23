@@ -21,7 +21,12 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TagModule } from 'primeng/tag';
 import { PaginatorModule } from 'primeng/paginator';
 import { SelectModule } from 'primeng/select';
-import { appConfig } from '../../../config/constants';
+import { Constants } from '../../../config/constants';
+import { ScheduleComponent } from '../schedule/schedule.component';
+import { filter, map } from 'rxjs';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { InputGroupModule } from 'primeng/inputgroup';
+import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 
 @Component({
   selector: 'app-profile',
@@ -36,7 +41,12 @@ import { appConfig } from '../../../config/constants';
     ButtonModule,
     InputTextModule,
     TagModule,
-    PaginatorModule],
+    PaginatorModule,
+    ScheduleComponent,
+    InputNumberModule,
+    InputGroupModule,
+    InputGroupAddonModule
+  ],
   providers: [CartService, ToastService, UserService],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss'
@@ -45,15 +55,20 @@ export class ProfileComponent implements OnInit {
   profileForm!: FormGroup;
   user!: User;
   products: Product[] = [];
-  productLimit = 0;
+  productLimit = 50;
   displayPreview = false;
   selectedProduct!: Product;
   bannerVisible = true;
+
+  email: string = '';
+  phone: string = '';
 
   productForm!: FormGroup;
   displayProductDialog = false;
   isEditMode = false;
   categories: Category[] = [];
+  sellerId: string;
+  role: string = '';
 
   featured = [
     { label: 'Si', value: 'Si' },
@@ -65,7 +80,21 @@ export class ProfileComponent implements OnInit {
     { label: 'Inactivo', value: 'Inactivo' },
   ];
 
-  whatsAppNumber = appConfig.whatsAppNumber;
+  deliveryOptions: string[] = [
+    'Inmediato',
+    // Horas
+    '1 Hora', '6 Horas', '12 Horas', '24 Horas',
+    // Días
+    '1 Día', '2 Días', '7 Días', '15 Días', '30 Días',
+    // Semanas
+    '1 Semana', '2 Semanas',
+    // Mes
+    '1 Mes'
+  ];
+
+  rememberDeliveryTime = false;
+
+  whatsAppNumber = Constants.whatsAppNumber;
 
   constructor(
     private readonly fb: FormBuilder,
@@ -76,7 +105,14 @@ export class ProfileComponent implements OnInit {
     private readonly productService: ProductService,
     private readonly cloudinaryService: CloudinaryService,
     private readonly categoryService: CategoryService
-  ) { }
+  ) {
+    this.sellerId = this.authService.getValueFromToken('userId');
+    this.role = this.authService.getValueFromToken('role');
+
+    if (this.role == 'admin') {
+      this.productLimit = 1000000;
+    }
+  }
 
   ngOnInit(): void {
     this.profileForm = this.fb.group({
@@ -97,16 +133,42 @@ export class ProfileComponent implements OnInit {
     this.loadProducts();
 
     this.productForm.get('tagsArray')!.valueChanges.subscribe((arr: string[]) => {
-      console.log('Tags array changed:', arr);
       this.productForm.get('tags')!.setValue(arr.join(','));
     });
 
-    const limit = this.authService.getValueFromToken('planProductLimit');
-    this.productLimit = limit == 'unlimited' ? -1 : (parseInt(limit, 10) || 0);
+    if (this.role === 'admin') {
+      this.listenDropshippingPrice();
+    }
+
+    //const limit = this.authService.getValueFromToken('planProductLimit');
+    //this.productLimit = limit == 'unlimited' ? -1 : (parseInt(limit, 10) || 0);
   }
 
   onGlobalFilter(table: Table, event: Event) {
     table.filterGlobal((event.target as HTMLInputElement).value, 'contains');
+  }
+
+  private listenDropshippingPrice(): void {
+    this.productForm.get('dropshippingPrice')!
+      .valueChanges
+      .pipe(
+        filter(v => v != null),
+        map(v => Number(v))
+      )
+      .subscribe(dPrice => {
+        const rawPrice = dPrice * 1.2;
+        const rawOrig = dPrice * 1.3;
+
+        const price = Math.ceil(rawPrice / 100) * 100;    // redondea hacia arriba al centenar
+        const originalPrice = Math.ceil(rawOrig / 100) * 100;
+
+        const revenue = +(price - Math.ceil(dPrice / 100) * 100);
+        this.productForm.patchValue({
+          price,
+          originalPrice,
+          revenue
+        }, { emitEvent: false });
+      });
   }
 
   private loadCategories(): void {
@@ -135,14 +197,20 @@ export class ProfileComponent implements OnInit {
       tags: [''],
       tagsArray: [[], Validators.maxLength(5)],
       stock: [null, [Validators.min(0), Validators.max(10000)]],
+      dropshippingPrice: [],
+      dropshippingUrl: [],
+      revenue: [0],
+      maxDeliveryTime: ['Inmediato'],
+      rememberDeliveryTime: [false]
     });
   }
 
   loadSeller(): void {
     this.userService.getUserById(this.authService.getValueFromToken('userId')).subscribe({
       next: (response: User) => {
-        console.log('Seller data:', response);
         this.user = response;
+        this.email = response.email;
+        this.phone = response.phone;
         this.profileForm.patchValue({
           name: response.name,
           description: response.description,
@@ -171,9 +239,9 @@ export class ProfileComponent implements OnInit {
     const updatedSeller: User = {
       ...this.profileForm.value
     };
-    console.log('Updated Seller:', updatedSeller);
-    this.sellerService.updateSeller(updatedSeller).subscribe(res => {
-      this.user = res;
+    this.sellerService.updateSeller(this.sellerId, updatedSeller).subscribe(res => {
+      this.toastService.showInfo('Exito', 'Se actualizó la inforamción de forma exitosa.');
+      localStorage.setItem('token', res.trim());
     });
   }
 
@@ -203,6 +271,10 @@ export class ProfileComponent implements OnInit {
   openNewProductForm(): void {
     // Lógica para abrir formulario de nuevo producto (modal o navegación)
     this.isEditMode = false;
+
+    const maxDeliveryTime = localStorage.getItem('maxDeliveryTime');
+    const rememberDeliveryTime = localStorage.getItem('rememberDeliveryTime');
+
     this.productForm.reset({
       id: null,
       name: '',
@@ -213,6 +285,8 @@ export class ProfileComponent implements OnInit {
       image: '',
       tagsArray: [],
       tags: '',
+      rememberDeliveryTime: rememberDeliveryTime,
+      maxDeliveryTime: maxDeliveryTime
     });
     this.displayProductDialog = true;
   }
@@ -231,6 +305,17 @@ export class ProfileComponent implements OnInit {
 
   saveProduct(): void {
     if (this.productForm.invalid) return;
+
+    // Recordar tiempo de entrega
+    const { maxDeliveryTime, rememberDeliveryTime } = this.productForm.value;
+    if (rememberDeliveryTime) {
+      localStorage.setItem('rememberDeliveryTime', rememberDeliveryTime);
+      localStorage.setItem('maxDeliveryTime', maxDeliveryTime);
+    } else {
+      localStorage.removeItem('rememberDeliveryTime');
+      localStorage.removeItem('maxDeliveryTime');
+    }
+
     const prod = this.productForm.value as Product;
     prod.seller = this.authService.getValueFromToken('userId');
     this.productService.saveOrUpdateProduct(prod).subscribe(() => {
@@ -240,8 +325,14 @@ export class ProfileComponent implements OnInit {
   }
 
   deleteProduct(product: Product): void {
-    this.productService.deleteProduct(product.id).subscribe(() => {
-      this.loadProducts();
+    this.productService.deleteProduct(product.id).subscribe({
+      next: () => {
+        this.toastService.showInfo('Desactivación exitosa', "Se desactivo el producto");
+        this.loadProducts();
+      },
+      error: (err: Error) => {
+        this.toastService.showError('Error', err.message);
+      }
     });
   }
 

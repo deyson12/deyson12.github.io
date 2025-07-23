@@ -1,0 +1,128 @@
+<div class="card w-full mx-auto p-4 sm:p-6">
+  <div class="p-4">
+    <h3 class="text-xl font-semibold mb-4">Recibes pedidos en qué horario?</h3>
+
+    <!-- Selector de modo: 24/7 o personalizado -->
+    <div class="mb-4 flex flex-col sm:flex-row gap-2 sm:gap-4">
+      <label class="flex items-center">
+        <p-radioButton name="mode" value="allDay"
+                       [(ngModel)]="availabilityMode"
+                       (onClick)="onModeChange('allDay')"
+                       inputId="modeAllDay"></p-radioButton>
+        <span class="ml-2">24/7</span>
+      </label>
+      <label class="flex items-center">
+        <p-radioButton name="mode" value="schedule"
+                       [(ngModel)]="availabilityMode"
+                       (onClick)="onModeChange('schedule')"
+                       inputId="modeSchedule"></p-radioButton>
+        <span class="ml-2">Personalizado</span>
+      </label>
+    </div>
+
+    <!-- Tabla solo en modo personalizado -->
+    <ng-container>
+      <div class="overflow-x-auto mb-4">
+        <p-table [value]="daysOfWeek" responsiveLayout="scroll" class="min-w-full">
+          <ng-template pTemplate="header">
+            <tr>
+              <th class="px-2 py-3 text-left">Día</th>
+              <th class="px-2 py-3 text-left">Franja(s)</th>
+              <th class="px-2 py-3 text-right hidden sm:table-cell">Acciones</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-day>
+            <tr>
+              <!-- Día -->
+              <td class="px-2 py-3 align-top">{{ day.label }}</td>
+
+              <!-- Franjas + botones móviles debajo -->
+              <td class="px-2 py-3">
+                <div class="flex flex-wrap gap-1">
+                  <p-chip *ngFor="let slot of availability[day.key]"
+                          [label]="formatTime(slot.start) + ' – ' + formatTime(slot.end)"
+                          removable="true"
+                          (onRemove)="removeSlot(day.key, slot)"
+                          class="m-0.5"></p-chip>
+                </div>
+                <!-- Botones sólo en móvil -->
+                <div class="flex gap-2 mt-2 sm:hidden justify-end">
+                  <button pButton icon="pi pi-plus"
+                          class="p-button-rounded p-button-sm"
+                          (click)="openSlotDialog(day.key)"
+                          title="Agregar"></button>
+                  <button pButton icon="pi pi-clone"
+                          class="p-button-rounded p-button-sm"
+                          (click)="openCopyDialog(day.key)"
+                          title="Duplicar"></button>
+                </div>
+              </td>
+
+              <!-- Botones desktop en columna aparte -->
+              <td class="px-2 py-3 text-right hidden sm:table-cell">
+                <button pButton icon="pi pi-plus"
+                        class="p-button-outlined p-button-sm mr-1 whitespace-nowrap"
+                        (click)="openSlotDialog(day.key)"
+                        title="Agregar"></button>
+                <button pButton icon="pi pi-clone"
+                        class="p-button-outlined p-button-sm whitespace-nowrap"
+                        (click)="openCopyDialog(day.key)"
+                        title="Duplicar"></button>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </ng-container>
+
+    <!-- Botón actualizar -->
+    <ng-container>
+      <button pButton label="Actualizar Disponibilidad" icon="pi pi-refresh"
+              class="w-full sm:w-auto px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark mt-4"
+              (click)="updateSchedule()"></button>
+    </ng-container>
+
+    <!-- Dialogo: Agregar Franja -->
+    <p-dialog header="Agregar franja"
+              [(visible)]="displayDialog"
+              [style]="{ width: '400px' }"
+              [breakpoints]="{ '640px': '90vw' }"
+              appendTo="body">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <p-datepicker [(ngModel)]="newSlot.start"
+                    [ngModelOptions]="{ standalone: true }"
+                    timeOnly="true"
+                    hourFormat="12"
+                    showMeridian="true"
+                    placeholder="Inicio"></p-datepicker>
+        <p-datepicker [(ngModel)]="newSlot.end"
+                    [ngModelOptions]="{ standalone: true }"
+                    timeOnly="true"
+                    hourFormat="12"
+                    showMeridian="true"
+                    placeholder="Fin"></p-datepicker>
+      </div>
+      <div class="p-dialog-footer flex justify-end gap-2">
+        <button pButton label="Cancelar" class="p-button-text" (click)="displayDialog = false"></button>
+        <button pButton label="Agregar franja" (click)="saveSlot()"></button>
+      </div>
+    </p-dialog>
+
+    <!-- Dialogo: Duplicar Franjas -->
+    <p-dialog header="Duplicar franjas"
+              [(visible)]="copyDialogVisible"
+              [style]="{ width: '350px' }"
+              [breakpoints]="{ '640px': '90vw' }"
+              appendTo="body">
+      <p-multiSelect [(ngModel)]="copyTargets"
+                     [options]="daysOfWeek"
+                     optionLabel="label"
+                     placeholder="Selecciona días"
+                     [ngModelOptions]="{ standalone: true }"></p-multiSelect>
+      <div class="p-dialog-footer flex justify-end gap-2 mt-4">
+        <button pButton label="Cancelar" class="p-button-text" (click)="copyDialogVisible = false"></button>
+        <button pButton label="Duplicar" (click)="applyCopy()"></button>
+      </div>
+    </p-dialog>
+  </div>
+</div>

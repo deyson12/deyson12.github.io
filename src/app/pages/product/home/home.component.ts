@@ -13,7 +13,7 @@ import { CartService } from '../../service/cart.service';
 import { AuthService } from '../../service/auth.service';
 import { BannerService } from '../../service/banner.service';
 import { FixedCartComponent } from '../fixed-cart/fixed-cart.component';
-import { appConfig } from '../../../config/constants';
+import { Constants } from '../../../config/constants';
 
 @Component({
   selector: 'app-home',
@@ -34,19 +34,21 @@ export class HomeComponent implements OnInit {
   banners: Banner[] = [];
   itemsCarousel: Product[] = [];
 
-  showBannerGlobal = true;
   showBanner = false;
 
   currentPath: string = '';
 
   plan: string = '';
+  role: string = '';
   days: number;
 
   interval = 3;
 
-  whatsAppNumber = appConfig.whatsAppNumber;
+  whatsAppNumber = Constants.whatsAppNumber;
+  phone = Constants.phone;
 
   noProducts = false;
+  
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -55,6 +57,7 @@ export class HomeComponent implements OnInit {
     private readonly bannerService: BannerService
   ) {
     this.plan = this.authService.getValueFromToken('plan');
+    this.role = this.authService.getValueFromToken('role');
     this.days = this.getDaysRemaining();
   }
 
@@ -76,7 +79,7 @@ export class HomeComponent implements OnInit {
       this.itemsCarousel = data;
     });
 
-    this.showBanner = this.authService.getValueFromToken('role') != 'seller';
+    this.showBanner = this.role != 'seller';
 
   }
 

@@ -1,27 +1,29 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../../service/auth.service';
+import { InvoiceComponent } from "../../admin/invoice/invoice.component";
+import { Constants } from '../../../config/constants';
 
 @Component({
   selector: 'app-payment-help',
-  imports: [],
+  imports: [InvoiceComponent],
   templateUrl: './payment-help.component.html',
   styleUrl: './payment-help.component.scss'
 })
 export class PaymentHelpComponent implements OnInit {
 
   currentPlan: string | null = null;
-  nextPlan = 'Adicional';        // texto para el mensaje de WhatsApp
-  whatsAppNumber = '573136090247';
-  qrCodeUrl = 'https://res.cloudinary.com/dsnijmtqf/image/upload/v1750429659/qr-code_adb3ed.jpg';  // ruta de la imagen QR
-  bankName = 'Bancolombia';
-  accountNumber = '353-860566-07';
+  whatsAppNumber = Constants.whatsAppNumber;
+  
   endDate = '';
+  sellerId: string;
 
-  constructor(private readonly autService: AuthService) { }
+  constructor(private readonly authService: AuthService) {
+    this.sellerId = this.authService.getValueFromToken('userId');
+  }
 
   ngOnInit(): void {
-    this.currentPlan = this.autService.getValueFromToken('plan');
-    this.endDate = this.autService.getValueFromToken('endDate');
+    this.currentPlan = this.authService.getValueFromToken('plan');
+    this.endDate = this.authService.getValueFromToken('endDate');
   }
 
   whatsappLink(type: string): string {

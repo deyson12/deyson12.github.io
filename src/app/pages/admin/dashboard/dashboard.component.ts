@@ -14,59 +14,46 @@ import { Plan } from '../../../models/plan';
 import { Subscription } from '../../../models/subscription';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
-import { DropdownModule } from 'primeng/dropdown';
+import { SelectModule } from 'primeng/select';
 import { UserService } from '../../service/user.service';
 import { CategoryService } from '../../service/category.service';
 import { BannerService } from '../../service/banner.service';
 import { PlanService } from '../../service/plan.service';
-import { Invoice } from '../../../models/invoice';
-import { DatePipe } from '@angular/common';
+import { GenericResponse } from '../../../models/genericResponse';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule, TableModule, InputTextModule, ButtonModule, TagModule, CalendarModule, TabViewModule, FormsModule, IconFieldModule, InputIconModule, DropdownModule],
+  imports: [CommonModule, TableModule, InputTextModule, ButtonModule, TagModule, CalendarModule,
+    TabViewModule, FormsModule, IconFieldModule, InputIconModule, SelectModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  providers: [DatePipe],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
 export class DashboardComponent implements OnInit {
-users: User[] = [];
+  users: User[] = [];
   banners: Banner[] = [];
   categories: Category[] = [];
   plans: Plan[] = [];
   subscriptions: Subscription[] = [];
 
-
-  invoices: Invoice[] = [
-    {
-      id: '123',
-      sellerName: 'Nombre',
-      month: 'Julio 2025'
-    }
-  ];
-
   userStatuses = [
     { label: 'Inicial', value: 'INICIAL', color: 'warn' },
-    { label: 'Pendiente', value: 'PENDIENTE', color: 'info'  },
-    { label: 'Confirmado', value: 'CONFIRMADO', color: 'secondary'  },
-    { label: 'Habilitado', value: 'HABILITADO', color: 'success'  }
+    { label: 'Pendiente', value: 'PENDIENTE', color: 'info' },
+    { label: 'Confirmado', value: 'CONFIRMADO', color: 'secondary' },
+    { label: 'Habilitado', value: 'HABILITADO', color: 'success' },
+    { label: 'Deshabilitado', value: 'DESHABILITADO', color: 'danger' }
   ];
-  
+
   constructor(
     private readonly userService: UserService,
     private readonly categoryService: CategoryService,
     private readonly bannerService: BannerService,
-    private readonly planService: PlanService,
-    private readonly datePipe: DatePipe
+    private readonly planService: PlanService
   ) { }
 
   ngOnInit(): void {
 
-    // Cargados desde BD
-    this.userService.getUsers().subscribe(users => {
-      this.users = users;
-    });
+    this.loadUsers();
 
     this.categoryService.getAllCategories().subscribe(categories => {
       this.categories = categories;
@@ -80,9 +67,15 @@ users: User[] = [];
       this.plans = plans;
 
       this.subscriptions = [
-      { id:'1', user:this.users[0], plan:this.plans[0], startDate:'2025-06-01', endDate:'2025-06-30', isActive:true }
-    ];
+        { id: '1', user: this.users[0], plan: this.plans[0], startDate: '2025-06-01', endDate: '2025-06-30', isActive: true }
+      ];
 
+    });
+  }
+
+  loadUsers() {
+    this.userService.getUsers().subscribe(users => {
+      this.users = users;
     });
   }
 
@@ -90,9 +83,22 @@ users: User[] = [];
     return this.userStatuses.find(s => s.value === status)?.color as 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast';
   }
 
-  toggleUser(user: User): void {
-    user.status = user.status === 'active' ? 'inactive' : 'active';
-    // TODO: Llamar a tu API
+  enable(user: User): void {
+    this.userService.changeStatus(user.id, 'HABILITADO').subscribe({
+        next: (response: GenericResponse) => {
+          console.log(response.code);
+          this.loadUsers();
+        },
+        error: (error) => {
+          console.error(error);
+        }
+      });
+  }
+
+  disable(user: User): void {
+    this.userService.changeStatus(user.id, 'DESHABILITADO').subscribe(() =>
+      this.loadUsers()
+    );
   }
 
   deleteBanner(banner: Banner): void {
@@ -141,20 +147,6 @@ users: User[] = [];
 
   toggleSubscription(sub: Subscription): void {
     sub.isActive = !sub.isActive;
-  }
-
-  getWhatsAppLink(invoice: Invoice): string {
-    // Mensaje crudo con saltos de línea
-    const rawMessage =
-    `Hola ${invoice.sellerName},\n\n` +
-    `Este es un recordatorio de que tienes pendiente la factura *ID: ${invoice.id}* ` +
-    `correspondiente al mes de *${this.datePipe.transform(invoice.month, 'MMMM yyyy')}*.\n\n` +
-    `Por favor, realiza el pago en un plazo máximo de 10 días hábiles. ` +
-    `Si no lo recibimos antes de ese plazo, tu cuenta se deshabilitará temporalmente.\n\n` +
-    `Quedamos atentos a tu confirmación y agradecemos tu confianza. ¡Saludos!`;
-
-    const encoded = encodeURIComponent(rawMessage);
-    return `https://wa.me/573136090247?text=${encoded}`;
   }
 
 }

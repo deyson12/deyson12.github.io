@@ -1,10 +1,11 @@
-<!-- seller-profile.component.html -->
-<div class="card w-full mx-auto p-6">
+@if (seller) {
+
+  <div class="card w-full mx-auto p-6">
     <!-- Sección de perfil -->
     <div class="flex flex-col md:flex-row items-center md:items-start">
-  <ng-container *ngIf="seller.profileImage; else avatarInitial">
+  <ng-container *ngIf="seller.image; else avatarInitial">
     <img
-      [src]="seller.profileImage"
+      [src]="seller.image"
       alt="{{ seller.name }}"
       class="w-32 h-32 rounded-full object-cover mb-4 md:mb-0 md:mr-6"
     />
@@ -23,10 +24,10 @@
       <ng-container *ngFor="let star of [1,2,3,4,5]">
         <i
           class="pi text-yellow-500 text-xl"
-          [ngClass]="star <= seller.rating ? 'pi-star-fill' : 'pi-star'">
+          [ngClass]="star <= 4 ? 'pi-star-fill' : 'pi-star'">
         </i>
       </ng-container>
-      <span class="ml-2">({{ seller.rating }})</span>
+      <span class="ml-2">({{ 4 }})</span>
     </div>
     <!-- Redes sociales -->
     <div class="flex items-center justify-center md:justify-start mt-4 space-x-4 text-2xl">
@@ -49,30 +50,29 @@
 </div>
 
 <!-- Productos destacados -->
-<section class="mb-12 mt-12">
+<!--section class="mb-12 mt-12">
     <h2 class="text-2xl font-bold mb-4">Productos Destacados</h2>
 
     <app-carousel [itemsCarousel]="seller.featuredProducts"></app-carousel>
-</section>
+</section -->
 
 <!-- Todos los productos -->
 <section class="mb-12 mt-12">
     <h2 class="text-2xl font-bold mb-4">Todos los productos</h2>
 
     <div class="grid grid-cols-12 gap-8">
-        @for (product of seller.products; track $index) {
+        @for (product of products; track $index) {
         <app-card class="col-span-12 lg:col-span-6 xl:col-span-4" [product]="product"></app-card>
         }
     </div>
 </section>
 
 <!-- Comentarios de clientes -->
-<section>
+<!--section>
     <h2 class="text-2xl font-bold mb-4">Comentarios de Clientes</h2>
     <div class="space-y-6">
         <div *ngFor="let c of seller.comments" class="card p-4 rounded-lg shadow-sm">
             <div class="flex items-center mb-2">
-                <!-- Avatar con inicial -->
                 <div
                     class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center mr-3 uppercase">
                     {{ c.userName[0] | uppercase }}
@@ -89,4 +89,6 @@
             <p>{{ c.comment }}</p>
         </div>
     </div>
-</section>
+</section -->
+
+}

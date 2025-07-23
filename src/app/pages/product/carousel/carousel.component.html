@@ -71,11 +71,23 @@
           </h4>
 
           <!-- Valoración -->
-          <div class="flex items-center space-x-1 mb-2 text-yellow-500">
+          <!--div class="flex items-center space-x-1 mb-2 text-yellow-500">
             <i class="pi pi-star-fill"></i>
             <span class="text-sm font-semibold"> {{product.stars}} </span>
             <span class="text-xs text-muted-color">({{getSalesDetail(product.sales)}})</span>
-          </div>
+          </div-->
+
+          <div class="flex items-center mt-1 space-x-2 text-sm text-blue-400 mb-2">
+                <i class="pi pi-info-circle"></i>
+                <span class="font-medium">
+                  @if (product.maxDeliveryTime === 'Inmediato') {
+                    Despacho Inmediato
+                  } @else {
+                    Entrega maxima: <strong> {{product.maxDeliveryTime}} </strong>
+                  }
+                  
+                </span>
+              </div>
 
           <!-- Precio actual y tachado -->
           <div class="flex items-baseline space-x-2 mb-2">

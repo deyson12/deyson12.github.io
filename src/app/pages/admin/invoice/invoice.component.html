@@ -1,0 +1,204 @@
+<!-- facturaciones.component.html -->
+<div class="card col-span-12 md:col-span-6">
+    <h2 class="text-xl font-semibold">Facturaciones</h2>
+
+    <!-- Selector de mes/año -->
+    <div class="mt-4 mb-2">
+        <p-datepicker [(ngModel)]="selectedMonth" view="month" dateFormat="MM yy" [monthNavigator]="true"
+            [yearNavigator]="true" yearRange="2020:2030" (onSelect)="onMonthChange($event)" [locale]="es">
+        </p-datepicker>
+    </div>
+
+    <p-tabs [value]="activeTab">
+    <p-tablist>
+        <p-tab [value]="0">Pendientes ({{ pendingInvoices.length }})</p-tab>
+        <p-tab [value]="1">Pagadas ({{ paidInvoices.length }})</p-tab>
+    </p-tablist>
+    <p-tabpanels>
+        <p-tabpanel [value]="0">
+            <div class="overflow-x-auto mt-4">
+                <table class="min-w-full divide-y divide-gray-200 responsive-table">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                ID Factura
+                            </th>
+                            <th *ngIf="!sellerId" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Vendedor
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Mes
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Total
+                            </th>
+                            <th
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
+                                % Comisión
+                            </th>
+                            <th
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
+                                Monto Comisión
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Acción
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr *ngFor="let invoice of pendingInvoices">
+                            <td data-label="ID Factura" class="px-6 py-4 whitespace-nowrap">
+                                {{ invoice.id | slice:0:8 }}
+                            </td>
+                            <td *ngIf="!sellerId" data-label="Vendedor" class="px-6 py-4 whitespace-nowrap">
+                                {{ invoice.sellerName }}
+                            </td>
+                            <td data-label="Mes" class="px-6 py-4 whitespace-nowrap">
+                                {{ invoice.billingMonth | date:'MMMM yyyy' }}
+                            </td>
+                            <td data-label="Total" class="px-6 py-4 whitespace-nowrap">
+                                {{ invoice.orderTotal | currency:'':'symbol':'1.0-0' }}
+                            </td>
+                            <td data-label="% Comisión" class="px-6 py-4 whitespace-nowrap hidden sm:table-cell">
+                                {{ invoice.commissionRate }} %
+                            </td>
+                            <td data-label="Monto Comisión" class="px-6 py-4 whitespace-nowrap hidden sm:table-cell">
+                                {{ invoice.commissionAmount | currency:'':'symbol':'1.0-0' }}
+                            </td>
+                            <td data-label="Acción" class="px-6 py-4 whitespace-nowrap space-x-1 text-right">
+                                @if (!sellerId) {
+                                <!-- WhatsApp -->
+                                <a [href]="getWhatsAppLink(invoice)" target="_blank"
+                                    class="inline-flex items-center px-3 py-1 border bg-green-600 border-green-500 text-sm font-medium rounded hover:bg-green-500">
+                                    <i class="pi pi-whatsapp text-white"></i>
+                                </a>
+                                <!-- Reenviar por email -->
+                                <button (click)="resendByEmail(invoice)"
+                                    class="inline-flex items-center px-3 py-1 border bg-blue-600 border-blue-500 text-sm font-medium rounded hover:bg-blue-500">
+                                    <i class="pi pi-envelope text-white"></i>
+                                </button>
+                                <!-- Marcar como pagada -->
+                                <button (click)="markAsPaid(invoice)"
+                                    class="inline-flex items-center px-3 py-1 border bg-yellow-600 border-yellow-500 text-sm font-medium rounded hover:bg-yellow-500">
+                                    <i class="pi pi-dollar text-white"></i>
+                                </button>
+                                } @else {
+                                <!-- Pagar -->
+                                <button (click)="payInvoice(invoice)"
+                                    class="inline-flex items-center px-3 py-1 border bg-yellow-600 border-yellow-500 text-sm font-medium rounded hover:bg-yellow-500">
+                                    <i class="pi pi-dollar text-white"></i>
+                                </button>
+                                }
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </p-tabpanel>
+        <p-tabpanel [value]="1">
+            <div class="overflow-x-auto mt-4">
+                <table class="min-w-full divide-y divide-gray-200 responsive-table">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                ID Factura
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Vendedor
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Mes
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Acción
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr *ngFor="let invoice of paidInvoices">
+                            <td data-label="ID Factura" class="px-6 py-4 whitespace-nowrap">
+                                {{ invoice.id | slice:0:8 }}
+                            </td>
+                            <td data-label="Vendedor" class="px-6 py-4 whitespace-nowrap">
+                                {{ invoice.sellerName }}
+                            </td>
+                            <td data-label="Mes" class="px-6 py-4 whitespace-nowrap">
+                                {{ invoice.billingMonth | date:'MMMM yyyy' }}
+                            </td>
+                            <td data-label="Acción" class="px-6 py-4 whitespace-nowrap text-right">
+                                <button (click)="viewInvoice(invoice)"
+                                    class="inline-flex items-center px-3 py-1 bg-gray-600 hover:bg-gray-500 text-white rounded">
+                                    <i class="pi pi-eye mr-1"></i>
+                                    <span class="sr-only">Ver</span>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </p-tabpanel>
+    </p-tabpanels>
+</p-tabs>
+
+</div>
+
+<p-dialog header="Términos y Condiciones" [(visible)]="displayPaymentForm" [modal]="true" [style]="{ width: '600px' }"
+    [contentStyle]="{ 'max-height': '70vh', overflow: 'auto' }" [closeOnEscape]="true" (onHide)="closePaymentForm()">
+    <div class="p-4">
+        <!-- Contenedor principal: dos columnas en desktop, una en móvil -->
+        <div class="flex flex-col md:flex-row">
+            <!-- Columna izquierda: datos del banco -->
+            <div class="w-full md:w-1/2 px-4">
+                <h3 class="text-lg font-semibold mb-3">Datos bancarios</h3>
+                <p class="mb-2">
+                    <strong>Banco:</strong> {{ bankName }}
+                </p>
+                <p class="mb-2">
+                    <strong>Número de cuenta:</strong> {{ accountNumber }}
+                </p>
+                <p>
+                    <strong>Tipo de cuenta:</strong> Ahorros
+                </p>
+            </div>
+
+            <!-- Columna derecha: QR, botones de descarga y ayuda -->
+            <div class="w-full md:w-1/2 px-4 flex flex-col items-center">
+                <img [src]="qrCodeUrl" alt="Código QR de pago" class="w-64 h-64 mb-2" />
+                <p class="text-center text-lg mb-4">
+                    Escanea el código para realizar el pago
+                </p>
+                <div class="flex space-x-2">
+                    <!-- Botón para descargar el QR -->
+                    <a [href]="qrCodeUrl" target="_blank" download="qr-pago.png"
+                        class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-700 transition">
+                        Descargar QR
+                    </a>
+                    <!-- Botón de ayuda -->
+                    <a [href]="whatsappHelpLink" target="_blank"
+                        class="inline-flex items-center justify-center bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700 transition">
+                        <i class="pi pi-whatsapp text-white mr-2"></i>
+                        Ayuda
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Guía de pago -->
+        <div class="mt-6 p-4 bg-gray-100 rounded">
+            <h4 class="font-semibold mb-2">Guía de pago</h4>
+            <ol class="list-decimal list-inside space-y-1">
+                <li>
+                    Paga el monto <strong> {{invoice?.commissionAmount | currency:'':'symbol':'1.0-0'}} </strong>
+                    escaneando el código QR.
+                </li>
+                <li>
+                    Envía el comprobante al número de celular:
+                    <strong> {{phone}} </strong>.
+                </li>
+                <li>
+                    Espera a que el pago sea verificado.
+                </li>
+            </ol>
+        </div>
+    </div>
+</p-dialog>

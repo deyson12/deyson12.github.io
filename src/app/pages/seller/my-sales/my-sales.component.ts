@@ -45,6 +45,14 @@ export class MySalesComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.initAll();
+  }
+
+  refreshAll(): void {
+    this.initAll();
+  }
+
+  initAll() {
     this.initCharts();
 
     this.sellerService.getSalesSumary(this.authService.getValueFromToken('userId')).subscribe({
@@ -59,7 +67,6 @@ export class MySalesComponent implements OnInit, OnDestroy {
         console.error('Error al obtener el resumen de ventas:', error);
       }
     });
-
   }
 
   initCharts() {

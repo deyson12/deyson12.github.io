@@ -1,39 +1,131 @@
 import { Routes } from '@angular/router';
-import { HomeComponent } from './product/home/home.component';
-import { CartComponent } from './product/cart/cart.component';
-import { ProductDetailComponent } from './product/product-detail/product-detail.component';
-import { SellerProfileComponent } from './product/seller-profile/seller-profile.component';
-import { ProfileComponent } from './seller/profile/profile.component';
-import { MySalesComponent } from './seller/my-sales/my-sales.component';
-import { PaymentHelpComponent } from './seller/payment-help/payment-help.component';
-import { CreateSellerComponent } from './seller/create-seller/create-seller.component';
-import { LogoutComponent } from './seller/logout/logout.component';
-import { TestComponent } from './admin/test/test.component';
-import { DashboardComponent } from './admin/dashboard/dashboard.component';
-import { AllFilteredComponent } from './product/all-filtered/all-filtered.component';
 
 export default [
-    { path: 'all', component: HomeComponent },
-    { path: 'food-and-drinks', component: HomeComponent },
-    { path: 'fashion', component: HomeComponent },
-    { path: 'electronics', component: HomeComponent },
-    { path: 'home', component: HomeComponent },
-    { path: 'health-and-beauty', component: HomeComponent },
-    { path: 'sports-and-outdoors', component: HomeComponent },
-    { path: 'automotive', component: HomeComponent },
-    { path: 'toys-and-entertainment', component: HomeComponent },
-    { path: 'pets', component: HomeComponent },
-    { path: 'services', component: HomeComponent },
-    { path: 'cart', component: CartComponent },
-    { path: 'product-detail/:uuid', component: ProductDetailComponent },
-    { path: 'all-filtered/:q', component: AllFilteredComponent },
-    { path: 'seller-profile', component: SellerProfileComponent },
-    { path: 'profile', component: ProfileComponent },
-    { path: 'my-sales', component: MySalesComponent },
-    { path: 'help', component: PaymentHelpComponent },
-    { path: 'logout', component: LogoutComponent },
-    { path: 'create-seller', component: CreateSellerComponent },
-    { path: 'test', component: TestComponent },
-    { path: 'dashboard', component: DashboardComponent },
-    { path: '**', redirectTo: '/pages/all' }
+  {
+    path: 'all',
+    loadComponent: () =>
+      import('./product/home/home.component').then(m => m.HomeComponent)
+  },
+  {
+    path: 'food-and-drinks',
+    loadComponent: () =>
+      import('./product/home/home.component').then(m => m.HomeComponent)
+  },
+  {
+    path: 'fashion',
+    loadComponent: () =>
+      import('./product/home/home.component').then(m => m.HomeComponent)
+  },
+  {
+    path: 'electronics',
+    loadComponent: () =>
+      import('./product/home/home.component').then(m => m.HomeComponent)
+  },
+  {
+    path: 'home',
+    loadComponent: () =>
+      import('./product/home/home.component').then(m => m.HomeComponent)
+  },
+  {
+    path: 'health-and-beauty',
+    loadComponent: () =>
+      import('./product/home/home.component').then(m => m.HomeComponent)
+  },
+  {
+    path: 'sports-and-outdoors',
+    loadComponent: () =>
+      import('./product/home/home.component').then(m => m.HomeComponent)
+  },
+  {
+    path: 'automotive',
+    loadComponent: () =>
+      import('./product/home/home.component').then(m => m.HomeComponent)
+  },
+  {
+    path: 'toys-and-entertainment',
+    loadComponent: () =>
+      import('./product/home/home.component').then(m => m.HomeComponent)
+  },
+  {
+    path: 'pets',
+    loadComponent: () =>
+      import('./product/home/home.component').then(m => m.HomeComponent)
+  },
+  {
+    path: 'services',
+    loadComponent: () =>
+      import('./product/home/home.component').then(m => m.HomeComponent)
+  },
+  {
+    path: 'cart',
+    loadComponent: () =>
+      import('./product/cart/cart.component').then(m => m.CartComponent)
+  },
+  {
+    path: 'product-detail/:uuid',
+    loadComponent: () =>
+      import('./product/product-detail/product-detail.component').then(m => m.ProductDetailComponent)
+  },
+  {
+    path: 'all-filtered/:q',
+    loadComponent: () =>
+      import('./product/all-filtered/all-filtered.component').then(m => m.AllFilteredComponent)
+  },
+  {
+    path: 'seller-profile',
+    loadComponent: () =>
+      import('./product/seller-profile/seller-profile.component').then(m => m.SellerProfileComponent)
+  },
+  {
+    path: 'profile',
+    loadComponent: () =>
+      import('./seller/profile/profile.component').then(m => m.ProfileComponent)
+  },
+  {
+    path: 'my-sales',
+    loadComponent: () =>
+      import('./seller/my-sales/my-sales.component').then(m => m.MySalesComponent)
+  },
+  {
+    path: 'payment',
+    loadComponent: () =>
+      import('./seller/payment-help/payment-help.component').then(m => m.PaymentHelpComponent)
+  },
+  {
+    path: 'logout',
+    loadComponent: () =>
+      import('./seller/logout/logout.component').then(m => m.LogoutComponent)
+  },
+  {
+    path: 'create-seller',
+    loadComponent: () =>
+      import('./seller/create-seller/create-seller.component').then(m => m.CreateSellerComponent)
+  },
+  {
+    path: 'invoice',
+    loadComponent: () =>
+      import('./admin/invoice/invoice.component').then(m => m.InvoiceComponent)
+  },
+  {
+    path: 'test',
+    loadComponent: () =>
+      import('./admin/test/test.component').then(m => m.TestComponent)
+  },
+  {
+    path: 'dashboard',
+    loadComponent: () =>
+      import('./admin/dashboard/dashboard.component').then(m => m.DashboardComponent)
+  },
+  {
+    path: 'cache',
+    loadComponent: () =>
+      import('./admin/cache/cache.component').then(m => m.CacheComponent)
+  },
+  {
+    path: 'dropshipping',
+    loadComponent: () =>
+      import('./admin/dropshipping/dropshipping.component').then(m => m.DropshippingComponent)
+  },
+  { path: '**', redirectTo: '/pages/all' }
 ] as Routes;
+

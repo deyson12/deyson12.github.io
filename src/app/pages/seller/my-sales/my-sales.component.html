@@ -1,7 +1,16 @@
 <p-fluid class="grid grid-cols-12 gap-8">
+  <!-- Botón de refrescar -->
+  <div class="col-span-12 flex">
+    <button type="button"
+      class="bg-orange-500 hover:bg-orange-600 text-white rounded-full px-4 py-2 text-sm shadow-md flex items-center"
+      (click)="refreshAll()">
+      <i class="pi pi-refresh mr-2"></i> Refrescar
+    </button>
+  </div>
+
   <!-- bloque de tarjetas -->
   <div class="col-span-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-    
+
     <!-- Ventas del día -->
     <div class="card flex items-center justify-between p-4 col-span-1 card-data">
       <div>
@@ -62,13 +71,13 @@
   <!-- Gráficos -->
   <div class="col-span-12 2xl:col-span-6">
     <div class="card">
-      <div class="font-semibold text-xl mb-4">Ventas Mensuales ultimos 6 meses</div>
+      <div class="font-semibold text-xl mb-4">Ventas Mensuales últimos 6 meses</div>
       <p-chart type="line" [data]="lineData" [options]="lineOptions"></p-chart>
     </div>
   </div>
   <div class="col-span-12 2xl:col-span-6">
     <div class="card">
-      <div class="font-semibold text-xl mb-4">Ventas por Producto de los ultimos 6 meses</div>
+      <div class="font-semibold text-xl mb-4">Ventas por Producto de los últimos 6 meses</div>
       <p-chart type="bar" [data]="barData" [options]="barOptions"></p-chart>
     </div>
   </div>

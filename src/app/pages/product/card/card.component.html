@@ -1,6 +1,6 @@
 <ng-container *ngIf="product; else skeletonCard">
   <a [class.disabled]="!puedeNavegar" [routerLink]="puedeNavegar ? ['/pages/product-detail', product.id] : null"
-    [state]="{ product: product }" (click)="!puedeNavegar && $event.preventDefault()" class="block">
+    [state]="{ product: product }" (click)="!puedeNavegar && $event.preventDefault()" class="block h-full">
     <div class="card mb-0 p-4 rounded-border shadow-sm hover:shadow-md transition-shadow h-full flex">
       <!-- Imagen + badge de descuento -->
       <div class="relative w-40 h-full flex-shrink-0 mr-4">
@@ -49,10 +49,22 @@
                 <span *ngIf="product.description && product.description.length > 100">…</span>
               </p>
 
-              <div class="flex items-center mt-1 space-x-2 text-sm">
+              <!--div class="flex items-center mt-1 space-x-2 text-sm">
                 <i class="pi pi-star-fill text-yellow-500"></i>
                 <span class="font-medium">
                   {{ product.stars }} ({{ getSalesDetail(product.sales) }})
+                </span>
+              </div-->
+
+              <div class="flex items-center mt-1 space-x-2 text-sm text-blue-400">
+                <i class="pi pi-info-circle"></i>
+                <span class="font-medium">
+                  @if (product.maxDeliveryTime === 'Inmediato') {
+                    Despacho Inmediato
+                  } @else {
+                    Entrega maxima: <strong> {{product.maxDeliveryTime}} </strong>
+                  }
+                  
                 </span>
               </div>
             </div>

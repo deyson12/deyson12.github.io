@@ -1,56 +1,3 @@
-<div class="grid grid-cols-12 gap-8">
-  <div class="card col-span-12 md:col-span-6">
-    <h2 class="text-xl font-semibold">Limpiar Cache</h2>
-
-
-  </div>
-
-  <div class="card col-span-12 md:col-span-6">
-  <h2 class="text-xl font-semibold">Facturaciones</h2>
-
-  <div class="overflow-x-auto mt-4">
-    <table class="min-w-full divide-y divide-gray-200">
-      <thead class="bg-gray-50">
-        <tr>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-            ID Factura
-          </th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-            Vendedor
-          </th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-            Mes de Facturación
-          </th>
-          <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-            Acción
-          </th>
-        </tr>
-      </thead>
-      <tbody class="bg-white divide-y divide-gray-200">
-        <tr *ngFor="let invoice of invoices">
-          <td class="px-6 py-4 whitespace-nowrap">{{ invoice.id }}</td>
-          <td class="px-6 py-4 whitespace-nowrap">{{ invoice.sellerName }}</td>
-          <td class="px-6 py-4 whitespace-nowrap">
-            {{ invoice.month | date:'MMMM yyyy' }}
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-right">
-
-            <a
-              [href]="getWhatsAppLink(invoice)"
-              target="_blank"
-              class="inline-flex items-center px-3 py-1 border bg-green-600 border-green-500 text-green-500 text-sm font-medium rounded hover:bg-green-50"
-            >
-            <span><i class="pi pi-whatsapp text-white"></i></span>
-          </a>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-
-</div>
-
 <div class="card mb-8">
   <!-- admin-dashboard.component.html -->
 
@@ -93,8 +40,8 @@
           <th>
             <p-columnFilter field="status" matchMode="equals" [showMenu]="false">
               <ng-template #filter let-value let-filter="filterCallback">
-                <p-dropdown [options]="userStatuses" optionLabel="label" optionValue="value" placeholder="Estado"
-                  [ngModel]="value" (ngModelChange)="filter($event)" [showClear]="true"></p-dropdown>
+                <p-select [options]="userStatuses" optionLabel="label" optionValue="value" placeholder="Estado"
+                  [ngModel]="value" (ngModelChange)="filter($event)" [showClear]="true"></p-select>
               </ng-template>
             </p-columnFilter>
           </th>
@@ -110,8 +57,15 @@
           <td>{{ user.role }}</td>
           <td><p-tag [value]="user.status" [severity]="getSeverity(user.status)"></p-tag></td>
           <td>
-            <button pButton icon="pi pi-power-off" class="p-button-text p-button-sm"
-              (click)="toggleUser(user)"></button>
+            <button (click)="enable(user)" *ngIf="user.status === 'CONFIRMADO' || user.status === 'DESHABILITADO'"
+              class="inline-flex items-center px-3 py-1 border bg-green-600 border-green-500 text-sm font-medium rounded hover:bg-green-500">
+              <i class="pi pi-check text-white"></i>
+            </button> &nbsp;
+
+            <button (click)="disable(user)" *ngIf="user.status === 'CONFIRMADO' || user.status === 'HABILITADO'"
+              class="inline-flex items-center px-3 py-1 border bg-red-600 border-red-500 text-sm font-medium rounded hover:bg-red-500">
+              <i class="pi pi-minus-circle text-white"></i>
+            </button>
           </td>
         </tr>
       </ng-template>

@@ -54,12 +54,23 @@
       </p>
 
       <!-- Valoración -->
-      <div class="flex items-center mb-4">
-
+      <!--div class="flex items-center mb-4">
         <span class="ml-2 text-blue-500 font-medium">
           <i class="pi pi-star-fill text-yellow-500"></i> ({{ product.stars }})
         </span>
-      </div>
+      </div-->
+
+      <div class="flex items-center mt-1 space-x-2 text-sm text-blue-400 mb-4">
+                <i class="pi pi-info-circle"></i>
+                <span class="font-medium">
+                  @if (product.maxDeliveryTime === 'Inmediato') {
+                    Despacho Inmediato
+                  } @else {
+                    Entrega maxima: <strong> {{product.maxDeliveryTime}} </strong>
+                  }
+                  
+                </span>
+              </div>
 
       <!-- Precio y descuento -->
       <div class="flex items-baseline space-x-3 mb-4">

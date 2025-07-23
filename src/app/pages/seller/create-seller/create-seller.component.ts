@@ -17,10 +17,11 @@ import { DialogModule } from 'primeng/dialog';
 import { ResendCodeResponse } from '../../../models/resendCodeResponse';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
-import { appConfig } from '../../../config/constants';
+import { Constants } from '../../../config/constants';
 import { PlanService } from '../../service/plan.service';
 import { Plan } from '../../../models/plan';
 import { environment } from '../../../../environments/environment';
+import { ScheduleComponent } from '../schedule/schedule.component';
 
 @Component({
   selector: 'app-create-seller',
@@ -35,7 +36,8 @@ import { environment } from '../../../../environments/environment';
     CheckboxModule,
     DialogModule,
     IconFieldModule,
-    InputIconModule
+    InputIconModule,
+    ScheduleComponent
   ],
   providers: [ToastService],
   templateUrl: './create-seller.component.html',
@@ -48,8 +50,8 @@ export class CreateSellerComponent implements OnInit, OnDestroy {
   role: string | null = null;
   isBuyer: boolean = false;
   displayTerms = false;
-  tycEmail = appConfig.email;
-  tycPhone = appConfig.phone;
+  tycEmail = Constants.email;
+  tycPhone = Constants.phone;
 
   uuid: string = uuidv4();
   userId: string | null = null;
@@ -79,7 +81,6 @@ export class CreateSellerComponent implements OnInit, OnDestroy {
     private readonly sellerService: SellerService,
     private readonly toastService: ToastService,
     private readonly cloudinaryService: CloudinaryService,
-    private readonly router: Router,
     private readonly planService: PlanService
   ) {
     this.userId = this.authService.getValueFromToken('userId');
@@ -91,7 +92,7 @@ export class CreateSellerComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
 
     if (this.role === 'seller') {
-      if (this.authService.getValueFromToken('status') != 'CONFIRMADO') {
+      if (this.authService.getValueFromToken('status') == 'PENDIENTE') {
         this.activeStep = 2;
         this.startTimer();
       } else {
@@ -118,7 +119,8 @@ export class CreateSellerComponent implements OnInit, OnDestroy {
           { value: this.isBuyer ? this.authService.getValueFromToken('sub') : '', disabled: this.isBuyer },
           [Validators.required, Validators.email]
         ],
-        phone: ['', [Validators.required, Validators.pattern(/^\(\d{3}\) \d{3}-\d{4}$/)]],
+        phone: [{ value: this.isBuyer ? this.authService.getValueFromToken('phone').replace('+57','') : '', disabled: this.isBuyer }, 
+          [Validators.required, Validators.pattern(/^\(\d{3}\) \d{3}-\d{4}$/)]],
         password: ['', this.isBuyer ? [] : [Validators.required, Validators.minLength(6)]],
         confirmPassword: ['', this.isBuyer ? [] : [Validators.required]],
         termsAccepted: [false, Validators.requiredTrue]

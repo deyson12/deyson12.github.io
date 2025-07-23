@@ -18,4 +18,8 @@ export interface Product {
     stock?: number;
     images?: string[];
     seller: string;
+    dropshippingUrl: string;
+    dropshippingPrice: number;
+    revenue: number;
+    maxDeliveryTime: string;
 }

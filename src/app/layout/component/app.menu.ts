@@ -37,6 +37,9 @@ export class AppMenu implements OnInit {
       label: 'Administrador',
       items: [
         { label: 'Dashboard', icon: 'mdi:view-grid', routerLink: ['/pages/dashboard'] },
+        { label: 'Facturas', icon: 'icon-park-outline:bill', routerLink: ['/pages/invoice'] },
+        { label: 'Cache', icon: 'mdi:cached', routerLink: ['/pages/cache'] },
+        { label: 'Dropshipping ', icon: 'hugeicons:package', routerLink: ['/pages/dropshipping'] },
         { label: 'Pruebas', icon: 'mdi:test-tube', routerLink: ['/pages/test'] },
       ]
     };
@@ -46,7 +49,7 @@ export class AppMenu implements OnInit {
       items: [
         { label: 'Mi perfil', icon: 'mdi:account', routerLink: ['/pages/profile'] },
         { label: 'Mis ventas', icon: 'mdi:cash-register', routerLink: ['/pages/my-sales'] },
-        { label: 'Plan y Pagos', icon: 'mdi:help-circle', routerLink: ['/pages/help'] },
+        { label: 'Pagos', icon: 'mdi:currency-usd', routerLink: ['/pages/payment'] },
         { label: 'Cerrar sesión', icon: 'mdi:logout', routerLink: ['/pages/logout'] }
       ]
     };

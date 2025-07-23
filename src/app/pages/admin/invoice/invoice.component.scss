@@ -1,0 +1,47 @@
+@media (max-width: 640px) {
+  .responsive-table thead,
+  .responsive-table thead th {
+    display: none !important;
+  }
+
+  .responsive-table,
+  .responsive-table tbody,
+  .responsive-table tr,
+  .responsive-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .responsive-table tr {
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 0.5rem;
+  }
+
+  /* Alineamos todo a la izquierda y desplazamos el contenido
+     para que no choque con la pseudo-etiqueta */
+  .responsive-table td {
+    padding: 0.5rem 0.75rem 0.5rem calc(45% + 1rem);
+    position: relative;
+    text-align: left !important;
+  }
+
+  .responsive-table td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: 600;
+    text-align: left;
+    width: 45%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/* Asegúrate también de que en escritorio los <th> queden text-left */
+.responsive-table thead th {
+  text-align: left !important;
+}

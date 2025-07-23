@@ -1,19 +1,27 @@
-<!-- En tu componente (por ejemplo header.component.html) -->
-@if (showBannerGlobal) {
+@if (showBanner || role === 'admin') {
 <ng-container>
   <div class="w-full bg-orange-500 text-white flex items-center justify-between px-4 py-2 shadow-md z-50 font-semibold">
-    @if (showBanner) {
     <div class="text-sm">
-      👉 ¿Quieres vender algún producto o servicio con nosotros? <a routerLink="/pages/create-seller"
-        class="font-semibold underline hover:text-orange-200"><b>Haz clic aqui</b></a> o
+      👉 ¿Quieres vender algún producto o servicio aqui? <a routerLink="/pages/create-seller"
+        class="font-semibold underline hover:text-orange-200"><b>Registrate</b></a> o
       Escríbenos al
       <a [href]="whatsappLink()" target="_blank" rel="noopener"
-        class="font-semibold underline hover:text-orange-200"><b>WhatsApp: 313 6090247</b></a>
+        class="font-semibold underline hover:text-orange-200"><b>WhatsApp: {{phone}} </b></a>
     </div>
-    } @else {
+    <button type="button" class="p-1 focus:outline-none" aria-label="Cerrar banner">
+      <i class="pi pi-times text-xl"></i>
+    </button>
+  </div>
+  <!-- Para que el contenido no quede oculto tras el banner: -->
+  <div class="h-12"></div>
+</ng-container>
+}
+@if (false && (!showBanner || role === 'admin')) {
+<ng-container>
+  <div class="w-full bg-orange-500 text-white flex items-center justify-between px-4 py-2 shadow-md z-50 font-semibold">
     <div class="text-sm">
       ⚠️
-      <a routerLink="/pages/help" class="font-semibold hover:text-orange-200">
+      <a routerLink="/pages/payment" class="font-semibold hover:text-orange-200">
         <span *ngIf="days > 0">
           Tu plan “{{ plan }}” vence en {{ days }} días, renovar aquí.
         </span>
@@ -25,8 +33,7 @@
         </span>
       </a>
     </div>
-    }
-    <button type="button" (click)="showBannerGlobal = false" class="p-1 focus:outline-none" aria-label="Cerrar banner">
+    <button type="button" (click)="showBanner = false" class="p-1 focus:outline-none" aria-label="Cerrar banner">
       <i class="pi pi-times text-xl"></i>
     </button>
   </div>

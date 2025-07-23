@@ -30,6 +30,17 @@
                             'bg-primary text-primary-contrast border-primary': value <= activeStep,
                             'border-surface': value > activeStep
                         }">
+                        <i class="pi pi-calendar"></i>
+                    </span>
+                </ng-template>
+            </p-step>
+
+            <p-step [value]="4" class="flex flex-row flex-auto gap-2">
+                <ng-template #content let-activateCallback="activateCallback" let-value="value">
+                    <span class="rounded-full border-2 w-12 h-12 inline-flex items-center justify-center" [ngClass]="{
+                            'bg-primary text-primary-contrast border-primary': value <= activeStep,
+                            'border-surface': value > activeStep
+                        }">
                         <i class="pi pi-id-card"></i>
                     </span>
                 </ng-template>
@@ -101,7 +112,7 @@
                                 <!-- Celular con InputMask de PrimeNG -->
                                 <div class="col-span-1">
                                     <label for="phone"
-                                        class="block text-sm font-medium text-gray-700 mb-1">Celular</label>
+                                        class="block text-sm font-medium text-gray-700 mb-1">Celular (Aqui te llegaran tus pedidos)</label>
                                     <div class="flex items-center border-none">
                                         <div
                                             class="border border-gray-300 bg-white mr-1 h-[32px] content-center rounded-[0.25rem]">
@@ -117,11 +128,11 @@
                                         </div>
                                         <p-inputMask id="phone" formControlName="phone" mask="(999) 999-9999"
                                             class="w-full rounded-[0.25rem]"
-                                            styleClass="w-full rounded-[0.25rem] focus:outline-none px-2 py-1"></p-inputMask>
+                                            styleClass="w-full rounded-[0.25rem] focus:outline-none px-2 py-1" [disabled]="isBuyer"></p-inputMask>
                                     </div>
                                     <small *ngIf="phone.touched && phone.invalid" class="text-red-600 text-xs">
                                         <span *ngIf="phone.errors?.['required']">El teléfono es obligatorio.</span>
-                                        <span *ngIf="phone.errors?.['pattern']">Formato válido: (313) 123-5678.</span>
+                                        <span *ngIf="phone.errors?.['pattern']">Formato válido: (3XX) XXX-XXXX.</span>
                                     </small>
                                 </div>
 
@@ -244,14 +255,25 @@
                     <div class="flex pt-6 justify-between">
                         <p-button (onClick)="activateCallback(1)" label="Volver" severity="secondary"
                             icon="pi pi-arrow-left" />
-                        <p-button [disabled]="!this.completeVerification"
-                            (onClick)="activateCallback(3); completeSellerCreation();" label="Siguiente"
-                            icon="pi pi-arrow-right" iconPos="right" />
+                        <p-button [disabled]="!this.completeVerification" (onClick)="activateCallback(3); completeSellerCreation();"
+                            label="Siguiente" icon="pi pi-arrow-right" iconPos="right" />
                     </div>
                 </ng-template>
             </p-step-panel>
 
             <p-step-panel [value]="3">
+                <ng-template #content let-activateCallback="activateCallback">
+                    <div class="flex flex-col gap-2 mx-auto">
+                        <app-schedule></app-schedule>
+                    </div>
+                    <div class="flex pt-6 justify-between">
+                        <p-button (onClick)="activateCallback(4);"
+                            label="Siguiente" icon="pi pi-arrow-right" iconPos="right" />
+                    </div>
+                </ng-template>
+            </p-step-panel>
+
+            <p-step-panel [value]="4">
                 <ng-template #content let-activateCallback="activateCallback">
                     <div class="flex flex-col gap-2 mx-auto" style="min-height: 16rem; max-width: 24rem">
                         <div class="flex flex-col items-center justify-center text-center p-4 bg-gray-50">
@@ -270,13 +292,16 @@
                             </h1>
                             <p class="mt-2 text-lg text-gray-600">
                                 Serás contactado al celular {{sellerForm.get('phone')?.value}} y en un plazo máximo de
-                                24 horas serás habilitado como vendedor.
+                                24 horas serás habilitado como vendedor. <br> Por lo pronto puedes comenzar a publicar tus 
+                                productos y en cuanto seas habilitado te notificaremos y tus productos seran visibles 
+                                para que los clientes puedan comenzar a realizar pedidos.
                             </p>
 
                             <div>
-                                <a [routerLink]="['/pages/all']"
-                                    class="inline-block px-6 py-3 bg-blue-600 text-white font-semibold rounded-full shadow hover:bg-blue-700 transition">
-                                    Explorar productos
+                                <a [routerLink]="['/pages/profile']"
+                                    class="inline-block px-6 py-3 font-semibold shadow transition 
+                                    bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 focus:outline-none">
+                                    Comenzar a publicar mis productos
                                 </a>
                             </div>
                         </div>
@@ -342,45 +367,37 @@
                     imágenes con derechos reservados, Ventas 7 Lunas podrá eliminar el anuncio inmediatamente.</li>
             </ul>
 
-            <h3 class="text-xl font-semibold mt-4 mb-2">5. Precios, Suscripciones y Pagos</h3>
+            <h3 class="text-xl font-semibold mt-4 mb-2">5. Precios y Pagos</h3>
             <ul class="list-disc list-inside mb-4">
-                <li><strong>Planes:</strong>
-                    <!--ul class="list-circle list-inside ml-6 mb-2">
-                        <li><strong>Básico:</strong> gratuito por 1 mes, hasta 5 productos.</li>
-                        <li><strong>Preferido:</strong> COP 30 000/mes, hasta 15 productos y destacado en página
-                            principal.</li>
-                        <li><strong>Premium:</strong> COP 50 000/mes, productos ilimitados, 1 destacado y prioridad
-                            en búsquedas.</li>
-                    </ul-->
+                <!--li><strong>Planes:</strong>
                     <ul class="list-circle list-inside ml-6 mb-2">
                         @for (plan of plans; track $index) {
                         <li>
-                            <strong>{{plan.name}}:</strong> 
+                            <strong>{{plan.name}}:</strong>
                             <span *ngIf="plan.name == 'Trial'">Gratuito por 1 mes</span>
                             @if (plan.productLimit) {
-                                Hasta {{plan.productLimit}} productos. 
-                                @if (plan.featuredLimit > 0) {
-                                    <span *ngIf="plan.featuredLimit > 1">Hasta {{plan.featuredLimit}} destacados</span>
-                                    <span *ngIf="plan.featuredLimit == 1">1 destacado</span>
-                                } @else {
-                                    sin destacados
-
-                                }
+                            Hasta {{plan.productLimit}} productos.
+                            @if (plan.featuredLimit > 0) {
+                            <span *ngIf="plan.featuredLimit > 1">Hasta {{plan.featuredLimit}} destacados</span>
+                            <span *ngIf="plan.featuredLimit == 1">1 destacado</span>
                             } @else {
-                                Productos ilimitados, 1 destacado y prioridad en búsquedas.
+                            sin destacados
+
+                            }
+                            } @else {
+                            Productos ilimitados, 1 destacado y prioridad en búsquedas.
                             }
                         </li>
                         }
                     </ul>
-                </li>
+                </li-->
+                <li>El pago para continuar en la plataforma debe realizarse máximo el 10 de cada mes y la factura sera enviada entre el dia 1 y 5 del mismo mes al correo registrado.</li>
                 <li>Cada mes debes realizar el pago correspondiente y compartir el comprobante al número de WhatsApp
-                    que encontrarás en la sección de “Planes y Pagos”.</li>
-                <li>Para procesar tus pagos utilizamos Stripe; los montos se muestran en pesos colombianos (COP).
-                </li>
+                    que encontrarás en la sección de “Pagos”.</li>
                 <li>Cualquier impuesto o comisión adicional (pública o privada) corre por cuenta del Vendedor.</li>
                 <li><strong>Modificación de precios:</strong> Ventas 7 Lunas se reserva el derecho de cambiar los
-                    precios de las suscripciones en cualquier momento; dichos ajustes se publicarán con antelación
-                    en la sección de “Planes y Pagos”. El uso continuado de la plataforma después de la publicación
+                    precios de las comisiones en cualquier momento; dichos ajustes se publicarán con antelación
+                    en la sección de “Pagos”. El uso continuado de la plataforma después de la publicación
                     constituirá aceptación de los nuevos precios.</li>
             </ul>
 

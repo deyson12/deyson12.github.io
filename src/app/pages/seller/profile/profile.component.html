@@ -48,11 +48,11 @@
         </div>
         <div>
           <label class="block font-medium mb-1">Email</label>
-          <input [value]="user.email" type="url" class="w-full border rounded p-2" disabled />
+          <input [value]="email" type="url" class="w-full border rounded p-2" disabled />
         </div>
         <div>
           <label class="block font-medium mb-1">Celular</label>
-          <input [value]="user.phone" type="url" class="w-full border rounded p-2" disabled />
+          <input [value]="phone" type="url" class="w-full border rounded p-2" disabled />
         </div>
       </div>
       <button type="submit" class="w-full sm:w-auto px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark">
@@ -60,14 +60,18 @@
       </button>
     </form>
   </section>
+</div>
 
+<app-schedule></app-schedule>
+
+<div class="card w-full mx-auto p-6">
   <!-- Banner de límite de productos -->
   <ng-container>
     <div *ngIf="productLimit > 0 && products.length >= productLimit"
       class="w-full bg-orange-500 text-white flex items-center justify-between px-4 py-2 shadow-md z-50 font-semibold">
       <div class="text-sm">
         Has llegado al máximo de productos permitido. Para añadir nuevos ítems, actualiza tu plan. Escríbenos por
-        <a [href]="whatsappLink()"  target="_blank" class="font-semibold underline">
+        <a [href]="whatsappLink()" target="_blank" class="font-semibold underline">
           WhatsApp: {{whatsAppNumber}}
         </a>
       </div>
@@ -164,6 +168,9 @@
                                 </p-columnFilter-->
               </div>
             </th>
+            <th style="min-width: 8rem" *ngIf="role === 'admin'">
+              Dropshipping
+            </th>
             <th style="min-width: 10rem" class="text-center">
               Acciones
             </th>
@@ -183,8 +190,15 @@
             <td class="px-4 py-2">
               <p-tag [value]="p.featured ? 'Si' : 'No'" [severity]="p.featured ? 'success' : 'warn'"></p-tag>
             </td>
-             <td class="px-4 py-2">
+            <td class="px-4 py-2">
               <p-tag [value]="p.active ? 'Activo' : 'Inactivo'" [severity]="p.active ? 'success' : 'warn'"></p-tag>
+            </td>
+            <td *ngIf="role === 'admin'">
+              @if (p.dropshippingUrl) {
+              <a [href]="p.dropshippingUrl" target="_blank">Link</a>
+              } @else {
+              N/A
+              }
             </td>
             <td class="px-4 py-2 text-center space-x-2 whitespace-nowrap">
               <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text"
@@ -232,6 +246,13 @@
 
       <!-- Formulario -->
       <form [formGroup]="productForm" (ngSubmit)="saveProduct()" class="space-y-4">
+
+        @if (role === 'admin') {
+        <img [src]="productForm.get('image')?.value" alt="Producto" class="w-24 h-24 rounded-full object-cover"
+          onerror="this.onerror=null; this.src='assets/img/sin-producto.png';" />
+        <label for="image" class="block font-medium mb-1">Imagen</label>
+        <input formControlName="image" type="text" class="w-full border rounded p-2" />
+        } @else {
         <div>
           <label for="productImage" class="block font-medium mb-1">Imagen</label>
           <img [src]="productForm.get('image')?.value" alt="Producto" class="w-24 h-24 rounded-full object-cover"
@@ -239,6 +260,7 @@
           <input id="productImage" type="file" accept="image/*" (change)="onProductImageChange($event)"
             class="w-full sm:w-auto border rounded p-2" />
         </div>
+        }
 
         <div>
           <label for="name" class="block font-medium mb-1">Nombre</label>
@@ -250,14 +272,65 @@
           <textarea formControlName="description" rows="3" class="w-full border rounded p-2"></textarea>
         </div>
 
+        <div>
+          <label for="maxDeliveryTime">Tiempo máximo de entrega</label>
+          <select formControlName="maxDeliveryTime" id="maxDeliveryTime" class="w-full border rounded p-2">
+            <option *ngFor="let opt of deliveryOptions" [value]="opt">
+              {{ opt }} 
+              @if (opt === 'Inmediato') {
+                <span> (Despacho al recibir pedido) </span>
+              }
+            </option>
+          </select>
+        </div>
+
+        <div>
+          <input type="checkbox" id="rememberDeliveryTime" formControlName="rememberDeliveryTime"
+            class="form-checkbox h-4 w-4 text-blue-600" />
+          <label for="rememberDeliveryTime" class="ml-2">
+            Recordar este tiempo de entrega para mis futuros productos
+          </label>
+        </div>
+
+        @if (role === 'admin') {
+
+        <div>
+          <label for="dropshippingUrl" class="block font-medium mb-1">Dropshipping URL</label>
+          <input formControlName="dropshippingUrl" type="text" class="w-full border rounded p-2" />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="dropshippingPrice" class="block font-medium mb-1">Dropshipping Price </label>
+            <p-inputgroup>
+              <p-inputgroup-addon>$</p-inputgroup-addon>
+              <p-inputNumber formControlName="dropshippingPrice" class="w-full"></p-inputNumber>
+            </p-inputgroup>
+          </div>
+          <div>
+            <label for="revenue" class="block font-medium mb-1">Ganacia</label>
+            <p-inputgroup>
+              <p-inputgroup-addon>$</p-inputgroup-addon>
+              <p-inputNumber formControlName="revenue" class="w-full"></p-inputNumber>
+            </p-inputgroup>
+          </div>
+        </div>
+        }
+
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label for="price" class="block font-medium mb-1">Precio</label>
-            <input formControlName="price" type="number" class="w-full border rounded p-2" />
+            <p-inputgroup>
+              <p-inputgroup-addon>$</p-inputgroup-addon>
+              <p-inputNumber formControlName="price" class="w-full"></p-inputNumber>
+            </p-inputgroup>
           </div>
           <div>
             <label for="originalPrice" class="block font-medium mb-1">Precio original</label>
-            <input formControlName="originalPrice" type="number" class="w-full border rounded p-2" />
+            <p-inputgroup>
+              <p-inputgroup-addon>$</p-inputgroup-addon>
+              <p-inputNumber formControlName="originalPrice" class="w-full"></p-inputNumber>
+            </p-inputgroup>
           </div>
         </div>
 
@@ -277,8 +350,8 @@
 
         <!-- Nota -->
         <div>
-          <label for="note" class="block font-medium mb-1">Nota <span
-              class="text-sm text-gray-500">(opcional) 20 caracteres maximo</span></label>
+          <label for="note" class="block font-medium mb-1">Nota <span class="text-sm text-gray-500">(opcional) 20
+              caracteres maximo</span></label>
           <input formControlName="note" type="text" maxlength="20" placeholder="Ejemplo: picante"
             class="w-full border rounded p-2" />
         </div>
@@ -289,7 +362,7 @@
               usa para
               busquedas por usuarios, maximo 5 tags</span></label>
           <p-chips formControlName="tagsArray" [separator]="','" [addOnBlur]="true"
-            placeholder="Ejm: hamburguesa regalo. Enter o ,">
+            placeholder="Ejm: hamburguesa, regalo, etc. Separado por ,">
           </p-chips>
           <div *ngIf="productForm.get('tagsArray')!.hasError('maxlength')">
             <span class="text-red-500">Sólo puedes ingresar hasta 5 tags.</span>

@@ -63,30 +63,7 @@ export class ProductDetailComponent implements OnInit {
     this.productId = this.route.snapshot.paramMap.get('uuid') ?? '';
   }
 
-  relatedProducts: Product[] = [
-    {
-      id: '2',
-      name: 'Uñas',
-      shortDescription: 'Uñas Acrilicas',
-      price: 30000,
-      image: 'https://industriastexmodasas.com/cdn/shop/products/2789.jpg?v=1669160143',
-      stars: 4.5,
-      originalPrice: 50000,
-      sales: 5,
-      seller: "1"
-    },
-    {
-      id: '3',
-      name: 'Tramites Visa',
-      shortDescription: 'Tramites de Visa para Estados Unidos',
-      price: 25000,
-      image: 'https://happywings.com.co/wp-content/uploads/2024/01/Soda-Sandia.jpg',
-      stars: 4.5,
-      originalPrice: 50000,
-      sales: 5,
-      seller: "1"
-    }
-  ]
+  relatedProducts: Product[] = []
 
   zoomStyles: { [k: string]: any } = {};
   zoomFactor = 2.5;
