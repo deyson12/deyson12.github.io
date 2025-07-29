@@ -29,7 +29,7 @@
         <label class="block font-medium mb-1">Descripción Negocio</label>
         <textarea formControlName="description" rows="3" class="w-full border rounded p-2"></textarea>
       </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <!--div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label class="block font-medium mb-1">Facebook URL</label>
           <input formControlName="facebookUrl" type="url" class="w-full border rounded p-2" />
@@ -54,7 +54,7 @@
           <label class="block font-medium mb-1">Celular</label>
           <input [value]="phone" type="url" class="w-full border rounded p-2" disabled />
         </div>
-      </div>
+      </div-->
       <button type="submit" class="w-full sm:w-auto px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark">
         Guardar Perfil
       </button>
@@ -84,117 +84,104 @@
   </ng-container>
 
   <section>
-  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 space-y-2 sm:space-y-0">
-    <div>
-      <h2 class="text-2xl font-bold">Mis Productos</h2>
-      <p class="text-gray-700 mt-1">
-        Tienes {{ products.length }} productos<span *ngIf="productLimit > 0"> de {{ productLimit }}</span>.
-      </p>
-    </div>
-    <button (click)="openNewProductForm()"
-            [disabled]="productLimit > 0 && products.length >= productLimit"
-            class="w-full sm:w-auto px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed">
-      + Nuevo Producto
-    </button>
-  </div>
-
-  <p-table #dt
-           [value]="products"
-           dataKey="id"
-           [paginator]="true" [rows]="10"
-           [rowHover]="true"
-           [showGridlines]="true"
-           responsiveLayout="stack"
-           [breakpoint]="'640px'"
-           [globalFilterFields]="['name','price','originalPrice','featured','active']">
-
-    <ng-template #caption>
-      <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2">
-        <input pInputText
-               type="text"
-               (input)="onGlobalFilter(dt, $event)"
-               placeholder="Buscar productos..."
-               class="w-full sm:w-1/3" />
-        <button pButton type="button"
-                icon="pi pi-filter-slash"
-                label="Limpiar"
-                class="sm:ml-2"
-                (click)="dt.clear()"></button>
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 space-y-2 sm:space-y-0">
+      <div>
+        <h2 class="text-2xl font-bold">Mis Productos</h2>
+        <p class="text-gray-700 mt-1">
+          Tienes {{ products.length }} productos<span *ngIf="productLimit > 0"> de {{ productLimit }}</span>.
+        </p>
       </div>
-    </ng-template>
+      <button (click)="openNewProductForm()" [disabled]="productLimit > 0 && products.length >= productLimit"
+        class="w-full sm:w-auto px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed">
+        + Nuevo Producto
+      </button>
+    </div>
 
-    <ng-template #header>
-      <tr>
-        <th>
-          Imagen
-        </th>
-        <th>
-          Nombre
-          <p-columnFilter type="text" field="name" display="menu" placeholder="Buscar por nombre"></p-columnFilter>
-        </th>
-        <th>
-          Precio
-          <p-columnFilter type="numeric" field="price" display="menu" placeholder="Rango de precio"></p-columnFilter>
-        </th>
-        <th>
-          Precio original
-          <p-columnFilter type="numeric" field="originalPrice" display="menu"></p-columnFilter>
-        </th>
-        <th>Destacado</th>
-        <th>Estado</th>
-        <th *ngIf="role==='admin'">Dropshipping</th>
-        <th class="text-center">Acciones</th>
-      </tr>
-    </ng-template>
+    <p-table #dt [value]="products" dataKey="id" [paginator]="true" [rows]="10" [rowHover]="true" [showGridlines]="true"
+      responsiveLayout="stack" [breakpoint]="'640px'"
+      [globalFilterFields]="['name','price','originalPrice','featured','active']">
 
-    <ng-template #body let-p>
-      <tr class="border-t hover:bg-gray-50">
-        <td class="px-4 py-2">
-          <img [src]="p.image" alt="{{ p.name }}" class="w-12 h-12 object-cover rounded"
-                onerror="this.onerror=null; this.src='assets/img/sin-producto.png';" />
-        </td>
-        <td class="px-4 py-2">{{ p.name }}</td>
-        <td class="px-4 py-2">{{ p.price | currency:'':'symbol':'1.0-0' }}</td>
-        <td class="px-4 py-2">
-          {{ p.originalPrice ? (p.originalPrice | currency:'':'symbol':'1.0-0') : 'N/A' }}
-        </td>
-        <td class="px-4 py-2">
-          <p-tag [value]="p.featured ? 'Si' : 'No'" [severity]="p.featured ? 'success' : 'warn'"></p-tag>
-        </td>
-        <td class="px-4 py-2">
-          <p-tag [value]="p.active ? 'Activo' : 'Inactivo'" [severity]="p.active ? 'success' : 'warn'"></p-tag>
-        </td>
-        <td *ngIf="role==='admin'" class="px-4 py-2">
-          <ng-container *ngIf="p.dropshippingUrl; else noLink">
-            <a [href]="p.dropshippingUrl" target="_blank">Link</a>
-          </ng-container>
-          <ng-template #noLink>N/A</ng-template>
-        </td>
-        <td class="px-4 py-2 text-center space-x-2 whitespace-nowrap">
-          <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text" (click)="previewProduct(p)"></button>
-          <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-text" (click)="editProduct(p)"></button>
-          <button pButton
-                  [icon]="p.active ? 'pi pi-trash' : 'pi pi-check'"
-                  class="p-button-rounded p-button-text"
-                  (click)="deleteProduct(p)"></button>
-        </td>
-      </tr>
-    </ng-template>
+      <ng-template #caption>
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2">
+          <input pInputText type="text"  [(ngModel)]="globalFilter" (input)="onGlobalFilter(dt, $event)" placeholder="Buscar productos..."
+            class="w-full sm:w-1/3" /> {{globalFilter}}
+          <button pButton type="button" icon="pi pi-filter-slash" label="Limpiar" class="sm:ml-2"
+            (click)="dt.clear(); limpiarGlobalFilter();"></button>
+        </div>
+      </ng-template>
 
-  </p-table>
-</section>
+      <ng-template #header>
+        <tr>
+          <th>
+            Imagen
+          </th>
+          <th>
+            Nombre
+            <p-columnFilter type="text" field="name" display="menu" placeholder="Buscar por nombre"></p-columnFilter>
+          </th>
+          <th>
+            Precio
+            <p-columnFilter type="numeric" field="price" display="menu" placeholder="Rango de precio"></p-columnFilter>
+          </th>
+          <th>
+            Precio original
+            <p-columnFilter type="numeric" field="originalPrice" display="menu"></p-columnFilter>
+          </th>
+          <th>Destacado</th>
+          <th>Estado</th>
+          <th *ngIf="role==='admin'">Dropshipping</th>
+          <th class="text-center">Acciones</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #body let-p>
+        <tr class="border-t hover:bg-gray-50">
+          <td class="px-4 py-2">
+            <img [src]="p.image" alt="{{ p.name }}" class="w-12 h-12 object-cover rounded"
+              onerror="this.onerror=null; this.src='assets/img/sin-producto.png';" />
+          </td>
+          <td class="px-4 py-2">{{ p.name }}</td>
+          <td class="px-4 py-2">{{ p.price | currency:'':'symbol':'1.0-0' }}</td>
+          <td class="px-4 py-2">
+            {{ p.originalPrice ? (p.originalPrice | currency:'':'symbol':'1.0-0') : 'N/A' }}
+          </td>
+          <td class="px-4 py-2">
+            <p-tag [value]="p.featured ? 'Si' : 'No'" [severity]="p.featured ? 'success' : 'warn'"></p-tag>
+          </td>
+          <td class="px-4 py-2">
+            <p-tag [value]="p.active ? 'Activo' : 'Inactivo'" [severity]="p.active ? 'success' : 'warn'"></p-tag>
+          </td>
+          <td *ngIf="role==='admin'" class="px-4 py-2">
+            <ng-container *ngIf="p.dropshippingUrl; else noLink">
+              <a [href]="p.dropshippingUrl" target="_blank">Link</a>
+            </ng-container>
+            <ng-template #noLink>N/A</ng-template>
+          </td>
+          <td class="px-4 py-2 text-center space-x-2 whitespace-nowrap">
+            <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text"
+              (click)="previewProduct(p)"></button>
+            <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-text"
+              (click)="editProduct(p)"></button>
+            <button pButton [icon]="p.active ? 'pi pi-trash' : 'pi pi-check'" class="p-button-rounded p-button-text"
+              (click)="deleteProduct(p)"></button>
+          </td>
+        </tr>
+      </ng-template>
+
+    </p-table>
+  </section>
 
 
   <!-- Modal de vista previa -->
   <div *ngIf="displayPreview" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
     <div class="bg-white rounded-lg overflow-hidden w-11/12 md:w-1/2">
       <div class="p-4 flex justify-between items-center border-b">
-        <h3 class="text-xl font-bold">Vista previa del producto</h3>
+        <h3 class="text-xl font-bold">Vista previa: Así se verá el producto</h3>
         <button (click)="closePreview()" class="text-gray-500 hover:text-gray-700">
           <i class="pi pi-times text-xl"></i>
         </button>
       </div>
-      <div class="p-4">
+      <div class="p-4" style="background-color: var(--surface-ground);">
         <app-card class="col-span-12 lg:col-span-6 xl:col-span-4" [product]="selectedProduct"
           [puedeNavegar]="false"></app-card>
       </div>
@@ -347,6 +334,73 @@
               class="text-sm text-gray-500">(opcional)</span></label>
           <input formControlName="stock" type="number" min="0" class="w-full border rounded p-2" />
         </div>
+
+        <!-- Personalizar opciones -->
+        <div>
+          <input type="checkbox" id="customEnabled" formControlName="customEnabled"
+            class="form-checkbox h-4 w-4 text-blue-600" />
+          <label for="customEnabled" class="ml-2">
+            Personalizar opciones de producto
+          </label>
+        </div>
+
+        @if (productForm.get('customEnabled')?.value) {
+
+        <div formArrayName="customOptions" class="space-y-4 mt-2">
+          <div *ngFor="let opt of customOptions.controls; let i = index" [formGroupName]="i"
+            class="border border-gray-200 rounded p-4 space-y-4">
+
+            <!-- Opción -->
+            <div class="flex flex-col">
+              <label class="font-medium mb-1">Opción</label>
+              <input formControlName="name" type="text" class="w-full border rounded p-2" />
+            </div>
+
+            <!-- Tipo -->
+            <div class="flex flex-col">
+              <label class="font-medium mb-1">Tipo</label>
+              <select formControlName="type" class="w-full border rounded p-2">
+                <option value="selectable">Selección única</option>
+                <option value="multiselect">Selección múltiple</option>
+                <option value="text">Campo abierto</option>
+                <option value="boolean">Si / No</option>
+                <!--option value="number">Numérico</option>
+                <option value="date">Fecha</option>
+                <option value="color">Selector de color</option>
+                <option value="file">Archivo</option-->
+              </select>
+            </div>
+
+            <!-- Valores (sólo para SELECT o MULTISELECT) -->
+            <div *ngIf="opt.get('type')?.value==='selectable' 
+           || opt.get('type')?.value==='multiselect'" class="flex flex-col">
+              <label class="font-medium mb-1">Opciones</label>
+              <input formControlName="values" type="text" placeholder="Separadas por comas"
+                class="w-full border rounded p-2" />
+            </div>
+
+            <!-- Obligatorio -->
+            <div class="flex items-center">
+              <input type="checkbox" formControlName="required" id="req{{i}}"
+                class="form-checkbox h-4 w-4 text-blue-600" />
+              <label for="req{{i}}" class="ml-2">Obligatorio</label>
+            </div>
+
+            <!-- Eliminar -->
+            <div>
+              <button type="button" (click)="removeOption(i)" class="text-red-600 hover:underline">
+                Eliminar
+              </button>
+            </div>
+          </div>
+
+          <!-- Botón agregar -->
+          <button type="button" (click)="addOption()"
+            class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
+            + Agregar opción
+          </button>
+        </div>
+        }
 
         <!-- Footer -->
         <div class="flex justify-end space-x-2">

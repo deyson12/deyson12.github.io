@@ -22,4 +22,5 @@ export interface Product {
     dropshippingPrice: number;
     revenue: number;
     maxDeliveryTime: string;
+    customOptions: { [key: string]: any }[];
 }

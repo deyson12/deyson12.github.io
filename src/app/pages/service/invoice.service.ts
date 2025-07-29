@@ -29,4 +29,8 @@ export class InvoiceService {
   changeStatus(invoiceId: string, status: string): Observable<GenericResponse> {
     return this.http.post<GenericResponse>(`${this.apiUrl}/${invoiceId}/change`, {status});
   }
+
+  generateInvoices(): Observable<GenericResponse> {
+    return this.http.post<GenericResponse>(`${this.apiUrl}`, {});
+  }
 }

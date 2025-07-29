@@ -61,16 +61,16 @@
       </div-->
 
       <div class="flex items-center mt-1 space-x-2 text-sm text-blue-400 mb-4">
-                <i class="pi pi-info-circle"></i>
-                <span class="font-medium">
-                  @if (product.maxDeliveryTime === 'Inmediato') {
-                    Despacho Inmediato
-                  } @else {
-                    Entrega maxima: <strong> {{product.maxDeliveryTime}} </strong>
-                  }
-                  
-                </span>
-              </div>
+        <i class="pi pi-info-circle"></i>
+        <span class="font-medium">
+          @if (product.maxDeliveryTime === 'Inmediato') {
+          Despacho Inmediato
+          } @else {
+          Entrega maxima: <strong> {{product.maxDeliveryTime}} </strong>
+          }
+
+        </span>
+      </div>
 
       <!-- Precio y descuento -->
       <div class="flex items-baseline space-x-3 mb-4">
@@ -124,13 +124,78 @@
       </p>
       }
 
+      <!-- Personalización de producto -->
+      <div *ngIf="product.customOptions.length > 0" class="mb-6">
+        <h3 class="text-lg font-semibold mb-4">Personalizar producto</h3>
+        <div *ngFor="let opt of product.customOptions; let i = index" class="space-y-4 mb-4">
+          <label class="block font-medium mb-1">
+            {{ opt['name'] }}
+            <span *ngIf="opt['required']" class="text-red-500">*</span>
+          </label>
+          <ng-container [ngSwitch]="opt['type']">
+
+            <!-- Seleccionable -->
+            <select *ngSwitchCase="'selectable'" class="w-full border rounded p-2"
+              [(ngModel)]="selectedOptions[opt['name']]" name="{{ opt['name'] }}" [required]="opt['required']">
+              <option *ngFor="let v of opt['values'].split(',')" [value]="v">{{ v }}</option>
+            </select>
+
+            <!-- Selección múltiple -->
+            <div *ngSwitchCase="'multiselect'" class="space-y-2">
+              <div *ngFor="let v of opt['values'].split(',')" class="flex items-center">
+                <input type="checkbox" [id]="opt['name'] + '-' + v"
+                  (change)="onMultiSelectChange(opt['name'], v, $event)" [checked]="isMultiSelected(opt['name'], v)"
+                  class="form-checkbox h-4 w-4 text-blue-600" />
+                <label [for]="opt['name'] + '-' + v" class="ml-2">{{ v }}</label>
+              </div>
+            </div>
+
+            <!-- Campo abierto -->
+            <textarea *ngSwitchCase="'text'" pTextarea autoResize="true" rows="1"
+              class="w-full border rounded p-2 resize-none" style="overflow:hidden;"
+              [(ngModel)]="selectedOptions[opt['name']]" name="{{ opt['name'] }}" [required]="opt['required']"></textarea>
+
+
+            <!-- Booleano como SI/NO -->
+            <select *ngSwitchCase="'boolean'" class="w-full border rounded p-2"
+              [(ngModel)]="selectedOptions[opt['name']]" name="{{ opt['name'] }}" [required]="opt['required']">
+              <option value="SI">SI</option>
+              <option value="NO">NO</option>
+            </select>
+
+            <!-- Numérico -->
+            <input *ngSwitchCase="'number'" type="number" class="w-full border rounded p-2"
+              [(ngModel)]="selectedOptions[opt['name']]" name="{{ opt['name'] }}" [min]="opt['values']?.split(',')[0]"
+              [max]="opt['values']?.split(',')[1]" [required]="opt['required']" />
+
+            <!-- Fecha -->
+            <input *ngSwitchCase="'date'" type="date" class="w-full border rounded p-2"
+              [(ngModel)]="selectedOptions[opt['name']]" name="{{ opt['name'] }}" [required]="opt['required']" />
+
+            <!-- Color -->
+            <input *ngSwitchCase="'color'" type="color" class="w-full p-1" [(ngModel)]="selectedOptions[opt['name']]"
+              name="{{ opt['name'] }}" [required]="opt['required']" />
+
+            <!-- Archivo -->
+            <input *ngSwitchCase="'file'" type="file" class="w-full" (change)="onFileChange($event, opt['name'])"
+              [required]="opt['required']" />
+          </ng-container>
+
+          <div *ngIf="errors[opt['name']]" class="text-red-500 text-sm">
+            {{ errors[opt['name']] }}
+          </div>
+        </div>
+      </div>
+
 
       <!-- Botones -->
       <div class="flex space-x-4 mb-6">
-        <button class="flex-1 bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg" (click)="buyProduct(product)">
+        <button class="flex-1 border border-green-300 bg-green-500 py-3 rounded-lg hover:bg-green-600 text-white"
+          (click)="buyProduct(product)">
           <i class="pi pi-whatsapp"></i> Comprar ahora
         </button>
-        <button class="flex-1 border border-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-100" (click)="addProductToCart(product)">
+        <button class="flex-1 border border-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-100"
+          (click)="addProductToCart(product)">
           <i class="pi pi-shopping-cart"></i> Agregar al carrito
         </button>
       </div>

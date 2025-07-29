@@ -56,13 +56,16 @@ export class CartService {
     this.saveOrders();
   }
 
-  addProductToCart(product: Product): void {
+  addProductToCart(product: Product, selectedOptions: { [key: string]: any }): void {
 
     console.log('Agregando producto al carrito:', product);
+    console.log('Opciones seleccionadas:', selectedOptions);
 
     const pending = this.ordersSignal().find(o => o.sellerId === product.seller && o.status === 'PENDIENTE');
 
-    const cartItem: ProductCart = { product, quantity: 1 };
+    const cartItem: ProductCart = { product, quantity: 1, selectedOptions };
+
+    console.log('Producto a agregar:', cartItem);
 
     if (pending) {
       this.addProduct(pending.id, cartItem);
@@ -121,7 +124,8 @@ export class CartService {
           if (exist) {
             exist.quantity++;
           } else {
-            o.products = [...o.products, { ...product, quantity: 1 }];
+            console.log('Agregando producto al pedido:', product);
+            o.products = [...o.products, { ...product, quantity: 1, selectedOptions: product.selectedOptions || {} }];
           }
         }
         return o;
@@ -174,6 +178,13 @@ export class CartService {
 
   confirmOrder(orderId: string, userId: string): Observable<ConfirmOrderResponse> {
     return this.http.post<ConfirmOrderResponse>(`${this.apiUrl}/${orderId}/confirm`, { userId }).pipe(
+      map(response => response),
+      catchError(this.handleConfirmError)
+    );
+  }
+
+  cancelOrder(orderId: string, userId: string, reason: string): Observable<ConfirmOrderResponse> {
+    return this.http.post<ConfirmOrderResponse>(`${this.apiUrl}/${orderId}/cancel`, { userId, reason }).pipe(
       map(response => response),
       catchError(this.handleConfirmError)
     );

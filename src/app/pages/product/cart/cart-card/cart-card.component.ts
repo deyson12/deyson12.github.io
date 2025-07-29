@@ -218,12 +218,19 @@ export class CartCardComponent implements OnInit {
     }
   }
 
+  getSelectedOptions(selectedOptions: { [key: string]: any } | undefined): string {
+    if (!selectedOptions) return '';
+    return `\n${Object.entries(selectedOptions)
+      .map(([key, value]) => `${key}: ${value}`)
+      .join('\n')}\n`;
+  }
+
 
   generarMensajeWhatsApp(order: Order): string {
     const products = order.products
       .map(
         (productCart) =>
-          `■ ${productCart.product.name} x ${productCart.quantity} = ${this.formatCurrency(productCart.product.price * productCart.quantity)}`
+          `■ ${productCart.product.name} x ${productCart.quantity} = ${this.formatCurrency(productCart.product.price * productCart.quantity)} ${this.getSelectedOptions(productCart.selectedOptions)}`
       )
       .join('\n');
 
@@ -256,6 +263,8 @@ ${address}
 
 *Confirmar orden:*
 ${environment.frontUrl}/auth/confirm/${order.id}\n
+*No se concretó el pedido? Cancelar orden:*
+${environment.frontUrl}/auth/cancel/${order.id}\n
 Gracias por tu compra.`.trim();
 
     // Generar enlace para WhatsApp

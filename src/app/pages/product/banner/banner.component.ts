@@ -74,7 +74,7 @@ export class BannerComponent implements OnInit, OnDestroy {
     return this.productService.getDiscount(product);
   }
 
-  addProductToCart(product: Product) {
+  /*addProductToCart(product: Product) {
     this.cartService.addProductToCart(product);
-  }
+  }*/
 }

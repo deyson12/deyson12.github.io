@@ -36,10 +36,10 @@ export class CardComponent {
     return this.productService.getDiscount(product);
   }
 
-  addProductToCart(product: Product) {
+  /*addProductToCart(product: Product) {
     if(!this.puedeNavegar)
       return;
     this.cartService.addProductToCart(product);
-  }
+  }*/
 
 }

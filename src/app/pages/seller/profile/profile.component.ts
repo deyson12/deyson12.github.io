@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { SellerService } from '../../service/seller.service';
 import { ProductService } from '../../service/product.service';
@@ -28,6 +28,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { TextareaModule } from 'primeng/textarea';
+import { CheckboxModule } from 'primeng/checkbox';
 
 @Component({
   selector: 'app-profile',
@@ -47,13 +48,15 @@ import { TextareaModule } from 'primeng/textarea';
     InputNumberModule,
     InputGroupModule,
     InputGroupAddonModule,
-    TextareaModule
+    TextareaModule,
+    CheckboxModule
   ],
   providers: [CartService, ToastService, UserService],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss'
 })
 export class ProfileComponent implements OnInit {
+  
   profileForm!: FormGroup;
   user!: User;
   products: Product[] = [];
@@ -61,6 +64,7 @@ export class ProfileComponent implements OnInit {
   displayPreview = false;
   selectedProduct!: Product;
   bannerVisible = true;
+  globalFilter: string = '';
 
   email: string = '';
   phone: string = '';
@@ -150,6 +154,10 @@ export class ProfileComponent implements OnInit {
     table.filterGlobal((event.target as HTMLInputElement).value, 'contains');
   }
 
+  limpiarGlobalFilter() {
+    this.globalFilter = '';
+  }
+
   private listenDropshippingPrice(): void {
     this.productForm.get('dropshippingPrice')!
       .valueChanges
@@ -202,8 +210,10 @@ export class ProfileComponent implements OnInit {
       dropshippingPrice: [],
       dropshippingUrl: [],
       revenue: [0],
-      maxDeliveryTime: ['Inmediato'],
-      rememberDeliveryTime: [false]
+      maxDeliveryTime: ['Inmediato', Validators.required],
+      rememberDeliveryTime: [false],
+      customEnabled: [false],
+      customOptions: this.fb.array([])
     });
   }
 
@@ -289,27 +299,53 @@ export class ProfileComponent implements OnInit {
       tagsArray: [],
       tags: '',
       rememberDeliveryTime: rememberDeliveryTime,
-      maxDeliveryTime: maxDeliveryTime
+      maxDeliveryTime: maxDeliveryTime,
+      customEnabled: false
     });
     this.displayProductDialog = true;
   }
 
   editProduct(product: Product): void {
-    this.isEditMode = true;
-    const tagsArray = product.tags
-      ? product.tags.split(',').map(tag => tag.trim())
-      : [];
-    this.productForm.patchValue({
-      ...product,
-      tagsArray
+  this.isEditMode = true;
+
+  const tagsArray = product.tags
+    ? product.tags.split(',').map(tag => tag.trim())
+    : [];
+
+  console.log('Editing product:', product);
+
+  // 1) Patchear el valor base + customEnabled
+  this.productForm.patchValue({
+    ...product,
+    tagsArray,
+    customEnabled: !!(product.customOptions && product.customOptions.length)
+  });
+
+  // 2) Limpiar el FormArray
+  this.customOptions.clear();
+
+  // 3) Volcar cada opción existente
+  if (product.customOptions && product.customOptions.length) {
+    product.customOptions.forEach(opt => {
+      this.customOptions.push(this.fb.group({
+        name:    [opt['name']],
+        type:    [opt['type']],
+        values:  [opt['values']],
+        required:[opt['required']]
+      }));
     });
-    this.displayProductDialog = true;
   }
 
+  this.displayProductDialog = true;
+}
+
   saveProduct(): void {
+
+    console.log(this.productForm.value);
+    console.log(this.productForm.get('customOptions')?.value);
+
     if (this.productForm.invalid) return;
 
-    // Recordar tiempo de entrega
     const { maxDeliveryTime, rememberDeliveryTime } = this.productForm.value;
     if (rememberDeliveryTime) {
       localStorage.setItem('rememberDeliveryTime', rememberDeliveryTime);
@@ -321,6 +357,8 @@ export class ProfileComponent implements OnInit {
 
     const prod = this.productForm.value as Product;
     prod.seller = this.authService.getValueFromToken('userId');
+
+    console.log('Product:', prod);
     this.productService.saveOrUpdateProduct(prod).subscribe(() => {
       this.loadProducts();
       this.displayProductDialog = false;
@@ -330,7 +368,7 @@ export class ProfileComponent implements OnInit {
   deleteProduct(product: Product): void {
     this.productService.deleteProduct(product.id).subscribe({
       next: () => {
-        this.toastService.showInfo('Desactivación exitosa', "Se desactivo el producto");
+        this.toastService.showInfo(product.active ? 'Desactivación exitosa' : 'Activación exitosa', product.active ? "Se desactivó el producto" : "Se activó el producto");
         this.loadProducts();
       },
       error: (err: Error) => {
@@ -344,6 +382,23 @@ export class ProfileComponent implements OnInit {
     this.productService.updateProduct(updated).subscribe(res => {
       product.featured = res.featured;
     });
+  }
+
+  get customOptions(): FormArray {
+    return this.productForm.get('customOptions') as FormArray;
+  }
+
+  addOption(): void {
+    this.customOptions.push(this.fb.group({
+      name: [''],
+      type: ['selectable'],
+      values: [''],
+      required: [false]
+    }));
+  }
+
+  removeOption(index: number): void {
+    this.customOptions.removeAt(index);
   }
 
   previewProduct(p: Product): void {

@@ -9,10 +9,19 @@ import { GalleriaModule } from 'primeng/galleria';
 import { DialogModule } from 'primeng/dialog';
 import { FixedCartComponent } from "../fixed-cart/fixed-cart.component";
 import { CartService } from '../../service/cart.service';
+import { FormsModule } from '@angular/forms';
+import { TextareaModule } from 'primeng/textarea';
 
 @Component({
   selector: 'app-product-detail',
-  imports: [CommonModule, GalleriaModule, DialogModule, FixedCartComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    GalleriaModule,
+    DialogModule,
+    FixedCartComponent,
+    TextareaModule
+  ],
   templateUrl: './product-detail.component.html',
   styleUrl: './product-detail.component.scss'
 })
@@ -101,11 +110,7 @@ export class ProductDetailComponent implements OnInit {
       this.productService.getProductById(this.productId).subscribe({
         next: (response: Product) => {
           this.product = response;
-          this.userService.getUserById(this.product.seller).subscribe({
-            next: (response: User) => {
-              this.user = response;
-            }
-          });
+          this.loadUser();
         },
         error: (error) => {
           console.error('Error fetching product:', error);
@@ -114,13 +119,77 @@ export class ProductDetailComponent implements OnInit {
         }
       });
     } else {
-      this.userService.getUserById(this.product.seller).subscribe({
-        next: (response: User) => {
-          this.user = response;
-        }
-      });
+      this.loadUser();
     }
 
+  }
+
+  loadUser() {
+    this.userService.getUserById(this.product.seller).subscribe({
+      next: (response: User) => {
+        this.user = response;
+      }
+    });
+  }
+
+  selectedOptions: { [key: string]: any } = {};
+  errors: { [key: string]: string } = {};
+
+  // Método que valida todas las opciones requeridas
+  validateOptions(): boolean {
+    this.errors = {};
+    let valid = true;
+
+    this.product.customOptions.forEach(opt => {
+      const key = opt['name'];
+      const val = this.selectedOptions[key];
+
+      if (opt['required']) {
+        switch (opt['type']) {
+          case 'multiselect':
+            if (!Array.isArray(val) || val.length === 0) {
+              this.errors[key] = 'Seleccione al menos una opción';
+              valid = false;
+            }
+            break;
+          default:
+            if (val === null || val === undefined || val === '') {
+              this.errors[key] = 'Este campo es obligatorio';
+              valid = false;
+            }
+        }
+      }
+    });
+
+    return valid;
+  }
+
+  // Para multiselect
+  onMultiSelectChange(name: string, value: string, ev: Event) {
+    const checked = (ev.target as HTMLInputElement).checked;
+    if (!Array.isArray(this.selectedOptions[name])) {
+      this.selectedOptions[name] = [];
+    }
+    const arr = this.selectedOptions[name] as string[];
+    if (checked) arr.push(value);
+    else {
+      const i = arr.indexOf(value);
+      if (i >= 0) arr.splice(i, 1);
+    }
+  }
+  isMultiSelected(name: string, value: string): boolean {
+    return Array.isArray(this.selectedOptions[name]) && this.selectedOptions[name].includes(value);
+  }
+  hasAnyMultiSelected(name: string): boolean {
+    return Array.isArray(this.selectedOptions[name]) && this.selectedOptions[name].length > 0;
+  }
+
+  // Para file
+  onFileChange(ev: Event, name: string) {
+    const input = ev.target as HTMLInputElement;
+    if (input.files?.length) {
+      this.selectedOptions[name] = input.files[0];
+    }
   }
 
   openZoom(img: string) {
@@ -134,10 +203,22 @@ export class ProductDetailComponent implements OnInit {
   }
 
   addProductToCart(product: Product) {
-    this.cartService.addProductToCart(product);
+
+    if (!this.validateOptions()) {
+      console.error('Validation failed:', this.errors);
+      return;
+    }
+
+    this.cartService.addProductToCart(product, this.selectedOptions);
   }
 
   buyProduct(product: Product) {
+
+    if (!this.validateOptions()) {
+      console.error('Validation failed:', this.errors);
+      return;
+    }
+
     this.addProductToCart(product);
     this.router.navigate(['/pages/cart']);
   }

@@ -39,6 +39,7 @@ export class InvoiceComponent implements OnInit {
   activeTab = 0;
   selectedMonth: Date;
   displayPaymentForm = false;
+  message = '';
 
   pendingInvoices: Invoice[] = [];
   paidInvoices: Invoice[] = [];
@@ -173,5 +174,21 @@ export class InvoiceComponent implements OnInit {
       `• *Total*: $ ${this.invoice?.commissionAmount}`;
     return `https://api.whatsapp.com/send?phone=${this.whatsAppNumber}&text=${encodeURIComponent(msg)}`;
   }
+
+  generateInvoices() {
+    this.message = '';
+    this.invoiceService.generateInvoices().subscribe({
+      next: (response) => {
+        this.message = response.code;
+        this.toastService.showInfo('Éxito', 'Facturas generadas correctamente');
+        this.loadInvoices();
+      },
+      error: (err) => {
+        console.error('Error generando facturas', err);
+        this.toastService.showError('Error', 'No se pudieron generar las facturas');
+      }
+    });
+  }
+    
 
 }

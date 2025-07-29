@@ -56,7 +56,7 @@ export class CarouselComponent {
     return this.productService.getSalesDetail(sales);
   }
 
-  addProductToCart(product: Product) {
+  /*addProductToCart(product: Product) {
     this.cartService.addProductToCart(product);
-  }
+  }*/
 }

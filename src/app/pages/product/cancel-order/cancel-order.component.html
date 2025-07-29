@@ -1,0 +1,135 @@
+@if (!userId) {
+<app-floating-configurator />
+<div
+    class="bg-surface-50 dark:bg-surface-950 flex items-center justify-center min-h-screen min-w-[100vw] overflow-hidden">
+    <div class="flex flex-col items-center justify-center">
+        <div
+            style="border-radius: 56px; padding: 0.3rem; background: linear-gradient(180deg, var(--primary-color) 10%, rgba(33, 150, 243, 0) 30%)">
+            <div class="w-full bg-surface-0 dark:bg-surface-900 py-20 px-8 sm:px-20" style="border-radius: 53px">
+                <div class="mb-8">
+                    <div class="w-64 mx-auto sm:w-96">
+                        <img class="w-full mx-auto" src="./assets/img/logo.png" alt="">
+                    </div>
+                </div>
+                <!-- src/app/auth/login/login.component.html -->
+                <form #loginForm="ngForm" (ngSubmit)="onSubmit(loginForm)" class="max-w-md mx-auto p-4">
+                    <!-- Email -->
+                    <div class="mb-6">
+                        <label for="email1" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">
+                            Email
+                        </label>
+                        <input pInputText id="email1" name="email" type="email" placeholder="Email address"
+                            class="w-full mb-1" [(ngModel)]="email" required email />
+                        <div *ngIf="loginForm.submitted && loginForm.controls['email']?.errors"
+                            class="text-red-600 mt-1 text-sm">
+                            <span *ngIf="loginForm.controls['email'].errors?.['required']">El email es
+                                obligatorio.</span>
+                            <span *ngIf="loginForm.controls['email'].errors?.['email']">Formato de email
+                                inválido.</span>
+                        </div>
+                    </div>
+
+                    <!-- Contraseña -->
+                    <div class="mb-6">
+                        <label for="password1"
+                            class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">
+                            Contraseña
+                        </label>
+                        <p-password id="password1" name="password" [(ngModel)]="password" placeholder="Password"
+                            [toggleMask]="true" styleClass="w-full" [fluid]="true" [feedback]="false" required
+                            minlength="4"></p-password>
+                        <div *ngIf="loginForm.submitted && loginForm.controls['password']?.errors"
+                            class="text-red-600 mt-1 text-sm">
+                            <span *ngIf="loginForm.controls['password'].errors?.['required']">La contraseña es
+                                obligatoria.</span>
+                            <span *ngIf="loginForm.controls['password'].errors?.['minlength']">
+                                Mínimo de {{ loginForm.controls['password'].errors?.['minlength'].requiredLength }}
+                                caracteres.
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Mensaje de error de login -->
+                    <div *ngIf="errorMessage" class="mb-4 text-red-600 font-medium text-center">
+                        {{ errorMessage }}
+                    </div>
+
+                    <!-- Botón Ingresar -->
+                    <p-button type="submit" label="Ingresar" styleClass="w-full"
+                        [disabled]="loginForm.invalid"></p-button>
+                </form>
+
+                <div class="flex justify-center">
+                    <a routerLink="/pages/all" class="underline">
+                        <span>Volver a la tienda</span>
+                    </a>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+</div>
+} @else {
+<!-- resto del flujo de selección de causa y estados -->
+@if (status === null) {
+<section class="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
+    <div class="text-center p-8 bg-white rounded-lg shadow">
+        <h2 class="text-2xl mb-4">¿Por qué quieres cancelar la orden {{ orderId }}?</h2>
+        <p-dropdown [options]="causes" [(ngModel)]="selectedCause" placeholder="Selecciona una causa"
+            class="w-full mb-4"></p-dropdown>
+        @if (selectedCause === 'Otro') {
+        <div class="mb-4">
+            <input [(ngModel)]="otherCause" type="text" placeholder="Especifica otra causa" maxlength="200"
+            class="w-full p-2 border border-gray-300 rounded mb-4" />
+            <small class="text-gray-500">{{ otherCause.length || 0 }}/200 caracteres</small>
+        </div>
+        }
+        <p-button label="Cancelar orden" (onClick)="onSubmitCause()"
+            [disabled]="!selectedCause || (selectedCause === 'Otro' && !otherCause)" class="w-full" />
+    </div>
+</section>
+} @else if (status === 'PENDING') {
+<section class="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
+    <div class="text-center p-8 max-w-md w-full">
+        <i class="pi pi-spin pi-spinner text-orange-500 !text-8xl mb-6"></i>
+        <h2 class="text-3xl font-semibold mb-4">Cancelando venta...</h2>
+        <p class="text-gray-600 mb-2">Pedido:</p>
+        <p class="text-4xl font-bold mb-6">{{ orderId }}</p>
+        <p class="text-gray-500">Por favor, espera un momento mientras procesamos la cancelación.</p>
+    </div>
+</section>
+} @else if (status == 'OK') {
+<section class="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
+    <div class="text-center p-8 max-w-md w-full">
+        <i class="pi pi-power-off text-green-500 !text-8xl mb-6"></i>
+        <h2 class="text-3xl font-semibold mb-4">¡Venta cancelada!</h2>
+        <p class="text-gray-600 mb-2">Has registrado la cancelación del pedido:</p>
+        <p class="text-2xl font-bold mb-6">{{ orderId }}</p>
+        <p class="text-gray-500">Puedes cerrar esta ventana cuando quieras.</p>
+    </div>
+</section>
+} @else if (status == 'INVALID_SELLER'){
+<section class="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
+    <div class="text-center p-8 max-w-md w-full">
+        <i class="pi pi-times-circle text-red-500 !text-8xl mb-6"></i>
+        <h2 class="text-3xl font-semibold mb-4">¡Acceso denegado!</h2>
+        <p class="text-gray-600 mb-2">El pedido:</p>
+        <p class="text-4xl font-bold mb-6">{{ orderId }}</p>
+        <p class="text-gray-500 mb-4">No eres el vendedor de este pedido y no puedes cancelarlo.</p>
+        <p class="text-gray-500">Puedes cerrar esta ventana cuando quieras.</p>
+    </div>
+</section>
+} @else {
+<section class="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
+    <div class="text-center p-8 max-w-md w-full">
+        <i class="pi pi-times-circle text-red-500 !text-8xl mb-6"></i>
+        <h2 class="text-3xl font-semibold mb-4">¡Ocurrió un Error!</h2>
+        <p class="text-gray-600 mb-2">Con el pedido:</p>
+        <p class="text-4xl font-bold mb-6">{{ orderId }}</p>
+        <p class="text-gray-500 mb-4">Por favor intentarlo mas tarde.</p>
+        <p class="text-gray-500">Puedes cerrar esta ventana cuando quieras.</p>
+    </div>
+</section>
+}
+}
