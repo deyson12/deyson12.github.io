@@ -27,6 +27,7 @@ import { filter, map } from 'rxjs';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
+import { TextareaModule } from 'primeng/textarea';
 
 @Component({
   selector: 'app-profile',
@@ -45,7 +46,8 @@ import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
     ScheduleComponent,
     InputNumberModule,
     InputGroupModule,
-    InputGroupAddonModule
+    InputGroupAddonModule,
+    TextareaModule
   ],
   providers: [CartService, ToastService, UserService],
   templateUrl: './profile.component.html',
@@ -241,7 +243,7 @@ export class ProfileComponent implements OnInit {
     };
     this.sellerService.updateSeller(this.sellerId, updatedSeller).subscribe(res => {
       this.toastService.showInfo('Exito', 'Se actualizó la inforamción de forma exitosa.');
-      localStorage.setItem('token', res.trim());
+      this.authService.setToken(res.trim());
     });
   }
 
@@ -260,7 +262,8 @@ export class ProfileComponent implements OnInit {
   onProductImageChange(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (file) {
-      this.cloudinaryService.uploadImage(file, uuidv4(), 'product').subscribe(url => {
+      const id = this.productForm.value.id ? this.productForm.value.id : uuidv4();
+      this.cloudinaryService.uploadImage(file, id, 'product').subscribe(url => {
         this.productForm.patchValue({
           image: url,
         });
@@ -276,7 +279,7 @@ export class ProfileComponent implements OnInit {
     const rememberDeliveryTime = localStorage.getItem('rememberDeliveryTime');
 
     this.productForm.reset({
-      id: null,
+      id: uuidv4(),
       name: '',
       description: '',
       price: 0,

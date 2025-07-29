@@ -6,20 +6,42 @@ import { AppMenuitem } from './app.menuitem';
 import { Category } from '../../models/category';
 import { CategoryService } from '../../pages/service/category.service';
 import { AuthService } from '../../pages/service/auth.service';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-menu',
   standalone: true,
-  imports: [CommonModule, AppMenuitem, RouterModule],
+  imports: [CommonModule, AppMenuitem, RouterModule, ButtonModule],
   template: `<ul class="layout-menu max-sm:pt-[60px]">
         <ng-container *ngFor="let item of model; let i = index">
             <li app-menuitem *ngIf="!item.separator" [item]="item" [index]="i" [root]="true"></li>
             <li *ngIf="item.separator" class="menu-separator"></li>
         </ng-container>
-    </ul> `
+        </ul> 
+        @if (!userId) {
+          <ul class="block md:hidden layout-menu max-sm:pt-[10px]">
+          <ng-container>
+            <li>
+              <button pButton type="button" icon="pi pi-power-off" label="Iniciar Sesión" routerLink="/auth/login">
+              </button>
+            </li>
+        </ng-container>
+        </ul>
+        } @else {
+          <ul class="block md:hidden layout-menu max-sm:pt-[10px]">
+          <ng-container>
+            <li>
+              <button pButton type="button" icon="pi pi-power-off" label="Cerrar Sesión" routerLink="/pages/logout">
+                  </button>
+            </li>
+        </ng-container>
+        </ul>
+        }
+    `
 })
 export class AppMenu implements OnInit {
 
+  userId: string = '';
   role: string | null = null;
 
   model: MenuItem[] = [];
@@ -32,6 +54,7 @@ export class AppMenu implements OnInit {
   ngOnInit() {
 
     this.role = this.auth.getValueFromToken('role');
+    this.userId = this.auth.getValueFromToken('userId');
 
     const adminGroup: MenuItem = {
       label: 'Administrador',
@@ -50,7 +73,6 @@ export class AppMenu implements OnInit {
         { label: 'Mi perfil', icon: 'mdi:account', routerLink: ['/pages/profile'] },
         { label: 'Mis ventas', icon: 'mdi:cash-register', routerLink: ['/pages/my-sales'] },
         { label: 'Pagos', icon: 'mdi:currency-usd', routerLink: ['/pages/payment'] },
-        { label: 'Cerrar sesión', icon: 'mdi:logout', routerLink: ['/pages/logout'] }
       ]
     };
 

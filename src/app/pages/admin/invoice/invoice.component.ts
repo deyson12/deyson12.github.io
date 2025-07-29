@@ -12,11 +12,15 @@ import { DialogModule } from 'primeng/dialog';
 import { Constants } from '../../../config/constants';
 import { DatePickerModule } from 'primeng/datepicker';
 import { PrimeNG } from 'primeng/config';
+import { ToastService } from '../../service/toast.service';
 
 @Component({
   selector: 'app-invoice',
-  imports: [CommonModule, TableModule, InputTextModule, ButtonModule, TagModule, DatePickerModule,
+  imports: [
+    CommonModule, TableModule, InputTextModule, 
+    ButtonModule, TagModule, DatePickerModule,
     TabsModule, FormsModule, DialogModule],
+  providers: [ToastService],
   templateUrl: './invoice.component.html',
   styleUrl: './invoice.component.scss'
 })
@@ -44,7 +48,8 @@ export class InvoiceComponent implements OnInit {
   constructor(
     private readonly invoiceService: InvoiceService,
     private readonly datePipe: DatePipe,
-  private primengConfig: PrimeNG
+    private primengConfig: PrimeNG,
+    private readonly toastService: ToastService
 ) {
     const today = new Date();
     this.selectedMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
@@ -109,8 +114,17 @@ export class InvoiceComponent implements OnInit {
     // lógica para reenviar por email
   }
 
-  markAsPaid(invoice: Invoice) {
+  changeStatus(invoice: Invoice, stauts: string) {
     // lógica para marcar como pagada
+    console.log('Factura:', invoice)
+    this.invoiceService.changeStatus(invoice.id, stauts).subscribe({
+          next: (response) => {
+            console.log('Finalizó: ', response);
+            this.toastService.showInfo('Exito','Se marcó como pagada');
+            this.loadInvoices();
+          },
+          error: (err) => this.toastService.showError('Error',err)
+        });
   }
 
   viewInvoice(invoice: Invoice) {

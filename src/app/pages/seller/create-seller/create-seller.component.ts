@@ -248,7 +248,7 @@ export class CreateSellerComponent implements OnInit, OnDestroy {
     this.authService.verifyCode(this.authService.getValueFromToken('userId') || this.uuid, fullCode).subscribe({
       next: (response: VerifyCodeResponse) => {
         if (response.status) {
-          localStorage.setItem('token', response.token);
+          this.authService.setToken(response.token);
           this.completeVerification = true;
           this.clearTimer();
           this.toastService.showInfo('Exito', 'Código verificado correctamente');
@@ -341,7 +341,7 @@ export class CreateSellerComponent implements OnInit, OnDestroy {
 
     this.sellerService.createSeller(payload).subscribe({
       next: (token) => {
-        localStorage.setItem('token', token);
+        this.authService.setToken(token);
         this.sellerForm.reset();
         this.avatarUrl = './assets/img/avatar-default.png';
         if (this.isBuyer) {

@@ -23,7 +23,6 @@ export class ProductService {
   }
 
   saveOrUpdateProduct(product: Product): Observable<string> {
-    console.log('Vamos a crear: ', product);
     return this.http.post<CreateProductResponse>(`${this.apiUrl}/saveOrUpdate`, product).pipe(
       map(response => response.token),
       catchError(this.handleError)
@@ -42,6 +41,18 @@ export class ProductService {
   getAllProductsByQuery(query: string): Observable<Product[]> {
     // Busca productos por nombre, descripción o categoría
     return this.http.get<Product[]>(`${this.apiUrl}/search/${query}`).pipe(
+      catchError((error: HttpErrorResponse) => {
+        console.error('Error fetching products by query:', error);
+        return throwError(() => new Error('Ocurrió un error al buscar productos'));
+      })
+    );
+  }
+
+  getAllProductsByQueryWithoutLimits(query: string): Observable<Product[]> {
+
+    const limit = -1;
+
+    return this.http.get<Product[]>(`${this.apiUrl}/search/${query}`, { params: { limit } }).pipe(
       catchError((error: HttpErrorResponse) => {
         console.error('Error fetching products by query:', error);
         return throwError(() => new Error('Ocurrió un error al buscar productos'));

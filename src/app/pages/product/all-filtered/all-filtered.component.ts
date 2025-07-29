@@ -20,7 +20,7 @@ export class AllFilteredComponent implements OnInit {
   constructor(
     private productService: ProductService,
     private route: ActivatedRoute,
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.route.paramMap.pipe(
@@ -29,11 +29,11 @@ export class AllFilteredComponent implements OnInit {
       distinctUntilChanged(),                           // evita repeticiones
       switchMap(q => {
         this.q = q;                                     // guarda localmente
-        return this.productService.getAllProductsByQuery(q);
+        return this.productService.getAllProductsByQueryWithoutLimits(q);
       })
     ).subscribe({
       next: products => this.products = products || [],
-      error: _      => this.products = []
+      error: _ => this.products = []
     });
   }
 }

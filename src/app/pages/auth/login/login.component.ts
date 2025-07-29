@@ -31,11 +31,16 @@ export class LoginComponent {
     password: string = '';
     checked: boolean = false;
     errorMessage: string = '';
+    returnUrl: string | null = null;
 
     constructor(
         private readonly authService: AuthService,
         private readonly router: Router
-    ){}
+    ){
+      const urlParams = new URLSearchParams(window.location.search);
+      const returnUrl = urlParams.get('returnUrl');
+      this.returnUrl = returnUrl ? decodeURIComponent(returnUrl) : null;
+    }
 
     onSubmit(form: NgForm) {
     if (form.invalid) {
@@ -45,8 +50,15 @@ export class LoginComponent {
     this.errorMessage = '';
     this.authService.login(this.email.trim(), this.password).subscribe({
       next: (token: string) => {
-        localStorage.setItem('token', token);
-        this.router.navigate(['/pages/all']);
+        this.authService.setToken(token);
+
+        if (this.returnUrl) {
+          // If returnUrl is defined, navigate to that URL
+          this.router.navigateByUrl(this.returnUrl);
+        } else {
+          // Otherwise, navigate to the default page
+          this.router.navigate(['/pages/all']);
+        }
       },
       error: (err: Error) => {
         this.errorMessage = err.message;

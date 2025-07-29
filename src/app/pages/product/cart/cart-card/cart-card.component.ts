@@ -155,7 +155,7 @@ export class CartCardComponent implements OnInit {
       };
       this.authService.createClient(payload).subscribe({
         next: (token: string) => {
-          localStorage.setItem('token', token);
+          this.authService.setToken(token);
           this.role = 'buyer';
           this.finishOrderAndSendWhatsApp();
         },

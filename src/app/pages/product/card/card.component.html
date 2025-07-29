@@ -9,13 +9,13 @@
   <img
     *ngIf="!loaded"
     [src]="product.image | cloudinaryPlaceholder"
-    class="absolute inset-0 w-full h-full object-cover filter blur-lg scale-110"
+    class="absolute inset-0 w-full object-cover filter blur-lg scale-110"
     alt="placeholder"
   />
 
   <!-- imagen real -->
   <img
-    class="relative w-full h-full object-cover rounded-lg transition-opacity duration-700"
+    class="relative w-full object-cover rounded-lg transition-opacity duration-700"
     [src]="product.image | optimizeCloudinary"
     [srcset]="product.image | cloudinarySrcset:'200,400,800,1200'"
     sizes="(max-width: 640px) 100vw, 640px"

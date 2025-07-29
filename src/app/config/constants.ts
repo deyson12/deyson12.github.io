@@ -1,5 +1,5 @@
 export const Constants = {
-  email: 'ventas7lunas@gmail.com',
+  email: 'ventas7lunas.shop@gmail.com',
   phone: '+57 300-296-6348',
   whatsAppNumber: '573002966348',
   accountNumber: '353-860566-07',

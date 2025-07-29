@@ -42,6 +42,7 @@ export class AppTopbarComponent implements OnInit, OnDestroy {
     name: string = '';
 
     items!: MenuItem[];
+    showSearchResult = false;
 
     // ===== Buscador =====
     productSearchTerm = '';
@@ -70,12 +71,18 @@ export class AppTopbarComponent implements OnInit, OnDestroy {
         this.name = this.authService.getValueFromToken('name');
 
         this.searchCtrl.valueChanges.pipe(
-            debounceTime(1000),                       // 300 ms de espera tras el último tecleo
-            filter((q: string) => q.length >= 3),    // sólo si hay al menos 3 caracteres
-            distinctUntilChanged(),                  // evita peticiones idénticas
-            switchMap(q => this.productService.getAllProductsByQuery(q)), // tu endpoint con limit=10
+            debounceTime(1000),
+            filter((q: string) => q.length >= 3),
+            distinctUntilChanged(),
+            switchMap(q => {
+                this.showSearchResult = false;
+                return this.productService.getAllProductsByQuery(q);
+            }), // tu endpoint con limit=10
             takeUntil(this.destroy$)
-        ).subscribe(results => this.filteredProducts = results ?? []);
+        ).subscribe(results => {
+            this.showSearchResult = true;
+            this.filteredProducts = results ?? [];
+        });
     }
 
     ngOnDestroy() {
@@ -83,14 +90,30 @@ export class AppTopbarComponent implements OnInit, OnDestroy {
         this.destroy$.complete();
     }
 
-    viewAll() {
-    const q = this.searchCtrl.value.trim();
-    if (q) {
-      this.router.navigate(['/pages/all-filtered', q]);
-      // opcional: limpiar sugerencias
-      this.filteredProducts = [];
+    onSearchBlur() {
+        setTimeout(() => {
+            this.showSearchResult = false;
+        }, 500); // Espera 200 ms para permitir el click en los resultados
     }
-  }
+
+    onSearchEnter() {
+        if (this.filteredProducts.length === 1) {
+            this.onProductSelect(this.filteredProducts[0]);
+        } else if (this.filteredProducts.length > 1) {
+            this.viewAll();
+        }
+    }
+
+    viewAll() {
+        const q = this.searchCtrl.value.trim();
+        if (q) {
+            this.router.navigate(['/pages/all-filtered', q]);
+            // opcional: limpiar sugerencias
+            this.searchCtrl.setValue('');
+            this.filteredProducts = [];
+            this.showSearchResult = false;
+        }
+    }
 
     /*onSearchInput() {
         const term = this.productSearchTerm.trim().toLowerCase();
@@ -113,11 +136,13 @@ export class AppTopbarComponent implements OnInit, OnDestroy {
         // cerrar dropdown y ejecutar tu lógica
         this.showMobileSearch = false;
         this.productSearchTerm = product.name;
+        this.showSearchResult = false;
         this.filteredProducts = [];
         this.handleProductSelect(product);
     }
 
     handleProductSelect(product: Product) {
+        this.searchCtrl.setValue('');
         this.router.navigate(
             ['/pages/product-detail', product.id],
             { state: { product } }

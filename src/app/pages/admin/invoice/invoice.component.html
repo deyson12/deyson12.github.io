@@ -30,7 +30,7 @@
                                 Mes
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Total
+                                Vendiste en Total
                             </th>
                             <th
                                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
@@ -38,7 +38,7 @@
                             </th>
                             <th
                                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
-                                Monto Comisión
+                                Total a pagar
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Acción
@@ -78,7 +78,7 @@
                                     <i class="pi pi-envelope text-white"></i>
                                 </button>
                                 <!-- Marcar como pagada -->
-                                <button (click)="markAsPaid(invoice)"
+                                <button (click)="changeStatus(invoice, 'PAID')"
                                     class="inline-flex items-center px-3 py-1 border bg-yellow-600 border-yellow-500 text-sm font-medium rounded hover:bg-yellow-500">
                                     <i class="pi pi-dollar text-white"></i>
                                 </button>
@@ -125,7 +125,14 @@
                             <td data-label="Mes" class="px-6 py-4 whitespace-nowrap">
                                 {{ invoice.billingMonth | date:'MMMM yyyy' }}
                             </td>
-                            <td data-label="Acción" class="px-6 py-4 whitespace-nowrap text-right">
+                            <td data-label="Acción" class="px-6 py-4 whitespace-nowrap space-x-1 text-right">
+                                 @if (!sellerId) {
+                                <button (click)="changeStatus(invoice, 'SENT')"
+                                    class="inline-flex items-center px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded">
+                                    <i class="pi pi-question mr-1"></i>
+                                    <span class="sr-only">Ver</span>
+                                </button>
+                                }
                                 <button (click)="viewInvoice(invoice)"
                                     class="inline-flex items-center px-3 py-1 bg-gray-600 hover:bg-gray-500 text-white rounded">
                                     <i class="pi pi-eye mr-1"></i>

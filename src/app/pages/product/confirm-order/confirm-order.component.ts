@@ -65,7 +65,7 @@ export class ConfirmOrderComponent implements OnInit {
     this.errorMessage = '';
     this.authService.login(this.email.trim(), this.password).subscribe({
       next: (token: string) => {
-        localStorage.setItem('token', token);
+        this.authService.setToken(token);
         window.location.reload();
       },
       error: (err: Error) => {

@@ -8,6 +8,7 @@ import { VerifyCodeResponse } from '../../models/verifyCodeResponse';
 import { ResendCodeResponse } from '../../models/resendCodeResponse';
 import { UserPayload } from '../../models/selllerPayload';
 import { CreateSellerResponse } from '../../models/create-seller-response';
+import { Router } from '@angular/router';
 
 interface LoginResponse {
   token: string;
@@ -17,12 +18,18 @@ interface LoginResponse {
   providedIn: 'root'
 })
 export class AuthService {
+
+  private readonly TOKEN_KEY = 'JWT_TOKEN';
+
   private readonly apiUrl = `${environment.apiUrl}/api/auth`;
 
   private readonly frontUrl = environment.frontUrl;
   private readonly backUrl = environment.apiUrl;
 
-  constructor(private readonly http: HttpClient) { }
+  constructor(
+    private readonly http: HttpClient,
+    private readonly router: Router
+  ) { }
 
   createClient(payload: UserPayload): Observable<string> {
     return this.http.post<CreateSellerResponse>(`${this.apiUrl}/register`, payload).pipe(
@@ -73,13 +80,56 @@ export class AuthService {
   }
 
   getValueFromToken(claim: string): string {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem(this.TOKEN_KEY);
     if (!token) return '';
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
       return payload[claim] ?? null;
     } catch {
       return '';
+    }
+  }
+
+  setToken(token: string): void {
+    localStorage.setItem(this.TOKEN_KEY, token);
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem(this.TOKEN_KEY);
+  }
+
+  isLoggedIn(): boolean {
+    const token = this.getToken();
+    if (!token) return false;
+    const exp = this.getTokenExpiration(token);
+    return exp !== null && exp > new Date();
+  }
+
+  logout(): void {
+    localStorage.removeItem(this.TOKEN_KEY);
+    this.router.navigate(['/auth/login']);
+  }
+
+  getUserRole(): string | null {
+    const token = this.getToken();
+    if (!token) return null;
+    try {
+      const { role } = JSON.parse(atob(token.split('.')[1]));
+      return role;
+    } catch {
+      return null;
+    }
+  }
+
+  private getTokenExpiration(token: string): Date | null {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (!payload.exp) return null;
+      const d = new Date(0);
+      d.setUTCSeconds(payload.exp);
+      return d;
+    } catch {
+      return null;
     }
   }
 }

@@ -18,23 +18,30 @@
         <p-inputgroup-addon class="!bg-orange-500">
           <i class="pi pi-search text-white"></i>
         </p-inputgroup-addon>
-        <input type="text" [formControl]="searchCtrl" placeholder="Buscar productos..." pInputText class="w-full" />
+        <input type="text" [formControl]="searchCtrl" placeholder="Buscar productos..." pInputText class="w-full" 
+        (blur)="onSearchBlur()" (keydown.enter)="onSearchEnter()"/>
       </p-inputgroup>
 
-      <ul *ngIf="filteredProducts.length"
+      <ul *ngIf="filteredProducts.length && showSearchResult"
         class="absolute bg-white shadow-lg border rounded-lg w-full mt-1 overflow-auto z-50">
         <li *ngFor="let p of filteredProducts" (click)="onProductSelect(p)"
           class="flex items-center px-3 py-2 hover:bg-gray-100 cursor-pointer">
           <img [src]="p.image" alt="{{ p.name }}" class="w-8 h-8 object-cover rounded mr-2" />
           <span class="truncate">{{ p.name }}</span>
         </li>
-
-        <!-- “Ver todos…” al final -->
-        <li *ngIf="filteredProducts.length" (click)="viewAll()"
-          class="px-3 py-2 hover:bg-gray-100 cursor-pointer text-blue-600 font-semibold">
+        <li (click)="viewAll()" class="px-3 py-2 hover:bg-gray-100 cursor-pointer text-blue-600 font-semibold">
           Ver todos…
         </li>
       </ul>
+
+      <ul *ngIf="filteredProducts.length <= 0 && showSearchResult"
+        class="absolute bg-white shadow-lg border rounded-lg w-full mt-1 overflow-auto z-50">
+        <li class="px-3 py-2 hover:bg-gray-100 cursor-pointer font-semibold">
+          No se encontraron resultados
+        </li>
+      </ul>
+
+
     </div>
 
     <!-- Visible sólo en pantallas ≥ md (>=768px) -->

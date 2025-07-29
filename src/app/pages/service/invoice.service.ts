@@ -4,6 +4,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Invoice } from '../../models/invoice';
 import { environment } from '../../../environments/environment';
+import { GenericResponse } from '../../models/genericResponse';
 
 @Injectable({ providedIn: 'root' })
 export class InvoiceService {
@@ -23,5 +24,9 @@ export class InvoiceService {
       .set('year',  year.toString())
       .set('month', month.toString());
     return this.http.get<Invoice[]>(`${this.apiUrl}/${sellerId}`, { params });
+  }
+
+  changeStatus(invoiceId: string, status: string): Observable<GenericResponse> {
+    return this.http.post<GenericResponse>(`${this.apiUrl}/${invoiceId}/change`, {status});
   }
 }
