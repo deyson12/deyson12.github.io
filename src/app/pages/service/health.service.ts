@@ -8,7 +8,7 @@ import { HttpClient } from '@angular/common/http';
 })
 export class HealthService {
 
-   private readonly apiUrl = `${environment.apiUrl}/api`;
+  private readonly apiUrl = `${environment.apiUrl}/api`;
 
   constructor(private readonly http: HttpClient) {}
 

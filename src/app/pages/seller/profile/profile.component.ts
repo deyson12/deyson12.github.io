@@ -166,11 +166,9 @@ export class ProfileComponent implements OnInit {
         map(v => Number(v))
       )
       .subscribe(dPrice => {
-        const rawPrice = dPrice * 1.2;
-        const rawOrig = dPrice * 1.3;
 
-        const price = Math.ceil(rawPrice / 100) * 100;    // redondea hacia arriba al centenar
-        const originalPrice = Math.ceil(rawOrig / 100) * 100;
+        const price = Math.ceil((dPrice * 1.2) / 100) * 100;    // redondea hacia arriba al centenar
+        const originalPrice = Math.ceil((dPrice * 1.3) / 100) * 100;
 
         const revenue = +(price - Math.ceil(dPrice / 100) * 100);
         this.productForm.patchValue({

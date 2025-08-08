@@ -48,7 +48,7 @@ export class HomeComponent implements OnInit {
   phone = Constants.phone;
 
   noProducts = false;
-  
+
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -64,23 +64,29 @@ export class HomeComponent implements OnInit {
   ngOnInit() {
     this.route.url.subscribe(urlSegments => {
       this.currentPath = urlSegments.map(segment => segment.path).join('/');
-    });
+      this.currentPath = this.currentPath.replace('products/', '');
 
-    this.bannerService.getBannersByCategory(this.currentPath).subscribe((data: Banner[]) => {
-      this.banners = data;
-      this.productService.getProductsByCategory(this.currentPath).subscribe((data: Product[]) => {
-        this.products = data;
-        this.noProducts = this.products.length <= 0;
-        this.interval = Math.floor(this.products.length / this.banners.length);
+      this.bannerService.getBannersByCategory(this.currentPath).subscribe((data: Banner[]) => {
+        this.banners = data;
+        this.productService.getProductsByCategory(this.currentPath).subscribe((data: Product[]) => {
+          this.products = data;
+          this.noProducts = this.products.length <= 0;
+          this.interval = Math.floor(this.products.length / this.banners.length);
+        });
       });
-    });
 
-    this.productService.getFeaturedProductsByCategory(this.currentPath).subscribe((data: Product[]) => {
-      this.itemsCarousel = data;
+      this.productService.getFeaturedProductsByCategory(this.currentPath).subscribe((data: Product[]) => {
+        this.itemsCarousel = data;
+      });
+
     });
 
     this.showBanner = this.role != 'seller';
 
+  }
+
+  closeBanner() {
+    this.showBanner = false;
   }
 
   getDaysRemaining(): number {

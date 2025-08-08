@@ -57,15 +57,19 @@
           <td>{{ user.role }}</td>
           <td><p-tag [value]="user.status" [severity]="getSeverity(user.status)"></p-tag></td>
           <td>
-            <button (click)="enable(user)" *ngIf="user.status === 'CONFIRMADO' || user.status === 'DESHABILITADO'"
+            @if (user.status === 'CONFIRMADO' || user.status === 'DESHABILITADO') {
+            <button (click)="enable(user)" 
               class="inline-flex items-center px-3 py-1 border bg-green-600 border-green-500 text-sm font-medium rounded hover:bg-green-500">
               <i class="pi pi-check text-white"></i>
             </button> &nbsp;
+            }
 
-            <button (click)="disable(user)" *ngIf="user.status === 'CONFIRMADO' || user.status === 'HABILITADO'"
+            @if (user.status === 'CONFIRMADO' || user.status === 'HABILITADO') {
+            <button (click)="disable(user)" 
               class="inline-flex items-center px-3 py-1 border bg-red-600 border-red-500 text-sm font-medium rounded hover:bg-red-500">
               <i class="pi pi-minus-circle text-white"></i>
             </button>
+            }
           </td>
         </tr>
       </ng-template>

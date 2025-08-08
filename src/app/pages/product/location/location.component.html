@@ -1,0 +1,42 @@
+<div class="text-gray-800 p-2 flex items-center cursor-pointer hover:bg-gray-200 transition-colors w-full"
+  (click)="onComponentClick()">
+  <iconify-icon icon="gis:position" width="18" height="18"
+    class="layout-menuitem-icon mr-2 text-xl text-orange-500"></iconify-icon>
+  <div>
+    <div class="text-sm font-semibold">Enviar a</div>
+    <div class="text-sm">
+      {{ (address || 'Obteniendo ubicación...' | slice:0:50) }}
+      <span class="text-sm">{{(address.length > 50 ? '...' : '')}}</span>
+    </div>
+  </div>
+</div>
+
+<p-dialog header="Ubicación" class="z-40" [(visible)]="showDialog" [modal]="true" [closable]="true"
+  [style]="{ width: '400px' }">
+
+  <div>
+    <p>{{ address }}</p>
+    <input pInputText type="text" [(ngModel)]="newAddress" placeholder="Ingresa nueva dirección" class="w-full mb-2" />
+    <button pButton type="button" label="Guardar" class="mb-2" (click)="saveNewAddress()"></button>
+
+    <p-message severity="info" icon="pi pi-info-circle"
+      text="Puedes mover el marcador(📍) libremente para ajustar la ubicación y ser mas exacto"
+      styleClass="h-full mb-2" />
+
+    <div class="mt-4" class="w-full h-[50vh]">
+      <google-map *ngIf="center" height="100%" width="100%" [center]="center" [zoom]="16">
+        <map-marker [position]="markerPosition" [options]="markerOptions"
+          (mapDragend)="onMarkerDragEnd($event)"></map-marker>
+      </google-map>
+    </div>
+  </div>
+</p-dialog>
+
+<p-dialog header="Permitir ubicación" class="z-40" [(visible)]="showAllowDialog" [modal]="true" [closable]="false"
+  [style]="{ width: '400px' }">
+  <div>
+    <p>Para poder continuar y mostrarte los productos cercanos, necesitamos acceder a tu ubicación.</p>
+    <p>No todos los vendedores realizan entregas a domicilio en todos los lugares, por lo que es importante conocer tu ubicación exacta.</p>
+    <button pButton type="button" label="Permitir acceso" (click)="onAllowLocation()"></button>
+  </div>
+</p-dialog>

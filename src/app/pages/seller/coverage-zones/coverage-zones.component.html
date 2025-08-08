@@ -1,0 +1,82 @@
+<div class="grid grid-cols-12 gap-8">
+    <div class="card col-span-12 p-4">
+
+        <div *ngIf="bannerVisible" class="w-full bg-orange-500 text-white flex items-center justify-between px-4 py-2 shadow-md z-50 font-semibold mb-4">
+            <div class="text-sm">
+                Requieres una zona de cobertura diferente? por favor contactanos aquí:
+                <a [href]="whatsappLink()" target="_blank" class="font-semibold underline">
+                    WhatsApp: {{whatsAppNumber}}
+                </a>
+            </div>
+            <button type="button" class="p-1 focus:outline-none" aria-label="Cerrar banner" (click)="closeBanner()">
+                <i class="pi pi-times text-xl"></i>
+            </button>
+        </div>
+
+        <div>
+            <!-- Botón para abrir diálogo de agregar -->
+            <button pButton type="button" label="Agregar Zona" icon="pi pi-plus" class="mb-4"
+                (click)="displayAddDialog = true">
+            </button>
+
+            <!-- Tabla de zonas asociadas al vendedor -->
+            <p-table [value]="sellerZones" class="w-full">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th>Creado</th>
+                        <th>Valor Domicilio</th>
+                        <th>Acciones</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-zone>
+                    <tr>
+                        <td>{{ zone.name }}</td>
+                        <td>{{ zone.description }}</td>
+                        <td>{{ zone.createdAt | date:'short' }}</td>
+                        <td>{{ zone.deliveryPrice | currency:'COP':'symbol':'1.0-0'  }}</td>
+                        <td>
+                            <button pButton type="button" icon="pi pi-trash"
+                                class="p-button-rounded p-button-danger p-button-sm" (click)="removeZone(zone)">
+                            </button>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+
+            <!-- Diálogo para agregar zona -->
+            <p-dialog header="Seleccionar zona" [(visible)]="displayAddDialog" [modal]="true"
+                [style]="{ width: '400px', height: '300px' }" [closable]="false">
+                <div class="p-field">
+                    <label for="zoneTree">Zonas disponibles</label>
+                    <p-treeSelect inputId="zoneTree" [options]="zoneTree" [(ngModel)]="selectedZone" optionLabel="name"
+                        placeholder="Elige una zona">
+                    </p-treeSelect>
+                </div>
+                <div class="p-field">
+                    <label for="zoneTree">Valor Domicilio</label>
+                    <p-inputNumber inputId="zoneTree" [(ngModel)]="deliveryPrice" mode="decimal" currency="COP"
+                        locale="es-CO" [min]="0" [max]="1000000" [showButtons]="true">
+                    </p-inputNumber>
+                </div>
+                <ng-template #footer>
+                    <button pButton type="button" label="Agregar" icon="pi pi-check" (click)="addZone()">
+                    </button>
+                    <button pButton type="button" label="Cancelar" icon="pi pi-times" class="p-button-text"
+                        (click)="displayAddDialog = false">
+                    </button>
+                </ng-template>
+            </p-dialog>
+        </div>
+
+        <div class="mt-8">
+            <google-map height="500px" width="100%" [center]="center" [zoom]="zoom">
+                <map-polygon *ngFor="let poly of polygons" [paths]="poly.paths" [options]="poly.options">
+                </map-polygon>
+                <map-marker [position]="markerPosition"></map-marker>
+            </google-map>
+        </div>
+
+    </div>
+</div>

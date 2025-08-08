@@ -1,0 +1,57 @@
+<div class="grid grid-cols-12 gap-8">
+    <div class="card col-span-12 p-4">
+        <h3>Scrape ML – Envío Gratis</h3>
+        <div class="p-fluid grid">
+            <div class="field col-12 md:col-4">
+                <label for="kw">Keyword</label>
+                <input id="kw" pInputText [(ngModel)]="keyword" placeholder="p.ej. reloj inteligente" />
+            </div>
+            <div class="field col-12 md:col-4">
+                <label for="limit">Límite</label>
+                <input id="limit" type="number" pInputText [(ngModel)]="limit" />
+            </div>
+            <div class="field col-12 md:col-4">
+                <label for="cat">Categoría</label>
+                <p-dropdown id="cat" [options]="categoryOptions" [(ngModel)]="categorySlug"
+                    placeholder="Selecciona una categoría" optionLabel="label" optionValue="value"></p-dropdown>
+            </div>
+            <div class="col-12 flex align-items-center">
+                <button pButton label="Ejecutar" (click)="run()" class="mr-2"></button>
+                <button pButton label="Copiar" icon="pi pi-copy" (click)="copyOutput()"></button>
+            </div>
+        </div>
+
+        <textarea class="w-full h-64 mt-3 p-2 border" [value]="output" readonly></textarea>
+
+        <div *ngIf="itemsList.length" class="mt-4 overflow-auto">
+            <h4>Resultados</h4>
+            <table class="w-full table-auto border-collapse border border-gray-300">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="border border-gray-300 p-2">Imagen</th>
+                        <th class="border border-gray-300 p-2">Nombre</th>
+                        <th class="border border-gray-300 p-2">Precio ML</th>
+                        <th class="border border-gray-300 p-2">Precio V7L</th>
+                        <th class="border border-gray-300 p-2">Ganancia</th>
+                        <th class="border border-gray-300 p-2">Ver</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of itemsList">
+                        <td class="border border-gray-300 p-2">
+                            <img [src]="item.image" [alt]="item.name" class="h-16 object-contain" />
+                        </td>
+                        <td class="border border-gray-300 p-2">{{ item.name }}</td>
+                        <td class="border border-gray-300 p-2">{{ item.originalPrice }}</td>
+                        <td class="border border-gray-300 p-2">{{ item.calculatedPrice }}</td>
+                        <td class="border border-gray-300 p-2">{{ item.revenue }}</td>
+                        <td class="border border-gray-300 p-2">
+                            <button pButton type="button" icon="pi pi-external-link"
+                                (click)="openLink(item.link)"></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

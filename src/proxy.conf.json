@@ -1,0 +1,8 @@
+{
+  "/ml": {
+    "target": "https://listado.mercadolibre.com.co",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": { "^/ml": "" }
+  }
+}

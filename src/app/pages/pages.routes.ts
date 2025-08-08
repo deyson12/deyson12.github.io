@@ -8,52 +8,7 @@ export default [
       import('./product/home/home.component').then(m => m.HomeComponent)
   },
   {
-    path: 'food-and-drinks',
-    loadComponent: () =>
-      import('./product/home/home.component').then(m => m.HomeComponent)
-  },
-  {
-    path: 'fashion',
-    loadComponent: () =>
-      import('./product/home/home.component').then(m => m.HomeComponent)
-  },
-  {
-    path: 'electronics',
-    loadComponent: () =>
-      import('./product/home/home.component').then(m => m.HomeComponent)
-  },
-  {
-    path: 'home',
-    loadComponent: () =>
-      import('./product/home/home.component').then(m => m.HomeComponent)
-  },
-  {
-    path: 'health-and-beauty',
-    loadComponent: () =>
-      import('./product/home/home.component').then(m => m.HomeComponent)
-  },
-  {
-    path: 'sports-and-outdoors',
-    loadComponent: () =>
-      import('./product/home/home.component').then(m => m.HomeComponent)
-  },
-  {
-    path: 'automotive',
-    loadComponent: () =>
-      import('./product/home/home.component').then(m => m.HomeComponent)
-  },
-  {
-    path: 'toys-and-entertainment',
-    loadComponent: () =>
-      import('./product/home/home.component').then(m => m.HomeComponent)
-  },
-  {
-    path: 'pets',
-    loadComponent: () =>
-      import('./product/home/home.component').then(m => m.HomeComponent)
-  },
-  {
-    path: 'services',
+    path: 'products/:category',                      // captura cualquier slug
     loadComponent: () =>
       import('./product/home/home.component').then(m => m.HomeComponent)
   },
@@ -104,6 +59,13 @@ export default [
     data: { roles: ['admin', 'seller'] }
   },
   {
+    path: 'coverage-zones',
+    loadComponent: () =>
+      import('./seller/coverage-zones/coverage-zones.component').then(m => m.CoverageZonesComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin', 'seller'] }
+  },
+  {
     path: 'payment',
     loadComponent: () =>
       import('./seller/payment-help/payment-help.component').then(m => m.PaymentHelpComponent),
@@ -144,6 +106,13 @@ export default [
     path: 'dropshipping',
     loadComponent: () =>
       import('./admin/dropshipping/dropshipping.component').then(m => m.DropshippingComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'scraper',
+    loadComponent: () =>
+      import('./admin/scraper/scraper.component').then(m => m.ScraperComponent),
     canActivate: [authGuard],
     data: { roles: ['admin'] }
   },

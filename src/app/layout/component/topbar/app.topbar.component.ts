@@ -1,4 +1,4 @@
-import { Component, computed, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, computed, CUSTOM_ELEMENTS_SCHEMA, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -16,6 +16,7 @@ import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { InputTextModule } from 'primeng/inputtext';
 import { debounceTime, distinctUntilChanged, filter, Subject, switchMap, takeUntil } from 'rxjs';
+import { LocationComponent } from '../../../pages/product/location/location.component';
 
 @Component({
     selector: 'app-topbar',
@@ -30,8 +31,10 @@ import { debounceTime, distinctUntilChanged, filter, Subject, switchMap, takeUnt
         ButtonModule,
         InputGroupModule,
         InputGroupAddonModule,
-        InputTextModule
+        InputTextModule,
+        LocationComponent
     ],
+    schemas: [CUSTOM_ELEMENTS_SCHEMA],
     templateUrl: './app.topbar.component.html',
 })
 export class AppTopbarComponent implements OnInit, OnDestroy {
@@ -52,7 +55,8 @@ export class AppTopbarComponent implements OnInit, OnDestroy {
     private readonly destroy$ = new Subject<void>();
 
     searchCtrl = new FormControl<string>('', { nonNullable: true });
-    cartCount = 3;
+
+    minimumSearchLength = 3;
 
     @ViewChild('op') popover!: Popover;
 
@@ -72,12 +76,12 @@ export class AppTopbarComponent implements OnInit, OnDestroy {
 
         this.searchCtrl.valueChanges.pipe(
             debounceTime(1000),
-            filter((q: string) => q.length >= 3),
+            filter((q: string) => q.length >= this.minimumSearchLength),
             distinctUntilChanged(),
             switchMap(q => {
                 this.showSearchResult = false;
                 return this.productService.getAllProductsByQuery(q);
-            }), // tu endpoint con limit=10
+            }),
             takeUntil(this.destroy$)
         ).subscribe(results => {
             this.showSearchResult = true;

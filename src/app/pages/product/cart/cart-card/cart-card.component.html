@@ -41,6 +41,11 @@
                     <td class="px-6 py-4 font-bold">{{ (productCart.product.price * productCart.quantity) |
                         currency:'':'symbol':'1.0-0' }}</td>
                 </tr>
+                <tr>
+                    <td colspan="5" class="px-6 py-4 text-right font-semibold">
+                        Domicilio: {{ getDeliveryPrice() | currency:'':'symbol':'1.0-0' }}
+                    </td>
+                </tr>
                 <tr class="border-t font-semibold">
                     <td colspan="5" class="px-6 py-4 text-right">
                         @if (getTotalDiscount(order.products) > 0) {
@@ -77,6 +82,12 @@
                     currency:'':'symbol':'1.0-0' }}</span>
             </div>
         </div>
+
+        <div class="flex justify-between pt-2 border-t">
+            <span>Domicilio</span>
+            <span>{{ getDeliveryPrice() | currency:'':'symbol':'1.0-0' }}</span>
+        </div>
+        
         <div class="flex justify-between pt-2 border-t font-semibold">
             <span>Total</span>
             <span>{{ getTotal(order.products) | currency:'':'symbol':'1.0-0' }}</span>
@@ -92,11 +103,15 @@
         <div class="flex gap-4">
             <!-- Botón según estado -->
             <ng-container *ngIf="order.status === 'PENDIENTE'; else volverAPedir">
-                <button type="button"
+                @if (allowDelivery) {
+                    <button type="button"
                     class="bg-green-500 hover:bg-green-600 text-white rounded-full px-4 py-2 text-sm shadow-md flex items-center"
                     (click)="openFinishOrder()">
                     <i class="pi pi-whatsapp mr-2"></i> Finalizar compra
                 </button>
+                } @else {
+                    <span class="text-red-500">No tienes cobertura para entrega a domicilio</span>
+                }
             </ng-container>
             <ng-template #volverAPedir>
                 <button type="button"

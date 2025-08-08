@@ -1,5 +1,13 @@
 @use 'mixins' as *;
 
+.layout-topbar-location {
+    position: fixed;
+    padding-top: 60px;
+    background-color: var(--surface-card);
+    width: 100%;
+    z-index: 996;
+}
+
 .layout-topbar {
     position: fixed;
     height: 4rem;
@@ -15,9 +23,9 @@
 
     .layout-topbar-logo-container {
         height: 100%;
-        width: 20rem;
         display: flex;
         align-items: center;
+        gap: 1rem;
     }
 
     .layout-topbar-logo {

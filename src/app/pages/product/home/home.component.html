@@ -1,4 +1,4 @@
-@if (showBanner || role === 'admin') {
+@if (showBanner) {
 <ng-container>
   <div class="w-full bg-orange-500 text-white flex items-center justify-between px-4 py-2 shadow-md z-50 font-semibold">
     <div class="text-sm">
@@ -8,7 +8,7 @@
       <a [href]="whatsappLink()" target="_blank" rel="noopener"
         class="font-semibold underline hover:text-orange-200"><b>WhatsApp: {{phone}} </b></a>
     </div>
-    <button type="button" class="p-1 focus:outline-none" aria-label="Cerrar banner">
+    <button (click)="closeBanner()" type="button" class="p-1 focus:outline-none" aria-label="Cerrar banner">
       <i class="pi pi-times text-xl"></i>
     </button>
   </div>
@@ -16,7 +16,7 @@
   <div class="h-12"></div>
 </ng-container>
 }
-@if (false && (!showBanner || role === 'admin')) {
+@if (false && (!showBanner)) {
 <ng-container>
   <div class="w-full bg-orange-500 text-white flex items-center justify-between px-4 py-2 shadow-md z-50 font-semibold">
     <div class="text-sm">

@@ -11,6 +11,7 @@ import { FixedCartComponent } from "../fixed-cart/fixed-cart.component";
 import { CartService } from '../../service/cart.service';
 import { FormsModule } from '@angular/forms';
 import { TextareaModule } from 'primeng/textarea';
+import { AuthService } from '../../service/auth.service';
 
 @Component({
   selector: 'app-product-detail',
@@ -60,16 +61,20 @@ export class ProductDetailComponent implements OnInit {
 
   productId: string = '';
 
+  role: string = '';
+
   constructor(
     private readonly router: Router,
     private readonly productService: ProductService,
     private readonly userService: UserService,
     private readonly route: ActivatedRoute,
-    private readonly cartService: CartService
+    private readonly cartService: CartService,
+    private readonly authService: AuthService
   ) {
     const nav = this.router.getCurrentNavigation();
     this.product = nav?.extras?.state?.['product'] as Product;
     this.productId = this.route.snapshot.paramMap.get('uuid') ?? '';
+    this.role = this.authService.getValueFromToken('role');
   }
 
   relatedProducts: Product[] = []
@@ -139,6 +144,10 @@ export class ProductDetailComponent implements OnInit {
   validateOptions(): boolean {
     this.errors = {};
     let valid = true;
+
+    if (!this.product.customOptions || this.product.customOptions.length === 0) {
+      return true; // No hay opciones personalizadas, no hay validación necesaria
+    }
 
     this.product.customOptions.forEach(opt => {
       const key = opt['name'];

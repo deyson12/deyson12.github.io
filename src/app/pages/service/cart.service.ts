@@ -9,6 +9,7 @@ import { environment } from '../../../environments/environment';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { catchError, map, Observable, throwError } from 'rxjs';
 import { ConfirmOrderResponse } from '../../models/confirmOrderResponse';
+import { CoverageZonesService } from './coverage-zones.service';
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
@@ -27,7 +28,8 @@ export class CartService {
 
   constructor(
     private readonly messageService: MessageService,
-    private readonly http: HttpClient
+    private readonly http: HttpClient,
+    private readonly coverageZonesService: CoverageZonesService
   ) {
     this.loadOrders();
   }
@@ -57,19 +59,14 @@ export class CartService {
   }
 
   addProductToCart(product: Product, selectedOptions: { [key: string]: any }): void {
-
-    console.log('Agregando producto al carrito:', product);
-    console.log('Opciones seleccionadas:', selectedOptions);
-
     const pending = this.ordersSignal().find(o => o.sellerId === product.seller && o.status === 'PENDIENTE');
 
     const cartItem: ProductCart = { product, quantity: 1, selectedOptions };
 
-    console.log('Producto a agregar:', cartItem);
-
     if (pending) {
       this.addProduct(pending.id, cartItem);
     } else {
+
       const newOrder: Omit<Order, 'id' | 'products'> = {
         sellerId: product.seller,
         buyerId: '',
@@ -77,7 +74,8 @@ export class CartService {
         address: '',
         paymentType: 'EFECTIVO',
         changeFrom: 0,
-        location: [0, 0]
+        location: [0, 0],
+        deliveryPrice: 0
       };
       const created = this.create(newOrder);
       this.addProduct(created.id, cartItem);
@@ -101,6 +99,13 @@ export class CartService {
 
   create(data: Omit<Order, 'id' | 'products'> & { products?: ProductCart[] }): Order {
     const id = uuidv4();
+    const lat = localStorage.getItem('location') ? JSON.parse(localStorage.getItem('location') || '{}').latitude : 0;
+    const lng = localStorage.getItem('location') ? JSON.parse(localStorage.getItem('location') || '{}').longitude : 0;
+
+    const location: [number, number] = [lat, lng];
+
+    console.log('Seller:', data.sellerId, 'y datos:', location);
+
     const order: Order = {
       id: id,
       sellerId: data.sellerId,
@@ -110,7 +115,8 @@ export class CartService {
       address: data.address,
       paymentType: data.paymentType,
       changeFrom: data.changeFrom,
-      location: data.location || [0, 0]
+      location: location,
+      deliveryPrice: data.deliveryPrice,
     };
     this.updateOrders(list => [...list, order]);
     return order;

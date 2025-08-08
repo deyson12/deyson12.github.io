@@ -12,12 +12,17 @@ import { AuthService } from '../pages/service/auth.service';
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
 
-   constructor(private auth: AuthService) {}
+  constructor(private auth: AuthService) { }
 
   intercept(
     req: HttpRequest<any>,
     next: HttpHandler
   ): Observable<HttpEvent<any>> {
+
+    if (req.url.startsWith('https://maps.googleapis.com/maps/api/geocode/')) {
+      return next.handle(req);
+    }
+
     const token = this.auth.getToken();
 
     // Si hay token, clonar la petición y agregar Authorization

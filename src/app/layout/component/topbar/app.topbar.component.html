@@ -9,16 +9,19 @@
       <img class="h-full block md:hidden"
         [src]="isDarkTheme() ? './assets/img/logo-sm-dark.png' : './assets/img/logo-sm.png'" alt="">
     </a>
+    <div class="hidden md:block">
+      <app-location></app-location>
+    </div>
   </div>
 
   <div class="layout-topbar-actions">
 
-    <div class="md:block relative">
+    <div class="md:block relative max-w-md">
       <p-inputgroup>
         <p-inputgroup-addon class="!bg-orange-500">
           <i class="pi pi-search text-white"></i>
         </p-inputgroup-addon>
-        <input type="text" [formControl]="searchCtrl" placeholder="Buscar productos..." pInputText class="w-full" 
+        <input type="text" [formControl]="searchCtrl" placeholder="Buscar productos..." pInputText 
         (blur)="onSearchBlur()" (keydown.enter)="onSearchEnter()"/>
       </p-inputgroup>
 
@@ -51,8 +54,7 @@
         <div class="inline-flex items-center gap-2 px-4 py-2
               bg-indigo-500 text-white rounded-lg
               hover:bg-indigo-600 transition-colors">
-          <i class="pi pi-user text-xl"></i>
-          <span>ADMIN</span>
+          <iconify-icon icon="clarity:administrator-solid" width="18" height="18" class="layout-menuitem-icon"></iconify-icon>
         </div>
       </div>&nbsp;
 
@@ -127,4 +129,7 @@
       </div>
     </div>
   </div>
+</div>
+<div class="layout-topbar-location block md:hidden bg-gray-100 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors">
+  <app-location></app-location>
 </div>

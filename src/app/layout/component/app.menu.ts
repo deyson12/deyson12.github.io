@@ -12,7 +12,7 @@ import { ButtonModule } from 'primeng/button';
   selector: 'app-menu',
   standalone: true,
   imports: [CommonModule, AppMenuitem, RouterModule, ButtonModule],
-  template: `<ul class="layout-menu max-sm:pt-[60px]">
+  template: `<ul class="layout-menu max-sm:pt-[110px]">
         <ng-container *ngFor="let item of model; let i = index">
             <li app-menuitem *ngIf="!item.separator" [item]="item" [index]="i" [root]="true"></li>
             <li *ngIf="item.separator" class="menu-separator"></li>
@@ -59,20 +59,22 @@ export class AppMenu implements OnInit {
     const adminGroup: MenuItem = {
       label: 'Administrador',
       items: [
-        { label: 'Dashboard', icon: 'mdi:view-grid', routerLink: ['/pages/dashboard'] },
-        { label: 'Facturas', icon: 'icon-park-outline:bill', routerLink: ['/pages/invoice'] },
-        { label: 'Cache', icon: 'mdi:cached', routerLink: ['/pages/cache'] },
-        { label: 'Dropshipping ', icon: 'hugeicons:package', routerLink: ['/pages/dropshipping'] },
-        { label: 'Pruebas', icon: 'mdi:test-tube', routerLink: ['/pages/test'] },
+        { label: 'Dashboard', icon: 'streamline-color:dashboard-3-flat', routerLink: ['/pages/dashboard'] },
+        { label: 'Facturas', icon: 'icon-park:bill', routerLink: ['/pages/invoice'] },
+        { label: 'Cache', icon: 'streamline-color:database-refresh-flat', routerLink: ['/pages/cache'] },
+        { label: 'Dropshipping ', icon: 'noto:package', routerLink: ['/pages/dropshipping'] },
+        { label: 'Scraper', icon: 'fluent-color:code-block-32', routerLink: ['/pages/scraper'] },
+        { label: 'Pruebas', icon: 'fluent-emoji-flat:test-tube', routerLink: ['/pages/test'] },
       ]
     };
 
     const profileGroup: MenuItem = {
       label: 'Perfil vendedor',
       items: [
-        { label: 'Mi perfil', icon: 'mdi:account', routerLink: ['/pages/profile'] },
-        { label: 'Mis ventas', icon: 'mdi:cash-register', routerLink: ['/pages/my-sales'] },
-        { label: 'Pagos', icon: 'mdi:currency-usd', routerLink: ['/pages/payment'] },
+        { label: 'Mi perfil', icon: 'streamline-plump-color:user-multiple-accounts-flat', routerLink: ['/pages/profile'] },
+        { label: 'Mis ventas', icon: 'emojione:bar-chart', routerLink: ['/pages/my-sales'] },
+        { label: 'Mis zonas de cobertura', icon: 'fluent-color:location-ripple-20', routerLink: ['/pages/coverage-zones'] },
+        { label: 'Pagos', icon: 'streamline-color:dollar-coin-flat', routerLink: ['/pages/payment'] },
       ]
     };
 
@@ -91,14 +93,14 @@ export class AppMenu implements OnInit {
           items: [
             {
               label: 'Todos',
-              icon: 'material-symbols-light:package',
+              icon: 'twemoji:shopping-bags',
               routerLink: ['all']
             },
             ...categories.map(cat => ({
               label: cat.name,
               icon: cat.icon,
-              routerLink: ['/pages/' + cat.code]
-            }))
+              routerLink: ['/pages/products/' + cat.code]
+            })),
           ]
         };
 

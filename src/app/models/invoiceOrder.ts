@@ -1,7 +1,11 @@
 export interface InvoiceOrder {
-    id: string;
-    sellerId: string;
-    sellerName: string;
-    billingMoth: string;
-    
-}
+    date: string;
+    orderId: string;
+    subtotal: number;
+    orderProducts: {
+        id: string;
+        name: string;
+        quantity: number;
+        unitPrice: number;
+    }[];
+ }   

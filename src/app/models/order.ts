@@ -11,5 +11,6 @@ export interface Order {
   paymentType: string;
   changeFrom: number;
   location: [number, number];
+  deliveryPrice?: number;
 }
   

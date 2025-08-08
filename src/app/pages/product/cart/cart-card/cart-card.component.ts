@@ -19,6 +19,7 @@ import { UserPayload } from '../../../../models/selllerPayload';
 import { v4 as uuidv4 } from 'uuid';
 import { ToastService } from '../../../service/toast.service';
 import { environment } from '../../../../../environments/environment';
+import { CoverageZonesService } from '../../../service/coverage-zones.service';
 
 @Component({
   selector: 'app-cart-card',
@@ -41,7 +42,8 @@ export class CartCardComponent implements OnInit {
     sellerId: '',
     status: '',
     buyerId: '',
-    location: [0, 0]
+    location: [0, 0],
+    deliveryPrice: 0
   };
 
   paymentTypes = [
@@ -64,12 +66,15 @@ export class CartCardComponent implements OnInit {
 
   role: string = '';
 
+  allowDelivery: boolean = false;
+
   constructor(
     private readonly locationService: LocationService,
     private readonly cartService: CartService,
     private readonly userService: UserService,
     private readonly authService: AuthService,
-    private readonly toastService: ToastService
+    private readonly toastService: ToastService,
+    private readonly coverageZonesService: CoverageZonesService
   ) { }
 
 
@@ -81,7 +86,17 @@ export class CartCardComponent implements OnInit {
     });
 
     this.role = this.authService.getValueFromToken('role');
-    this.order.address = localStorage.getItem('address') || '';
+    this.order.address = localStorage.getItem('location') ? JSON.parse(localStorage.getItem('location') || '{}').address : '';
+
+
+
+    this.coverageZonesService.getDeliveryPrice(this.getLocation(), this.order.sellerId).subscribe({
+      next: (zone) => {
+        console.log('Zona de cobertura:', zone);
+        this.order.deliveryPrice = zone.deliveryPrice;
+        this.allowDelivery = zone.id !== undefined && zone.id !== null;
+      }
+    });
 
     this.userService.getUserById(this.order.sellerId).subscribe({
       next: (response: User) => {
@@ -98,8 +113,8 @@ export class CartCardComponent implements OnInit {
     this.displayFinishOrder = true;
   }
 
-  getTotal(productsCart: ProductCart[]) {
-    return productsCart.reduce((acc, productCart) => acc + productCart.product.price * productCart.quantity, 0);
+  getTotal(productsCart: ProductCart[]) : number{
+    return productsCart.reduce((acc, productCart) => acc + productCart.product.price * productCart.quantity, 0) + (this.order.deliveryPrice || 0);
   }
 
   // originalPrice can be null
@@ -170,14 +185,9 @@ export class CartCardComponent implements OnInit {
   }
 
   finishOrderAndSendWhatsApp() {
-    this.getLocation()
-      .then((location) => {
-        this.order.location = location;
-        this.continueOrder();
-      })
-      .catch((error) => {
-        this.continueOrder();
-      });
+    const location = this.getLocation();
+    this.order.location = location;
+    this.continueOrder();
   }
 
   continueOrder() {
@@ -209,10 +219,10 @@ export class CartCardComponent implements OnInit {
     this.order.products = [];
   }
 
-  async getLocation(): Promise<[number, number]> {
+  getLocation(): [number, number] {
     try {
-      const location = await this.locationService.getCurrentLocation();
-      return [location.latitude, location.longitude];
+      return [localStorage.getItem('location') ? JSON.parse(localStorage.getItem('location') || '{}').latitude : 0,
+        localStorage.getItem('location') ? JSON.parse(localStorage.getItem('location') || '{}').longitude : 0];
     } catch (error) {
       return [0, 0];
     }
@@ -253,14 +263,13 @@ https://maps.google.com/?q=${order.location[0]},${order.location[1]}\n`;
 
 *Orden:* ${order.id}
 
-${products}
-*Total:* ${this.formatCurrency(order.products.reduce((acc, productCart) => acc + productCart.product.price * productCart.quantity, 0))}
+${products}*Domicilio:* ${this.formatCurrency(order.deliveryPrice || 0)}
+*Total:* ${this.formatCurrency(this.getTotal(order.products))}
 
 ${payment}
 
 *Dirección:* ${order.address}
 ${address}
-
 *Confirmar orden:*
 ${environment.frontUrl}/auth/confirm/${order.id}\n
 *No se concretó el pedido? Cancelar orden:*
@@ -290,6 +299,10 @@ Gracias por tu compra.`.trim();
     const userAgent = navigator.userAgent;
     // Detectar dispositivos móviles comunes
     return /android|iphone|ipad|ipod/i.test(userAgent);
+  }
+
+  getDeliveryPrice(): string|number {
+    return this.order.deliveryPrice || 0;
   }
 
 }

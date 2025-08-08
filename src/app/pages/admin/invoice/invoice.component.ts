@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { TableModule } from 'primeng/table';
 import { InputTextModule } from 'primeng/inputtext';
@@ -14,6 +14,8 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { PrimeNG } from 'primeng/config';
 import { ToastService } from '../../service/toast.service';
 
+import html2pdf from 'html2pdf.js';
+
 @Component({
   selector: 'app-invoice',
   imports: [
@@ -27,6 +29,7 @@ import { ToastService } from '../../service/toast.service';
 export class InvoiceComponent implements OnInit {
 
   @Input() sellerId!: string;
+  @ViewChild('facturaContainer') facturaContainer!: ElementRef;
 
   es: any;
 
@@ -39,6 +42,7 @@ export class InvoiceComponent implements OnInit {
   activeTab = 0;
   selectedMonth: Date;
   displayPaymentForm = false;
+  displayInvoiceForm = false;
   message = '';
 
   pendingInvoices: Invoice[] = [];
@@ -94,6 +98,9 @@ export class InvoiceComponent implements OnInit {
   }
 
   fillInvoices(list: Invoice[]) {
+
+    console.log('Facturas cargadas:', list);
+
     this.pendingInvoices =  list.filter(inv => inv.status === 'PENDING' || inv.status === 'SENT');
     this.paidInvoices = list.filter(inv => inv.status === 'PAID');
 
@@ -130,6 +137,8 @@ export class InvoiceComponent implements OnInit {
 
   viewInvoice(invoice: Invoice) {
     // lógica para ver factura
+    this.invoice = invoice;
+    this.displayInvoiceForm = true;
   }
 
   getWhatsAppLink(invoice: Invoice): string {
@@ -166,6 +175,10 @@ export class InvoiceComponent implements OnInit {
     this.displayPaymentForm = false;
   }
 
+  closeInvoiceForm() {
+    this.displayInvoiceForm = false;
+  }
+
   get whatsappHelpLink(): string {
     const msg = 
       'Hola, requiero ayuda para pagar mi factura:\n\n' +
@@ -189,6 +202,16 @@ export class InvoiceComponent implements OnInit {
       }
     });
   }
-    
+
+  descargarPDF() {
+    const opt = {
+      margin: 10,
+      filename: `factura_${this.invoice?.billingMonth.toString().replace(/\s+/g, '_')}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    html2pdf().from(this.facturaContainer.nativeElement).set(opt).save();
+  }
 
 }

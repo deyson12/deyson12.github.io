@@ -11,7 +11,7 @@ import { ProductService } from '../../service/product.service';
 
 @Component({
   selector: 'app-seller-profile',
-  imports: [CommonModule, CardComponent, CarouselComponent],
+  imports: [CommonModule, CardComponent, /*CarouselComponent*/],
   providers: [CartService],
   templateUrl: './seller-profile.component.html',
   styleUrl: './seller-profile.component.scss'
