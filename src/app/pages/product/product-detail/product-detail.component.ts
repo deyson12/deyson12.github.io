@@ -28,6 +28,8 @@ import { AuthService } from '../../service/auth.service';
 })
 export class ProductDetailComponent implements OnInit {
 
+  expanded = false;
+
   product!: Product;
 
   /** Color seleccionado (si lo usas) */
@@ -231,4 +233,9 @@ export class ProductDetailComponent implements OnInit {
     this.addProductToCart(product);
     this.router.navigate(['/pages/cart']);
   }
+
+  get descHtml(): string {
+  // Renderiza <b>, <i>, etc. y respeta saltos de línea
+  return (this.product?.description ?? '').replace(/\n/g, '<br>');
+}
 }

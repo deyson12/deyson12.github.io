@@ -85,13 +85,13 @@ export class CreateSellerComponent implements OnInit, OnDestroy {
   ) {
     this.userId = this.authService.getValueFromToken('userId');
     this.role = this.authService.getValueFromToken('role');
-    this.isBuyer = this.role === 'buyer';
+    this.isBuyer = this.role === 'BUYER';
     this.uuid = this.userId ? this.userId : this.uuid;
   }
 
   ngOnInit(): void {
 
-    if (this.role === 'seller') {
+    if (this.role === 'SELLER') {
       if (this.authService.getValueFromToken('status') == 'PENDIENTE') {
         this.activeStep = 2;
         this.startTimer();

@@ -49,28 +49,35 @@ export default [
     loadComponent: () =>
       import('./seller/profile/profile.component').then(m => m.ProfileComponent),
     canActivate: [authGuard],
-    data: { roles: ['admin', 'seller'] }
+    data: { roles: ['ADMIN', 'SELLER'] }
+  },
+  {
+    path: 'my-products',
+    loadComponent: () =>
+      import('./seller/my-products/my-products.component').then(m => m.MyProductsComponent),
+    canActivate: [authGuard],
+    data: { roles: ['ADMIN', 'SELLER'] }
   },
   {
     path: 'my-sales',
     loadComponent: () =>
       import('./seller/my-sales/my-sales.component').then(m => m.MySalesComponent),
     canActivate: [authGuard],
-    data: { roles: ['admin', 'seller'] }
+    data: { roles: ['ADMIN', 'SELLER'] }
   },
   {
     path: 'coverage-zones',
     loadComponent: () =>
       import('./seller/coverage-zones/coverage-zones.component').then(m => m.CoverageZonesComponent),
     canActivate: [authGuard],
-    data: { roles: ['admin', 'seller'] }
+    data: { roles: ['ADMIN', 'SELLER'] }
   },
   {
     path: 'payment',
     loadComponent: () =>
       import('./seller/payment-help/payment-help.component').then(m => m.PaymentHelpComponent),
     canActivate: [authGuard],
-    data: { roles: ['admin', 'seller'] }
+    data: { roles: ['ADMIN', 'SELLER'] }
   },
 
   // Admin routes
@@ -79,42 +86,49 @@ export default [
     loadComponent: () =>
       import('./admin/invoice/invoice.component').then(m => m.InvoiceComponent),
     canActivate: [authGuard],
-    data: { roles: ['admin'] }
+    data: { roles: ['ADMIN'] }
   },
   {
     path: 'test',
     loadComponent: () =>
       import('./admin/test/test.component').then(m => m.TestComponent),
     canActivate: [authGuard],
-    data: { roles: ['admin'] }
+    data: { roles: ['ADMIN'] }
   },
   {
     path: 'dashboard',
     loadComponent: () =>
       import('./admin/dashboard/dashboard.component').then(m => m.DashboardComponent),
     canActivate: [authGuard],
-    data: { roles: ['admin'] }
+    data: { roles: ['ADMIN'] }
   },
   {
     path: 'cache',
     loadComponent: () =>
       import('./admin/cache/cache.component').then(m => m.CacheComponent),
     canActivate: [authGuard],
-    data: { roles: ['admin'] }
+    data: { roles: ['ADMIN'] }
+  },
+  {
+    path: 'orders',
+    loadComponent: () =>
+      import('./admin/orders/orders.component').then(m => m.OrdersComponent),
+    canActivate: [authGuard],
+    data: { roles: ['ADMIN'] }
   },
   {
     path: 'dropshipping',
     loadComponent: () =>
       import('./admin/dropshipping/dropshipping.component').then(m => m.DropshippingComponent),
     canActivate: [authGuard],
-    data: { roles: ['admin'] }
+    data: { roles: ['ADMIN'] }
   },
   {
     path: 'scraper',
     loadComponent: () =>
       import('./admin/scraper/scraper.component').then(m => m.ScraperComponent),
     canActivate: [authGuard],
-    data: { roles: ['admin'] }
+    data: { roles: ['ADMIN'] }
   },
 
   { path: '**', redirectTo: '/pages/all' }

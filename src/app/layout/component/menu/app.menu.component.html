@@ -1,0 +1,19 @@
+<div class=" overflow-y-auto overscroll-contain">
+  <ul class="layout-menu max-sm:pt-[110px] max-sm:pb-[calc(env(safe-area-inset-bottom)+80px)]">
+    <ng-container *ngFor="let item of model; let i = index">
+      <li app-menuitem *ngIf="!item.separator" [item]="item" [index]="i" [root]="true"></li>
+      <li *ngIf="item.separator" class="menu-separator"></li>
+    </ng-container>
+
+    <!-- usa <li>, no ng-container, para que apliquen las clases -->
+    <li class="layout-menu max-sm:pt-[10px]" *ngIf="!userId" style="padding: 0.75rem 1rem;">
+      <button pButton type="button" icon="pi pi-power-off" label="Iniciar Sesión" routerLink="/auth/login"></button>
+    </li>
+    <li class="layout-menu max-sm:pt-[10px]" *ngIf="userId" style="padding: 0.75rem 1rem;">
+      <button pButton type="button" icon="pi pi-power-off" label="Cerrar Sesión" routerLink="/pages/logout"></button>
+    </li>
+
+    <!-- pequeño “spacer” extra por si acaso -->
+    <li aria-hidden="true" class="h-10 md:hidden"></li>
+  </ul>
+</div>

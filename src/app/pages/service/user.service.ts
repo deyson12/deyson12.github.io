@@ -27,4 +27,9 @@ export class UserService {
   changeStatus(id: string, status: string): Observable<GenericResponse> {
     return this.http.put<GenericResponse>(`${this.apiUrl}/change-status/${id}`, { status });
   }
+
+  updateUser(userId: string, arg1: { name: string; phone: string; }) {
+    let url = `${this.apiUrl}/:userId`.replace(':userId', userId);
+    return this.http.put(url, arg1);
+  }
 }

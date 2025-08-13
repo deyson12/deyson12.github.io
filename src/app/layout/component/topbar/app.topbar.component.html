@@ -6,7 +6,7 @@
     <a class="layout-topbar-logo h-full" routerLink="/">
       <img class="h-full hidden md:block" [src]="isDarkTheme() ? './assets/img/logo-dark.png' : './assets/img/logo.png'"
         alt="">
-      <img class="h-full block md:hidden"
+      <img class="h-12 w-12 block md:hidden"
         [src]="isDarkTheme() ? './assets/img/logo-sm-dark.png' : './assets/img/logo-sm.png'" alt="">
     </a>
     <div class="hidden md:block">
@@ -48,9 +48,9 @@
     </div>
 
     <!-- Visible sólo en pantallas ≥ md (>=768px) -->
-    <div *ngIf="role === '' || role === 'buyer' || role === 'admin'" class="hidden md:block">
+    <div *ngIf="role === '' || role === 'B' || role === 'ADMIN'" class="hidden md:block">
       <!-- Sólo Admin -->
-      <div *ngIf="role === 'admin'" class="inline">
+      <div *ngIf="role === 'ADMIN'" class="inline">
         <div class="inline-flex items-center gap-2 px-4 py-2
               bg-indigo-500 text-white rounded-lg
               hover:bg-indigo-600 transition-colors">

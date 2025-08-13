@@ -1,5 +1,6 @@
 
 import { ProductCart } from "./product-cart";
+import { User } from "./user";
 
 export interface Order {
   id: string;
@@ -12,5 +13,8 @@ export interface Order {
   changeFrom: number;
   location: [number, number];
   deliveryPrice?: number;
+  createdAt?: Date;
+  seller?: User;
+  buyer?: User;
 }
   

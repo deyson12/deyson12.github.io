@@ -17,7 +17,7 @@
                         <label for="email1" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">
                             Email
                         </label>
-                        <input pInputText id="email1" name="email" type="email" placeholder="Email address"
+                        <input pInputText id="email1" name="email" type="email" placeholder="Email / Correo"
                             class="w-full mb-1" [(ngModel)]="email" required email />
                         <div *ngIf="loginForm.submitted && loginForm.controls['email']?.errors"
                             class="text-red-600 mt-1 text-sm">
@@ -34,7 +34,7 @@
                             class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">
                             Contraseña
                         </label>
-                        <p-password id="password1" name="password" [(ngModel)]="password" placeholder="Password"
+                        <p-password id="password1" name="password" [(ngModel)]="password" placeholder="Contraseña"
                             [toggleMask]="true" styleClass="w-full" [fluid]="true" [feedback]="false" required
                             minlength="4"></p-password>
                         <div *ngIf="loginForm.submitted && loginForm.controls['password']?.errors"

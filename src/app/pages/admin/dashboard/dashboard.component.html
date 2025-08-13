@@ -58,14 +58,14 @@
           <td><p-tag [value]="user.status" [severity]="getSeverity(user.status)"></p-tag></td>
           <td>
             @if (user.status === 'CONFIRMADO' || user.status === 'DESHABILITADO') {
-            <button (click)="enable(user)" 
+            <button (click)="enable(user)"
               class="inline-flex items-center px-3 py-1 border bg-green-600 border-green-500 text-sm font-medium rounded hover:bg-green-500">
               <i class="pi pi-check text-white"></i>
             </button> &nbsp;
             }
 
             @if (user.status === 'CONFIRMADO' || user.status === 'HABILITADO') {
-            <button (click)="disable(user)" 
+            <button (click)="disable(user)"
               class="inline-flex items-center px-3 py-1 border bg-red-600 border-red-500 text-sm font-medium rounded hover:bg-red-500">
               <i class="pi pi-minus-circle text-white"></i>
             </button>
@@ -75,12 +75,62 @@
       </ng-template>
     </p-table>
   </section>
-
 </div>
 <div class="card mb-2">
+  Pedidos pendientes con mas de 2 días de antigüedad
+  <section class="mb-6">
 
-
-  <!-- Sección Banners -->
+    <p-table #dt3 [value]="pendingOrders" dataKey="id" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10,25,50]"
+      [globalFilterFields]="['sellerId','buyerId','status','address','paymentType']"
+      [tableStyle]="{ 'min-width': '60rem' }">
+      <ng-template #caption>
+        <ng-container *ngTemplateOutlet="captionFilter"></ng-container>
+      </ng-template>
+      <ng-template #header>
+        <tr>
+          <th>Vendedor</th>
+          <th>Comprador</th>
+          <th>Estado</th>
+          <th>Dirección</th>
+          <th>Tipo de Pago</th>
+          <th>Cambio de</th>
+          <th>Acciones</th>
+        </tr>
+        <tr>
+          <th><p-columnFilter type="text" field="sellerId"></p-columnFilter></th>
+          <th><p-columnFilter type="text" field="buyerId"></p-columnFilter></th>
+          <th><p-columnFilter type="text" field="status"></p-columnFilter></th>
+          <th><p-columnFilter type="text" field="address"></p-columnFilter></th>
+          <th><p-columnFilter type="text" field="paymentType"></p-columnFilter></th>
+          <th><p-columnFilter type="text" field="changeFrom"></p-columnFilter></th>
+          <th></th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-order>
+        <tr>
+          <td>{{ order.seller.name }}</td>
+          <td>{{ order.buyer?.name || 'anonimo' }}</td>
+          <td>{{ order.status }}</td>
+          <td>{{ order.address }}</td>
+          <td>{{ order.paymentType }}</td>
+          <td>{{ order.changeFrom }}</td>
+          <td>
+            <!-- Botones de Whatsapp y cancelar orden -->
+            <button pButton icon="pi pi-whatsapp" class="p-button-text p-button-sm" (click)="sendWhatsApp(order)">
+              Vendedor</button>
+            <button pButton icon="pi pi-whatsapp" class="p-button-text p-button-sm"
+              (click)="sendWhatsAppToBuyer(order)"> Comprador</button>
+            <button pButton icon="pi pi-times" class="p-button-text p-button-sm" (click)="cancelOrder(order)">
+              Cancelar</button>
+            <button pButton icon="pi pi-check-circle" class="p-button-text p-button-sm" (click)="confirmOrder(order)">
+              Confirmar</button>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </section>
+</div>
+<div class="card mb-2">
   <section class="mb-6">
     <h2 class="text-xl font-semibold mb-8">Banners</h2>
     <p-table #dt2 [value]="banners" dataKey="id" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10,25,50]"
@@ -129,8 +179,7 @@
     </p-table>
   </section>
 </div>
-<div class="card mb-2">
-  <!-- Sección Categorías -->
+<!--div class="card mb-2">
   <section class="mb-6">
     <h2 class="text-xl font-semibold mb-8">Categorías</h2>
     <p-table #dt3 [value]="categories" dataKey="id" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10,25,50]"
@@ -180,9 +229,8 @@
       </ng-template>
     </p-table>
   </section>
-</div>
-<div class="card mb-2">
-  <!-- Sección Planes -->
+</div-->
+<!--div- class="card mb-2">
   <section class="mb-6">
     <h2 class="text-xl font-semibold mb-8">Planes</h2>
     <p-table #dt4 [value]="plans" dataKey="id" editable="true" [paginator]="true" [rows]="10"
@@ -239,9 +287,8 @@
       </ng-template>
     </p-table>
   </section>
-</div>
-<div class="card mb-2">
-  <!-- Sección Subscripciones -->
+</div-->
+<!--div class="card mb-2">
   <section class="mb-6">
     <h2 class="text-xl font-semibold mb-8">Subscripciones</h2>
     <p-table #dt5 [value]="subscriptions" dataKey="id" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10,25,50]"
@@ -288,4 +335,4 @@
       </ng-template>
     </p-table>
   </section>
-</div>
+</div-->

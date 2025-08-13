@@ -103,13 +103,13 @@
         <div class="flex gap-4">
             <!-- Botón según estado -->
             <ng-container *ngIf="order.status === 'PENDIENTE'; else volverAPedir">
-                @if (allowDelivery) {
+                @if (allowDelivery === 1) {
                     <button type="button"
                     class="bg-green-500 hover:bg-green-600 text-white rounded-full px-4 py-2 text-sm shadow-md flex items-center"
                     (click)="openFinishOrder()">
                     <i class="pi pi-whatsapp mr-2"></i> Finalizar compra
                 </button>
-                } @else {
+                } @else if (allowDelivery === -1) {
                     <span class="text-red-500">No tienes cobertura para entrega a domicilio</span>
                 }
             </ng-container>
@@ -153,7 +153,7 @@
                         </label>
                         <input type="text" pInputText placeholder="Dirección completa incluido apartamento o piso"
                             [(ngModel)]="order.address" name="address" required #addressCtrl="ngModel"
-                            class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-400" />
+                            class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-400" disabled="true" />
                         <div *ngIf="addressCtrl.invalid && (addressCtrl.dirty || form.submitted)"
                             class="text-red-600 text-sm">
                             <div *ngIf="addressCtrl.errors?.['required']">
@@ -198,11 +198,11 @@
                     <!-- Crear cuenta? -->
                     <div *ngIf="role === ''" class="flex items-center space-x-2">
                         <p-checkbox [(ngModel)]="createAccount" name="createAccount" binary="true"></p-checkbox>
-                        <label class="text-sm text-gray-700">¿Quieres crear cuenta?</label>
+                        <label class="text-sm text-gray-700">¿Crear cuenta rápida para futuras compras?</label>
                     </div>
 
                     <!-- Campos adicionales si crear cuenta -->
-                    <div *ngIf="createAccount" class="space-y-4 pl-6 border-l-2 border-green-200">
+                    <div class="space-y-4 pl-6 border-l-2 border-green-200">
                         <!-- Nombre -->
                         <div class="space-y-1">
                             <label class="block text-sm font-medium text-gray-700">Nombre</label>
@@ -217,7 +217,7 @@
                         </div>
 
                         <!-- Email -->
-                        <div class="space-y-1">
+                        <div *ngIf="createAccount" class="space-y-1">
                             <label class="block text-sm font-medium text-gray-700">Email</label>
                             <input type="email" pInputText [(ngModel)]="email" name="email" required email
                                 #emailCtrl="ngModel"
@@ -261,7 +261,7 @@
                         </div>
 
                         <!-- Contraseña -->
-                        <div class="space-y-1">
+                        <div *ngIf="createAccount" class="space-y-1">
                             <label class="block text-sm font-medium text-gray-700">Contraseña</label>
                             <input type="password" pInputText [(ngModel)]="password" name="password" required
                                 minlength="6" #passwordCtrl="ngModel" placeholder="Mínimo 6 caracteres"
@@ -278,7 +278,7 @@
                         </div>
 
                         <!-- Confirmar contraseña -->
-                        <div class="space-y-1">
+                        <div *ngIf="createAccount" class="space-y-1">
                             <label class="block text-sm font-medium text-gray-700">
                                 Confirmar contraseña (Diferentes? {{password !== confirmPassword}})
                             </label>
@@ -301,12 +301,12 @@
                     </div>
 
                     <!-- Recordar dirección -->
-                    <div class="flex items-center space-x-2">
+                    <!--div class="flex items-center space-x-2">
                         <p-checkbox [(ngModel)]="rememberAddress" name="rememberAddress" binary="true"></p-checkbox>
                         <label class="text-sm text-gray-700">
                             Recordar esta dirección para una próxima compra
                         </label>
-                    </div>
+                    </div-->
 
                     <!-- Botón Finalizar -->
                     <div class="pt-4 border-t border-gray-200">

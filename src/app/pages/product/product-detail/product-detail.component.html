@@ -1,4 +1,4 @@
-<div class="max-w-7xl mx-auto p-6 flex">
+<div class="max-w-7xl mx-auto flex">
   <!-- Ahora es flex y el hijo flex-1 -->
   <div *ngIf="product" class="flex-1 card rounded-lg shadow-lg p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
 
@@ -49,9 +49,19 @@
         {{ product.name }}
       </h1>
 
-      <p class="mb-3 whitespace-pre-line">
-  {{ product.description }}
-</p>
+      <div
+  class="mb-3 overflow-hidden"
+  [ngClass]="{ 'line-clamp-5': !expanded }"
+  [innerHTML]="descHtml">
+</div>
+
+      <div class="mb-3">
+        <a *ngIf="(product.description?.split('\n')?.length ?? 0) > 5 
+         || (product.description?.length ?? 0) > 150" class="text-blue-500 cursor-pointer"
+        (click)="expanded = !expanded">
+        {{ expanded ? 'Ver menos' : 'Ver más...' }}
+      </a>
+      </div>
 
       <!-- Valoración -->
       <!--div class="flex items-center mb-4">
@@ -89,7 +99,7 @@
         </span>
       </div>
 
-      @if (role === 'admin' && product.dropshippingUrl) {
+      @if (role === 'ADMIN' && product.dropshippingUrl) {
       <div class="mb-4">
         <span class="text-sm text-gray-600">Precio de dropshipping:</span>
         <span class="text-lg font-bold text-blue-500">
@@ -223,7 +233,7 @@
         <span class="text-blue-500 underline"> {{user?.businessName}} - ({{user?.name}})</span>
       </p>
 
-      @if (role === 'admin' && product.dropshippingUrl) {
+      @if (role === 'ADMIN' && product.dropshippingUrl) {
       <p class="text-sm text-gray-600 mb-2">
         Dropshipping URL
         <span class="text-blue-500 underline">

@@ -52,7 +52,7 @@ export class CartCardComponent implements OnInit {
   ];
 
   createAccount = false;
-  rememberAddress = true;
+  // rememberAddress = true;
 
   name = '';
   email = '';
@@ -66,7 +66,7 @@ export class CartCardComponent implements OnInit {
 
   role: string = '';
 
-  allowDelivery: boolean = false;
+  allowDelivery: number = 0;
 
   constructor(
     private readonly locationService: LocationService,
@@ -86,15 +86,19 @@ export class CartCardComponent implements OnInit {
     });
 
     this.role = this.authService.getValueFromToken('role');
+
+    if (this.role != '') {
+      this.name = this.authService.getValueFromToken('name');
+      this.phone = this.authService.getValueFromToken('phone').replace('+57', ''); // Eliminar caracteres no numéricos
+    }
+
     this.order.address = localStorage.getItem('location') ? JSON.parse(localStorage.getItem('location') || '{}').address : '';
-
-
 
     this.coverageZonesService.getDeliveryPrice(this.getLocation(), this.order.sellerId).subscribe({
       next: (zone) => {
         console.log('Zona de cobertura:', zone);
         this.order.deliveryPrice = zone.deliveryPrice;
-        this.allowDelivery = zone.id !== undefined && zone.id !== null;
+        this.allowDelivery = zone.id !== undefined && zone.id !== null ? 1 : -1;
       }
     });
 
@@ -148,20 +152,34 @@ export class CartCardComponent implements OnInit {
 
   finishOrder() {
 
-    if (this.rememberAddress) {
+    /*if (this.rememberAddress) {
       localStorage.setItem('address', this.order.address);
     } else {
       localStorage.removeItem('address');
-    }
+    }*/
 
-    if (this.createAccount) {
-      console.log('Crear cuenta nueva');
+    const userId = this.authService.getValueFromToken('userId');
+    
+    if (userId) {
+      this.userService.updateUser(userId, {
+        name: this.name,
+        phone: '+57'.concat(this.phone)
+      }).subscribe({
+        next: () => {
+          this.order.buyerId = userId;
+          this.finishOrderAndSendWhatsApp();
+        },
+        error: (err) => {
+          this.toastService.showError('Error', err.message);
+        }
+      });
+    } else {
       const payload: UserPayload = {
-        userId: uuidv4(),
+        userId: !userId ? uuidv4() : userId,
         name: this.name,
         businessName: '',
         image: '',
-        email: this.email,
+        email: this.email || uuidv4(),
         phone: this.phone,
         password: this.password,
         exist: false,
@@ -171,17 +189,16 @@ export class CartCardComponent implements OnInit {
       this.authService.createClient(payload).subscribe({
         next: (token: string) => {
           this.authService.setToken(token);
-          this.role = 'buyer';
+          this.order.buyerId = this.authService.getValueFromToken('userId');
+          this.role = 'BUYER';
           this.finishOrderAndSendWhatsApp();
         },
         error: (err) => {
           this.toastService.showError('Error', err.message);
         }
       });
-    } else {
-      this.order.buyerId = this.authService.getValueFromToken('userId');
-      this.finishOrderAndSendWhatsApp();
     }
+    
   }
 
   finishOrderAndSendWhatsApp() {

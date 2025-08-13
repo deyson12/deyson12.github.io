@@ -1,5 +1,5 @@
 import { Component, ElementRef } from '@angular/core';
-import { AppMenu } from './app.menu';
+import { AppMenu } from './menu/app.menu.component';
 
 @Component({
     selector: 'app-sidebar',

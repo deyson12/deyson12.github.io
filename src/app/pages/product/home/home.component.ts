@@ -81,7 +81,7 @@ export class HomeComponent implements OnInit {
 
     });
 
-    this.showBanner = this.role != 'seller';
+    this.showBanner = this.role != 'SELLER';
 
   }
 
@@ -122,7 +122,8 @@ export class HomeComponent implements OnInit {
   }
 
   whatsappLink(): string {
-    const message = `Hola, deseo actualizar mi plan!`;
+    // Mensaje bonito y formateado que diga algo como "Hola, quiero vender priductos en ventas 7 Lunas"
+    const message = 'Hola, quiero vender productos en ventas 7 Lunas. ¿Cómo puedo empezar?';
     return `https://wa.me/${this.whatsAppNumber}?text=${encodeURIComponent(message)}`;
   }
 

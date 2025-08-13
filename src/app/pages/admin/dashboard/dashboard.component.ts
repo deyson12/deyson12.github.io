@@ -20,10 +20,13 @@ import { CategoryService } from '../../service/category.service';
 import { BannerService } from '../../service/banner.service';
 import { PlanService } from '../../service/plan.service';
 import { GenericResponse } from '../../../models/genericResponse';
+import { Order } from '../../../models/order';
+import { OrderService } from '../../service/order.service';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule, TableModule, InputTextModule, ButtonModule, TagModule, CalendarModule,
+  imports: [
+    CommonModule, TableModule, InputTextModule, ButtonModule, TagModule, CalendarModule,
     TabViewModule, FormsModule, IconFieldModule, InputIconModule, SelectModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './dashboard.component.html',
@@ -35,6 +38,22 @@ export class DashboardComponent implements OnInit {
   categories: Category[] = [];
   plans: Plan[] = [];
   subscriptions: Subscription[] = [];
+
+  /*
+  export interface Order {
+    id: string;
+    sellerId: string;
+    buyerId: string;
+    products: ProductCart[];
+    status: string;
+    address: string;
+    paymentType: string;
+    changeFrom: number;
+    location: [number, number];
+    deliveryPrice?: number;
+  }
+    */
+  pendingOrders: Order[] = [];
 
   userStatuses = [
     { label: 'Inicial', value: 'INICIAL', color: 'warn' },
@@ -48,7 +67,8 @@ export class DashboardComponent implements OnInit {
     private readonly userService: UserService,
     private readonly categoryService: CategoryService,
     private readonly bannerService: BannerService,
-    private readonly planService: PlanService
+    private readonly planService: PlanService,
+    private readonly orderService: OrderService
   ) { }
 
   ngOnInit(): void {
@@ -71,6 +91,10 @@ export class DashboardComponent implements OnInit {
       ];
 
     });
+
+    this.orderService.getPendingOrders().subscribe(orders => {
+      this.pendingOrders = orders;
+    });
   }
 
   loadUsers() {
@@ -85,14 +109,14 @@ export class DashboardComponent implements OnInit {
 
   enable(user: User): void {
     this.userService.changeStatus(user.id, 'HABILITADO').subscribe({
-        next: (response: GenericResponse) => {
-          console.log(response.code);
-          this.loadUsers();
-        },
-        error: (error) => {
-          console.error(error);
-        }
-      });
+      next: (response: GenericResponse) => {
+        console.log(response.code);
+        this.loadUsers();
+      },
+      error: (error) => {
+        console.error(error);
+      }
+    });
   }
 
   disable(user: User): void {
@@ -147,6 +171,48 @@ export class DashboardComponent implements OnInit {
 
   toggleSubscription(sub: Subscription): void {
     sub.isActive = !sub.isActive;
+  }
+
+  sendWhatsApp(order: Order): void {
+    const message = `Hola, el pedido con *ID ${order.id}* está pendiente de ser procesado.  
+Para generar la factura y evitar reprocesos, es necesario que confirme la orden o la cancele cuanto antes.`;
+    const phoneNumber = order.seller?.phone;
+    const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
+  }
+
+  sendWhatsAppToBuyer(order: Order): void {
+
+    const message = `Hola, el día *${this.formatDate(order.createdAt)}* se generó el pedido con *ID ${order.id.split('-')[0]}*, nos puedes informar por favor si dicho pedido fue entregado.
+
+Detalle del pedido:
+
+*Vendedor:*  ${order.seller?.businessName} (${order.seller?.name})
+*Productos:* ${order.products.map(p => `${p.product.name} x ${p.quantity}`).join(', ')}
+*Dirección:* ${order.address}
+
+Te agradecemos tu pronta respuesta, esto nos ayudará a mejorar nuestro servicio.`;
+
+    const url = `https://wa.me/${order.buyer?.phone}?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
+  }
+
+  formatDate(date: Date | undefined): string {
+    if (!date) return '';
+    // Formatear como ejemplo 01 de enero de 2023 en español
+    return new Intl.DateTimeFormat('es-ES', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    }).format(new Date(date));
+  }
+
+  cancelOrder(order: Order): void {
+    // TODO: Implementar cancelación de orden
+  }
+
+  confirmOrder(order: Order): void {
+
   }
 
 }
