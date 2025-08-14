@@ -70,7 +70,7 @@
       </ng-template>
 
       <ng-template #body let-p>
-        <tr class="border-t hover:bg-gray-50" *ngIf="!p.description">
+        <tr class="border-t hover:bg-gray-50">
           <td class="px-4 py-2">
             <img [src]="p.image" alt="{{ p.name }}" class="w-12 h-12 object-cover rounded"
               onerror="this.onerror=null; this.src='assets/img/sin-producto.png';" />
