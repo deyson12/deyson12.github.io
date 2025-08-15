@@ -146,4 +146,4 @@ Este proyecto está bajo la licencia MIT. Ve el archivo [LICENSE](LICENSE) para 
 
 ## 📬 Contacto
 Desarrollador: Deyson Estrada  
-Correo: tu-email@dominio.com
+Correo: deyson12@gmail.com

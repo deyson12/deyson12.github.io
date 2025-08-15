@@ -37,8 +37,7 @@ export class CoverageZonesComponent implements OnInit {
   whatsAppNumber = Constants.whatsAppNumber;
 
   bannerVisible = true;
-
-  center!: google.maps.LatLngLiteral;
+  center: google.maps.LatLngLiteral = { lat: 6.255504965127156, lng: -75.57746916699779 }; // Default center
   markerPosition!: google.maps.LatLngLiteral;
 
   polygons: PolygonData[] = [];
