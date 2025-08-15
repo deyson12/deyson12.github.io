@@ -112,7 +112,9 @@
                 } @else if (allowDelivery === -1) {
                     <span class="text-red-500">No tienes cobertura para entrega a domicilio</span>
                 } @else if (allowDelivery === 99) {
-                    <span class="text-red-500">Actualmente la plataforma esta en estado de implementación y estará disponible para comprar aproximadamente el día 1 de septiembre</span>
+                    <span class="text-red-500">La plataforma está en implementación y estará disponible para compras desde el 1 de septiembre.</span>
+                } @else {
+                    <span class="text-gray-500">Verificando cobertura de entrega...</span>
                 }
             </ng-container>
             <ng-template #volverAPedir>
