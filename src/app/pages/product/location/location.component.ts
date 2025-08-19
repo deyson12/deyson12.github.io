@@ -107,7 +107,6 @@ export class LocationComponent implements OnInit {
           }
         );
       } else {
-        console.log('Geolocation is not supported by this browser.');
         this.geoAllowLocation = false;
         this.showAllowDialog = true;
       }

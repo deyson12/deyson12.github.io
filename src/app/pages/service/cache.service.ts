@@ -16,7 +16,6 @@ export class CacheService {
 
   // 2. Obtener todas las entries (objecto key → array de items)
   getEntries(cacheName: string): Observable<Record<string, any[]>> {
-    console.log('Cachename:', cacheName);
     return this.http.get<Record<string, any[]>>(`${this.apiUrl}/${cacheName}/entries`);
   }
 

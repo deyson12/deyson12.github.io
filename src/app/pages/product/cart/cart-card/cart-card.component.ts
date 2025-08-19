@@ -66,7 +66,7 @@ export class CartCardComponent implements OnInit {
 
   role: string = '';
 
-  allowDelivery: number = 99; // 0
+  allowDelivery: number = 0; // 0 - 99
 
   constructor(
     private readonly locationService: LocationService,
@@ -96,9 +96,8 @@ export class CartCardComponent implements OnInit {
 
     this.coverageZonesService.getDeliveryPrice(this.getLocation(), this.order.sellerId).subscribe({
       next: (zone) => {
-        console.log('Zona de cobertura:', zone);
         this.order.deliveryPrice = zone.deliveryPrice;
-        //this.allowDelivery = zone.id !== undefined && zone.id !== null ? 1 : -1;
+        this.allowDelivery = zone.id !== undefined && zone.id !== null ? 1 : -1;
       }
     });
 

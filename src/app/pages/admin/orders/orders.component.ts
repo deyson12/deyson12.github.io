@@ -33,7 +33,6 @@ export class OrdersComponent implements OnInit {
 
   loadPendingOrders(): void {
     this.orderService.getOrders().subscribe(orders => {
-      console.log(orders);
       this.orders = orders.map(order => ({
         order,
         showMap: false,

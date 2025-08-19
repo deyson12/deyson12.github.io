@@ -67,7 +67,6 @@ export class CoverageZonesComponent implements OnInit {
   loadSellerZones() {
     this.coverageZonesService.getCoverageZonesBySeller(this.sellerId).subscribe({
       next: (data) => {
-        console.log('Coverage zones fetched:', data);
 
         this.sellerZones = data.map(zone => ({
           id: zone.id,
@@ -82,8 +81,6 @@ export class CoverageZonesComponent implements OnInit {
         const highestPriorityZone = data.reduce((prev, current) => {
           return (prev.priority < current.priority) ? prev : current;
         }, data[0]);
-
-        console.log('Highest priority zone:', highestPriorityZone);
 
         // Convertirmos el highestPriorityZone en el centro del mapa
         if (highestPriorityZone && highestPriorityZone.polygon.length > 0) {
@@ -138,15 +135,12 @@ export class CoverageZonesComponent implements OnInit {
   }
 
   loadZoneTree() {
-    // Convertir lista plana a TreeNode[]
-    // Ejemplo simple (sin jerarquía):
-
     this.coverageZonesService.getCoverageZones().subscribe((zones: ZoneResponse[]) => {
       this.zoneTree = zones.map(zone => ({
-        key: zone.polygon[0].lat + ',' + zone.polygon[0].lng, // Usar coordenadas como clave
+        key: zone.polygon[0].lat + ',' + zone.polygon[0].lng,
         label: zone.name,
         data: zone,
-        children: [] // Si no hay hijos, dejar array vacío
+        children: []
       }));
     });
   }
@@ -154,7 +148,6 @@ export class CoverageZonesComponent implements OnInit {
   addZone() {
     if (this.selectedZone) {
 
-      console.log('Selected zone:', this.selectedZone);
       // Llamada al backend para asociar la zona
       this.coverageZonesService.assignZone(this.sellerId, this.selectedZone.data.id, this.deliveryPrice).subscribe(() => {
         // Refrescar tabla

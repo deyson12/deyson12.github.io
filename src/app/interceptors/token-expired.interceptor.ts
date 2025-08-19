@@ -22,9 +22,6 @@ export class TokenExpiredInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     return next.handle(req).pipe(
       catchError((err: HttpErrorResponse) => {
-
-        console.log('Token expired or invalid', err.status);
-
         if (err.status === 401) {
           // Token expirado o inválido
           this.auth.logout();               // limpia localStorage

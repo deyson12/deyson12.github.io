@@ -204,7 +204,6 @@ export class ProductDetailComponent implements OnInit {
   }
 
   openZoom(img: string) {
-    console.log('Opening zoom for image:', img);
     this.zoomImage = img;
     this.displayZoom = true;
   }

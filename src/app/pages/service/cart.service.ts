@@ -104,8 +104,6 @@ export class CartService {
 
     const location: [number, number] = [lat, lng];
 
-    console.log('Seller:', data.sellerId, 'y datos:', location);
-
     const order: Order = {
       id: id,
       sellerId: data.sellerId,
@@ -130,7 +128,6 @@ export class CartService {
           if (exist) {
             exist.quantity++;
           } else {
-            console.log('Agregando producto al pedido:', product);
             o.products = [...o.products, { ...product, quantity: 1, selectedOptions: product.selectedOptions || {} }];
           }
         }
@@ -164,7 +161,6 @@ export class CartService {
   }
 
   sendOrder(order: Order): Observable<Order> {
-    console.log('Enviando orden al back:', order);
     return this.http.post<Order>(this.apiUrl, order).pipe(
       map(response => response),
       catchError(this.handleError)

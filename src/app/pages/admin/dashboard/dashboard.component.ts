@@ -110,7 +110,6 @@ export class DashboardComponent implements OnInit {
   enable(user: User): void {
     this.userService.changeStatus(user.id, 'HABILITADO').subscribe({
       next: (response: GenericResponse) => {
-        console.log(response.code);
         this.loadUsers();
       },
       error: (error) => {

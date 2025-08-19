@@ -98,9 +98,6 @@ export class InvoiceComponent implements OnInit {
   }
 
   fillInvoices(list: Invoice[]) {
-
-    console.log('Facturas cargadas:', list);
-
     this.pendingInvoices =  list.filter(inv => inv.status === 'PENDING' || inv.status === 'SENT');
     this.paidInvoices = list.filter(inv => inv.status === 'PAID');
 
@@ -124,10 +121,8 @@ export class InvoiceComponent implements OnInit {
 
   changeStatus(invoice: Invoice, stauts: string) {
     // lógica para marcar como pagada
-    console.log('Factura:', invoice)
     this.invoiceService.changeStatus(invoice.id, stauts).subscribe({
           next: (response) => {
-            console.log('Finalizó: ', response);
             this.toastService.showInfo('Exito','Se marcó como pagada');
             this.loadInvoices();
           },

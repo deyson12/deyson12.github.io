@@ -46,7 +46,6 @@ export class SellerService {
 
   private handleError(error: HttpErrorResponse) {
     // Puedes extender esto para leer mensajes específicos del backend
-    console.log('Error M: ', error?.error?.message ?? 'Error desconocido');
     return throwError(() => new Error(error?.error?.message ?? 'Error desconocido'));
   }
 

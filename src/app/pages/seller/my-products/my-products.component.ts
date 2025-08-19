@@ -168,8 +168,6 @@ export class MyProductsComponent implements OnInit {
       ? product.tags.split(',').map(tag => tag.trim())
       : [];
 
-    console.log('Editing product:', product);
-
     // 1) Patchear el valor base + customEnabled
     this.productForm.patchValue({
       ...product,
@@ -198,10 +196,6 @@ export class MyProductsComponent implements OnInit {
   }
 
   saveProduct(): void {
-
-    console.log(this.productForm.value);
-    console.log(this.productForm.get('customOptions')?.value);
-
     if (this.productForm.invalid) return;
 
     const { maxDeliveryTime, rememberDeliveryTime } = this.productForm.value;
@@ -216,7 +210,6 @@ export class MyProductsComponent implements OnInit {
     const prod = this.productForm.value as Product;
     prod.seller = this.authService.getValueFromToken('userId');
 
-    console.log('Product:', prod);
     this.productService.saveOrUpdateProduct(prod).subscribe(() => {
       this.loadProducts();
       this.displayProductDialog = false;

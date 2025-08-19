@@ -1,7 +1,8 @@
 <div class="grid grid-cols-12 gap-8">
     <div class="card col-span-12 p-4">
 
-        <div *ngIf="bannerVisible" class="w-full bg-orange-500 text-white flex items-center justify-between px-4 py-2 shadow-md z-50 font-semibold mb-4">
+        <div *ngIf="bannerVisible"
+            class="w-full bg-orange-500 text-white flex items-center justify-between px-4 py-2 shadow-md z-50 font-semibold mb-4">
             <div class="text-sm">
                 Requieres una zona de cobertura diferente? por favor contactanos aquí:
                 <a [href]="whatsappLink()" target="_blank" class="font-semibold underline">
@@ -35,7 +36,7 @@
                         <td>{{ zone.name }}</td>
                         <td>{{ zone.description }}</td>
                         <td>{{ zone.createdAt | date:'short' }}</td>
-                        <td>{{ zone.deliveryPrice | currency:'COP':'symbol':'1.0-0'  }}</td>
+                        <td>{{ zone.deliveryPrice | currency:'COP':'symbol':'1.0-0' }}</td>
                         <td>
                             <button pButton type="button" icon="pi pi-trash"
                                 class="p-button-rounded p-button-danger p-button-sm" (click)="removeZone(zone)">
@@ -47,27 +48,37 @@
 
             <!-- Diálogo para agregar zona -->
             <p-dialog header="Seleccionar zona" [(visible)]="displayAddDialog" [modal]="true"
-                [style]="{ width: '400px', height: '300px' }" [closable]="false">
-                <div class="p-field">
-                    <label for="zoneTree">Zonas disponibles</label>
-                    <p-treeSelect inputId="zoneTree" [options]="zoneTree" [(ngModel)]="selectedZone" optionLabel="name"
-                        placeholder="Elige una zona">
-                    </p-treeSelect>
+                [style]="{ width: '400px', height: '50%' }" [closable]="false">
+
+                <div class="flex flex-col gap-4 p-2">
+                    <!-- Selección de zona -->
+                    <div class="flex flex-col gap-1">
+                        <label for="zoneTree">Zonas disponibles</label>
+                        <p-treeSelect inputId="zoneTree" [options]="zoneTree" [(ngModel)]="selectedZone"
+                            optionLabel="name" placeholder="Elige una zona">
+                        </p-treeSelect>
+                    </div>
+
+                    <!-- Valor domicilio -->
+                    <div class="flex flex-col gap-1">
+                        <label for="deliveryPrice">Valor domicilio</label>
+                        <p-inputNumber inputId="deliveryPrice" [(ngModel)]="deliveryPrice" mode="currency"
+                            currency="COP" locale="es-CO" [min]="0" [max]="1000000" [showButtons]="true" [step]="1000"
+                            [minFractionDigits]="0" [maxFractionDigits]="0">
+                        </p-inputNumber>
+
+                    </div>
                 </div>
-                <div class="p-field">
-                    <label for="zoneTree">Valor Domicilio</label>
-                    <p-inputNumber inputId="zoneTree" [(ngModel)]="deliveryPrice" mode="decimal" currency="COP"
-                        locale="es-CO" [min]="0" [max]="1000000" [showButtons]="true">
-                    </p-inputNumber>
-                </div>
+
                 <ng-template #footer>
-                    <button pButton type="button" label="Agregar" icon="pi pi-check" (click)="addZone()">
-                    </button>
-                    <button pButton type="button" label="Cancelar" icon="pi pi-times" class="p-button-text"
-                        (click)="displayAddDialog = false">
-                    </button>
+                    <div class="flex justify-end gap-2">
+                        <button pButton type="button" label="Agregar" icon="pi pi-check" (click)="addZone()"></button>
+                        <button pButton type="button" label="Cancelar" icon="pi pi-times" class="p-button-text"
+                            (click)="displayAddDialog = false"></button>
+                    </div>
                 </ng-template>
             </p-dialog>
+
         </div>
 
         <div class="mt-8">

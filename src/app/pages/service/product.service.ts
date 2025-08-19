@@ -135,11 +135,5 @@ export class ProductService {
     );
   }
 
-  /** Actualiza un producto y retorna el objeto actualizado */
-  updateProduct(updated: Product): Observable<Product> {
-    // En un caso real harías un PUT al backend.
-    console.log('Vamos a actualizar: ', updated);
-    return of(updated);
-  }
 
 }

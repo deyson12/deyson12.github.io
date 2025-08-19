@@ -45,6 +45,7 @@ import { LayoutService } from '../service/layout.service';
 >
   {{ item.label }}
 </span>
+<span class="text-red-500 text-lg" *ngIf="showBadge && item.badge">&nbsp;•</span>
                 <i class="pi pi-fw pi-angle-down layout-submenu-toggler" *ngIf="item.items"></i>
             </a>
 
@@ -91,6 +92,8 @@ export class AppMenuitem {
 
     key: string = '';
 
+    showBadge: boolean = true;
+
     constructor(
         public router: Router,
         private readonly layoutService: LayoutService
@@ -135,6 +138,15 @@ export class AppMenuitem {
     }
 
     itemClick(event: Event) {
+
+        this.showBadge = false;
+
+        if (this.item.label === 'Mis productos') {
+            localStorage.removeItem('productsPending');
+        } else if (this.item.label === 'Mis zonas de cobertura') {
+            localStorage.removeItem('coveragePending');
+        }
+
         // avoid processing disabled items
         if (this.item.disabled) {
             event.preventDefault();

@@ -158,13 +158,11 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  
-
-  toggleFeatured(product: Product): void {
+  /*toggleFeatured(product: Product): void {
     const updated: Product = { ...product, featured: !product.featured };
     this.productService.updateProduct(updated).subscribe(res => {
       product.featured = res.featured;
     });
-  }
+  }*/
 
 }

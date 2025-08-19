@@ -21,6 +21,9 @@ export class AppMenu implements OnInit {
 
   model: MenuItem[] = [];
 
+  coveragePending: string = localStorage.getItem('coveragePending') || '';
+  productsPending: string = localStorage.getItem('productsPending') || '';
+
   constructor(
     private categoryService: CategoryService,
     private auth: AuthService
@@ -48,9 +51,9 @@ export class AppMenu implements OnInit {
       label: 'Perfil vendedor',
       items: [
         { label: 'Mi perfil', icon: 'streamline-plump-color:user-multiple-accounts-flat', routerLink: ['/pages/profile'] },
-        { label: 'Mis productos', icon: 'fluent-emoji-flat:card-file-box', routerLink: ['/pages/my-products'] },
+        { label: 'Mis productos', icon: 'fluent-emoji-flat:card-file-box', routerLink: ['/pages/my-products'], badge: this.productsPending },
         { label: 'Mis ventas', icon: 'emojione:bar-chart', routerLink: ['/pages/my-sales'] },
-        { label: 'Mis zonas de cobertura', icon: 'fluent-color:location-ripple-20', routerLink: ['/pages/coverage-zones'] },
+        { label: 'Mis zonas de cobertura', icon: 'fluent-color:location-ripple-20', routerLink: ['/pages/coverage-zones'], badge: this.coveragePending },
         { label: 'Pagos', icon: 'streamline-color:dollar-coin-flat', routerLink: ['/pages/payment'] },
       ]
     };

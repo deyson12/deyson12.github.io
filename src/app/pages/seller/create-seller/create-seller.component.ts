@@ -350,7 +350,6 @@ export class CreateSellerComponent implements OnInit, OnDestroy {
         activateCallback(2);
       },
       error: (err) => {
-        console.log(err)
         this.toastService.showError('Error', err.message);
         this.creationButtonDisabled = false;
       }
@@ -358,6 +357,8 @@ export class CreateSellerComponent implements OnInit, OnDestroy {
   }
 
   completeSellerCreation() {
+    localStorage.setItem('coveragePending', 'SI');
+    localStorage.setItem('productsPending', 'SI');
     window.location.reload();
   }
 }

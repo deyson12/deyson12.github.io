@@ -18,7 +18,6 @@ export class OrderService {
   }
 
   getPendingOrders(): Observable<Order[]> {
-    console.log('Fetching pending orders from:', `${this.apiUrl}/status/PENDIENTE`);
     return this.http.get<Order[]>(`${this.apiUrl}/status/PENDIENTE`);
   }
 

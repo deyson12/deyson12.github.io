@@ -29,8 +29,7 @@ export class TestComponent implements OnInit {
   }
 
   onSubmit() {
-    // enviarás form.value.tagsCsv
-    console.log(this.form.value.tagsCsv);
+    // enviarás this.form.value.tagsCsv
   }
 
 }
