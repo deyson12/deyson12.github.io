@@ -20,7 +20,6 @@ import { AuthService } from '../../service/auth.service';
     FormsModule,
     GalleriaModule,
     DialogModule,
-    FixedCartComponent,
     TextareaModule
   ],
   templateUrl: './product-detail.component.html',

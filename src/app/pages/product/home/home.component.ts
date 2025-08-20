@@ -22,8 +22,7 @@ import { Constants } from '../../../config/constants';
     CarouselComponent,
     BannerComponent,
     CardComponent,
-    RouterModule,
-    FixedCartComponent
+    RouterModule
   ],
   providers: [CartService],
   templateUrl: './home.component.html',

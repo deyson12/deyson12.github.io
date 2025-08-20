@@ -17,7 +17,9 @@
   <div>
     <p>{{ address }}</p>
     <input pInputText type="text" [(ngModel)]="newAddress" placeholder="Ingresa nueva dirección" class="w-full mb-2" />
-    <button pButton type="button" label="Guardar" class="mb-2" (click)="saveNewAddress()"></button>
+    
+    <button pButton type="button" label="Guardar" class="mb-2" (click)="saveNewAddress()"></button> &nbsp;
+     <button pButton type="button" label="Obtener mi ubicación" class="mb-2" (click)="assignMylocation()"></button>
 
     <p-message severity="info" icon="pi pi-info-circle"
       text="Puedes mover el marcador(📍) libremente para ajustar la ubicación y ser mas exacto"

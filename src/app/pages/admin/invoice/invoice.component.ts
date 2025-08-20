@@ -15,6 +15,7 @@ import { PrimeNG } from 'primeng/config';
 import { ToastService } from '../../service/toast.service';
 
 import html2pdf from 'html2pdf.js';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-invoice',
@@ -116,7 +117,15 @@ export class InvoiceComponent implements OnInit {
 
   // Métodos de acción
   resendByEmail(invoice: Invoice) {
-    // lógica para reenviar por email
+    this.invoiceService.resendInvoice(invoice.id).subscribe({
+      next: (response) => {
+        this.toastService.showInfo('Éxito', 'Factura reenviada por correo');
+      },
+      error: (err) => {
+        console.error('Error reenviando factura', err);
+        this.toastService.showError('Error', 'No se pudo reenviar la factura');
+      }
+    });
   }
 
   changeStatus(invoice: Invoice, stauts: string) {
@@ -146,14 +155,14 @@ export class InvoiceComponent implements OnInit {
     );
 
     // link de pago (ajusta la URL base según tu backend)
-    const paymentLink = `https://ventas7lunas.shop/pago?invoiceId=${invoice.id}`;
+    const paymentLink = `${environment.frontUrl}/pages/payment`;
 
     // mensaje con enlace de pago
     const rawMessage =
       `Hola ${invoice.sellerName},\n\n` +
-      `Tienes pendiente la factura *ID: ${invoice.id}* correspondiente a *${fechaEs}*.\n\n` +
+      `Tienes pendiente la factura *ID: ${invoice.id.slice(0, 8)}* correspondiente a *${fechaEs}*.\n\n` +
       `Para pagar, haz clic aquí:\n${paymentLink}\n\n` +
-      `Por favor, realiza el pago en un plazo máximo de 10 días hábiles. ` +
+      `Por favor, realiza el pago en un plazo máximo de *10 días* hábiles. ` +
       `Si no lo recibimos antes de ese plazo, tu cuenta se deshabilitará temporalmente.\n\n` +
       `Quedamos atentos a tu confirmación. ¡Saludos!`;
 

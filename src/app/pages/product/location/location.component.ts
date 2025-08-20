@@ -7,6 +7,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { FormsModule } from '@angular/forms';
 import { GoogleMapsModule } from '@angular/google-maps';
 import { MessageModule } from 'primeng/message';
+import { LogService } from '../../service/log.service';
 
 @Component({
   selector: 'app-location',
@@ -42,42 +43,10 @@ export class LocationComponent implements OnInit {
 
   private apiKey = 'AIzaSyCZDKgSFqjayBMohK8lawKi2KPf8HLWdnM';
 
-  polygons = [
-  {
-    paths: [
-      { lat: 6.285, lng: -75.611 },
-      { lat: 6.286, lng: -75.609 },
-      { lat: 6.284, lng: -75.608 },
-      { lat: 6.283, lng: -75.610 },
-      { lat: 6.285, lng: -75.611 }
-    ],
-    options: {
-      fillColor: '#2196f3',
-      strokeColor: '#0d47a1',
-      fillOpacity: 0.4,
-      strokeOpacity: 1,
-      strokeWeight: 2
-    }
-  },
-  {
-    paths: [
-      { lat: 6.287, lng: -75.613 },
-      { lat: 6.288, lng: -75.611 },
-      { lat: 6.286, lng: -75.610 },
-      { lat: 6.285, lng: -75.612 },
-      { lat: 6.287, lng: -75.613 }
-    ],
-    options: {
-      fillColor: '#f44336',
-      strokeColor: '#b71c1c',
-      fillOpacity: 0.4,
-      strokeOpacity: 1,
-      strokeWeight: 2
-    }
-  }
-];
-
-  constructor(private http: HttpClient) { }
+  constructor(
+    private readonly http: HttpClient,
+    private readonly logService: LogService
+  ) { }
 
   ngOnInit(): void {
     const saved = localStorage.getItem('location');
@@ -113,6 +82,22 @@ export class LocationComponent implements OnInit {
     }
   }
 
+  assignMylocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          this.latitude = pos.coords.latitude;
+          this.longitude = pos.coords.longitude;
+          this.setMapLocation(this.latitude, this.longitude);
+          this.reverseGeocode(this.latitude, this.longitude);
+        },
+        err => {
+          console.error('Error getting location:', err);
+        }
+      );
+    }
+  }
+
   private setMapLocation(lat: number, lng: number) {
     this.center = { lat, lng };
     this.markerPosition = { lat, lng };
@@ -124,6 +109,13 @@ export class LocationComponent implements OnInit {
       longitude: this.longitude,
       address: this.address
     }));
+
+    this.logService.log('NEW_LOCATION', {
+      latitude: this.latitude,
+      longitude: this.longitude,
+      address: this.address
+    }).subscribe();
+
     // refrescar la página para aplicar los cambios
     window.location.reload();
   }

@@ -104,7 +104,7 @@ export class CartCardComponent implements OnInit {
         console.log('Zona de cobertura:', zone, this.allowDelivery);
 
         if (this.allowDelivery === -1) {
-          this.logService.log('NO_COVERAGE', this.getLocation()).subscribe();
+          this.logService.log('NO_COVERAGE', {location: this.getLocation(), address: this.getAddress()}).subscribe();
         }
       }
     });
@@ -158,12 +158,6 @@ export class CartCardComponent implements OnInit {
   }
 
   finishOrder() {
-
-    /*if (this.rememberAddress) {
-      localStorage.setItem('address', this.order.address);
-    } else {
-      localStorage.removeItem('address');
-    }*/
 
     const userId = this.authService.getValueFromToken('userId');
     
@@ -249,6 +243,14 @@ export class CartCardComponent implements OnInit {
         localStorage.getItem('location') ? JSON.parse(localStorage.getItem('location') || '{}').longitude : 0];
     } catch (error) {
       return [0, 0];
+    }
+  }
+
+  getAddress(): string {
+    try {
+      return localStorage.getItem('location') ? JSON.parse(localStorage.getItem('location') || '{}').address : '';
+    } catch (error) {
+      return '';
     }
   }
 

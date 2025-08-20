@@ -8,6 +8,7 @@ import { GenericResponse } from '../../models/genericResponse';
 
 @Injectable({ providedIn: 'root' })
 export class InvoiceService {
+  
   private readonly apiUrl = `${environment.apiUrl}/api/invoices`;
 
   constructor(private http: HttpClient) {}
@@ -32,5 +33,9 @@ export class InvoiceService {
 
   generateInvoices(): Observable<GenericResponse> {
     return this.http.post<GenericResponse>(`${this.apiUrl}`, {});
+  }
+
+  resendInvoice(id: string): Observable<GenericResponse> {
+    return this.http.post<GenericResponse>(`${this.apiUrl}/${id}/resend`, {});
   }
 }

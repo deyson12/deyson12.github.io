@@ -35,7 +35,6 @@ import { CheckboxModule } from 'primeng/checkbox';
   imports: [
     CommonModule,
     SelectModule,
-    CardComponent,
     ReactiveFormsModule,
     FormsModule,
     ChipsModule,
