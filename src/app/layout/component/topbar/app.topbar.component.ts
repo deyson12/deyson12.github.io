@@ -17,6 +17,7 @@ import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { InputTextModule } from 'primeng/inputtext';
 import { debounceTime, distinctUntilChanged, filter, Subject, switchMap, takeUntil } from 'rxjs';
 import { LocationComponent } from '../../../pages/product/location/location.component';
+import { LogService } from '../../../pages/service/log.service';
 
 @Component({
     selector: 'app-topbar',
@@ -65,7 +66,8 @@ export class AppTopbarComponent implements OnInit, OnDestroy {
         private readonly authService: AuthService,
         public cartService: CartService,
         private readonly productService: ProductService,
-        private readonly router: Router
+        private readonly router: Router,
+         private readonly logService: LogService
     ) { }
 
     ngOnInit(): void {
@@ -86,6 +88,9 @@ export class AppTopbarComponent implements OnInit, OnDestroy {
         ).subscribe(results => {
             this.showSearchResult = true;
             this.filteredProducts = results ?? [];
+            if (this.filteredProducts.length === 0) {
+                this.logService.log('NO_SEARCH_PRODUCT', this.searchCtrl.value).subscribe();
+            }
         });
     }
 

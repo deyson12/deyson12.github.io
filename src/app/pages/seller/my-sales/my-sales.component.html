@@ -68,6 +68,106 @@
 
   </div>
 
+  <div class="card col-span-12">
+    <div class="font-semibold text-xl mb-4">Ventas</div>
+
+    <div class="mt-4 mb-2">
+      <p-datepicker [(ngModel)]="selectedMonth" view="month" dateFormat="MM yy" [monthNavigator]="true"
+        [yearNavigator]="true" yearRange="2020:2030" (onSelect)="onMonthChange($event)" [locale]="es">
+      </p-datepicker>
+    </div>
+
+    <p-table [value]="orders" [paginator]="true" [rows]="10" [responsiveLayout]="'scroll'">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Id</th>
+          <th>Fecha</th>
+          <th>Comprador</th>
+          <th>Total</th>
+          <th>Estado</th>
+          <th>Pago</th>
+          <th>Acciones</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-order>
+        <tr>
+          <td>{{ order.id | slice:0:8 }}</td>
+          <td>{{ order.createdAt | date: 'short' }}</td>
+          <td>{{ order.buyer.name }}</td>
+          <td>{{ getTotal(order) | currency }}</td>
+          <td>{{ order.status }}</td>
+          <td>{{ order.paymentType }}</td>
+          <td>
+            <button type="button" class="p-button p-button-secondary" (click)="showOrderDetails(order)">
+              Ver Detalles
+            </button>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <p-dialog header="Detalles de la Orden" [(visible)]="displayDetailDialog" [modal]="true" [responsive]="true"
+      [style]="{ width: '50vw' }">
+
+      <ng-template pTemplate="content">
+        <div *ngIf="selectedOrder" class="space-y-4">
+
+          <!-- Encabezado -->
+          <div class="border-b pb-2">
+            <h3 class="text-lg font-semibold">
+              Orden #{{ selectedOrder.id }}
+            </h3>
+            <p class="text-sm text-gray-500">
+              Fecha: {{ selectedOrder.createdAt | date: 'short' }}
+            </p>
+          </div>
+
+          <!-- Información general -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <p><strong>Comprador:</strong> {{ selectedOrder.buyer?.name || 'N/A' }}</p>
+            <p><strong>Total:</strong> {{ getTotal(selectedOrder) | currency }}</p>
+            <p><strong>Estado:</strong> {{ selectedOrder.status }}</p>
+            <p><strong>Pago:</strong> {{ selectedOrder.paymentType }}</p>
+            <p class="md:col-span-2">
+              <strong>Ubicación:</strong>
+
+              {{selectedOrder.address}}
+
+              <google-map height="500px" width="100%" [center]="center" [zoom]="14">
+                  <map-marker [position]="markerPosition"></map-marker>
+                </google-map>
+            </p>
+          </div>
+
+          <!-- Productos -->
+          <div>
+            <h4 class="font-semibold mb-2">Productos</h4>
+            <p-table [value]="selectedOrder.products" [paginator]="false" [rows]="5">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th>Producto</th>
+                  <th>Cantidad</th>
+                  <th>Precio Unitario</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-product>
+                <tr>
+                  <td>{{ product.product.name }}</td>
+                  <td>{{ product.quantity }}</td>
+                  <td>{{ product.product.price | currency }}</td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
+
+        </div>
+      </ng-template>
+
+    </p-dialog>
+
+
+  </div>
+
   <!-- Gráficos -->
   <div class="col-span-12 2xl:col-span-6">
     <div class="card">

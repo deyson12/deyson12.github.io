@@ -6,14 +6,33 @@ import { ChartModule } from 'primeng/chart';
 import { FluidModule } from 'primeng/fluid';
 import { SellerService } from '../../service/seller.service';
 import { AuthService } from '../../service/auth.service';
+import { TableModule } from 'primeng/table';
+import { Order } from '../../../models/order';
+import { OrderService } from '../../service/order.service';
+import { DatePickerModule } from 'primeng/datepicker';
+import { FormsModule } from '@angular/forms';
+import { DialogModule } from 'primeng/dialog';
+import { GoogleMapsModule } from '@angular/google-maps';
 
 @Component({
   selector: 'app-my-sales',
-  imports: [CommonModule, ChartModule, FluidModule],
+  imports: [
+    CommonModule, 
+    FormsModule,
+    ChartModule, 
+    FluidModule, 
+    TableModule, 
+    DatePickerModule,
+    DialogModule,
+    GoogleMapsModule
+  ],
   templateUrl: './my-sales.component.html',
   styleUrl: './my-sales.component.scss'
 })
 export class MySalesComponent implements OnInit, OnDestroy {
+  
+  es: any;
+
   lineData: any;
   barData: any;
   lineOptions: any;
@@ -33,10 +52,21 @@ export class MySalesComponent implements OnInit, OnDestroy {
   primary: string = '';
   primaryLight: string = '';
 
+  selectedMonth: Date = new Date();
+  orders: Order[] = [];
+
+  displayDetailDialog: boolean = false;
+
+  selectedOrder: Order | null = null;
+
+  center: google.maps.LatLngLiteral = { lat: 6.255504965127156, lng: -75.57746916699779 }; // Default center
+  markerPosition!: google.maps.LatLngLiteral;
+
   constructor(
     private readonly layoutService: LayoutService,
     private readonly sellerService: SellerService,
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
+    private readonly orderService: OrderService
 
   ) {
     this.subscription = this.layoutService.configUpdate$
@@ -65,6 +95,19 @@ export class MySalesComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('Error al obtener el resumen de ventas:', error);
+      }
+    });
+
+    this.initOrders();
+  }
+
+  initOrders() {
+    this.orderService.getOrdersBySellerAndDate(this.authService.getValueFromToken('userId'), this.selectedMonth).subscribe({
+      next: (orders) => {
+        this.orders = orders;
+      },
+      error: (error) => {
+        console.error('Error al obtener las órdenes:', error);
       }
     });
   }
@@ -188,6 +231,22 @@ export class MySalesComponent implements OnInit, OnDestroy {
         console.error('Error al obtener las ventas por producto:', error);
       }
     });
+  }
+
+  onMonthChange(date: Date) {
+    this.selectedMonth = date;
+    this.initOrders();
+  }
+
+  getTotal(order: any): string | number {
+    return order.products.reduce((sum: number, product: any) => sum + (product.product.price * product.quantity), 0);
+  }
+
+  showOrderDetails(order: any) {
+    this.selectedOrder = order;
+    this.center = { lat: order.location[0], lng: order.location[1] };
+    this.markerPosition = { lat: order.location[0], lng: order.location[1] };
+    this.displayDetailDialog = true;
   }
 
   ngOnDestroy() {

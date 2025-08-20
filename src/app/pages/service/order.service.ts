@@ -21,4 +21,8 @@ export class OrderService {
     return this.http.get<Order[]>(`${this.apiUrl}/status/PENDIENTE`);
   }
 
+  getOrdersBySellerAndDate(sellerId: string, date: Date): Observable<Order[]> {
+    return this.http.get<Order[]>(`${this.apiUrl}/seller/${sellerId}/month/${date.toISOString().split('T')[0]}`);
+  }
+
  } 

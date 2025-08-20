@@ -20,6 +20,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { ToastService } from '../../../service/toast.service';
 import { environment } from '../../../../../environments/environment';
 import { CoverageZonesService } from '../../../service/coverage-zones.service';
+import { LogService } from '../../../service/log.service';
 
 @Component({
   selector: 'app-cart-card',
@@ -74,7 +75,8 @@ export class CartCardComponent implements OnInit {
     private readonly userService: UserService,
     private readonly authService: AuthService,
     private readonly toastService: ToastService,
-    private readonly coverageZonesService: CoverageZonesService
+    private readonly coverageZonesService: CoverageZonesService,
+    private readonly logService: LogService
   ) { }
 
 
@@ -98,6 +100,12 @@ export class CartCardComponent implements OnInit {
       next: (zone) => {
         this.order.deliveryPrice = zone.deliveryPrice;
         this.allowDelivery = zone.id !== undefined && zone.id !== null ? 1 : -1;
+
+        console.log('Zona de cobertura:', zone, this.allowDelivery);
+
+        if (this.allowDelivery === -1) {
+          this.logService.log('NO_COVERAGE', this.getLocation()).subscribe();
+        }
       }
     });
 

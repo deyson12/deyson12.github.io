@@ -6,11 +6,12 @@ import { AppTopbarComponent } from '../topbar/app.topbar.component';
 import { AppSidebar } from '../app.sidebar';
 import { AppFooter } from '../app.footer';
 import { LayoutService } from '../../service/layout.service';
+import { FixedCartComponent } from '../../../pages/product/fixed-cart/fixed-cart.component';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [CommonModule, AppTopbarComponent, AppSidebar, RouterModule, AppFooter],
+  imports: [CommonModule, AppTopbarComponent, AppSidebar, RouterModule, AppFooter, FixedCartComponent],
   templateUrl: './app.layout.component.html',
 })
 export class AppLayout {

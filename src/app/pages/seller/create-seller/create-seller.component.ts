@@ -147,7 +147,7 @@ export class CreateSellerComponent implements OnInit, OnDestroy {
   /** Inicializa o reinicia el contador */
   startTimer() {
     this.showResend = false;
-    this.countdown = 3; // duracion en segundos
+    this.countdown = 45; // duracion en segundos
     this.clearTimer();
     this.intervalId = setInterval(() => {
       this.countdown--;
