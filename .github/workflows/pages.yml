@@ -35,6 +35,12 @@ jobs:
         run: |
           cp docs/index.html docs/404.html
           touch docs/.nojekyll
+      
+      - name: Add legal static pages (return 200 on these routes)
+        run: |
+          mkdir -p docs/privacy-and-policy docs/service-condition
+          cp legal/privacy-and-policy.html  docs/privacy-and-policy/index.html
+          cp legal/service-condition.html   docs/service-condition/index.html
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
