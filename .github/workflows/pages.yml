@@ -41,6 +41,7 @@ jobs:
           mkdir -p docs/privacy-and-policy docs/service-condition
           cp legal/privacy-and-policy.html  docs/privacy-and-policy/index.html
           cp legal/service-condition.html   docs/service-condition/index.html
+          cp src/assets/img/icon.ico docs/favicon.ico || true
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
