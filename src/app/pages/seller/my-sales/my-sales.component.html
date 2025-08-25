@@ -69,7 +69,7 @@
   </div>
 
   <div class="card col-span-12">
-    <div class="font-semibold text-xl mb-4">Ventas</div>
+    <div class="font-semibold text-xl mb-4">Ventas por mes</div>
 
     <div class="mt-4 mb-2">
       <p-datepicker [(ngModel)]="selectedMonth" view="month" dateFormat="MM yy" [monthNavigator]="true"
@@ -84,6 +84,7 @@
           <th>Fecha</th>
           <th>Comprador</th>
           <th>Total</th>
+          <th>Envío</th>
           <th>Estado</th>
           <th>Pago</th>
           <th>Acciones</th>
@@ -91,20 +92,59 @@
       </ng-template>
       <ng-template pTemplate="body" let-order>
         <tr>
-          <td>{{ order.id | slice:0:8 }}</td>
-          <td>{{ order.createdAt | date: 'short' }}</td>
-          <td>{{ order.buyer.name }}</td>
-          <td>{{ getTotal(order) | currency }}</td>
-          <td>{{ order.status }}</td>
-          <td>{{ order.paymentType }}</td>
-          <td>
-            <button type="button" class="p-button p-button-secondary" (click)="showOrderDetails(order)">
-              Ver Detalles
+          <td [ngClass]="getClass(order)">{{ order.id | slice:0:8 }}</td>
+          <td [ngClass]="getClass(order)">{{ order.createdAt | date: 'short' }}</td>
+          <td [ngClass]="getClass(order)">{{ order.buyer.name }}</td>
+          <td [ngClass]="getClass(order)">{{ getTotal(order) | currency }}</td>
+          <td [ngClass]="getClass(order)">{{ order.deliveryPrice | currency }}</td>
+          <td [ngClass]="getClass(order)">
+            <!-- Span chip con color y borde y padding -->
+            <span [ngClass]="{
+              'bg-green-500 border-green-500': order.status === 'CONFIRMADO',
+              'bg-yellow-500 border-yellow-500': order.status === 'PENDIENTE',
+              'bg-red-500 border-red-500': order.status === 'CANCELADO'
+            }" class="inline-block px-2 py-1 rounded-full border text-white text-sm">
+              {{ order.status }}
+            </span>
+          </td>
+          <td [ngClass]="getClass(order)">{{ order.paymentType }}</td>
+          <td [ngClass]="getClass(order)">
+            <button type="button" class="p-button p-button-secondary ml-2" (click)="showOrderDetails(order)">
+              <i class="pi pi-eye"></i>
             </button>
+            @if (order.status === 'PENDIENTE') {
+            <button type="button" class="p-button p-button-success ml-2" (click)="confirmOrder(order.id)">
+              <i class="pi pi-check"></i>
+            </button>
+            <button type="button" class="p-button p-button-danger ml-2" (click)="openCancelOrderDialog(order)">
+              <i class="pi pi-times"></i>
+            </button>
+            }
           </td>
         </tr>
       </ng-template>
     </p-table>
+
+    <!-- Dialog para cancelar orden -->
+    <p-dialog header="Cancelar Orden" [(visible)]="displayCancelDialog" [modal]="true" [responsive]="true"
+      [style]="{ height: '500px' }">
+      <ng-template pTemplate="content">
+          <div class="text-center p-8 bg-white rounded-lg shadow">
+            <h2 class="text-2xl mb-4">¿Por qué quieres cancelar la orden {{ orderToCancel?.id }}?</h2>
+            <p-dropdown [options]="causes" [(ngModel)]="selectedCause" placeholder="Selecciona una causa"
+              class="w-full mb-4"></p-dropdown>
+            @if (selectedCause === 'Otro') {
+            <div class="mb-4">
+              <input [(ngModel)]="otherCause" type="text" placeholder="Especifica otra causa" maxlength="200"
+                class="w-full p-2 border border-gray-300 rounded mb-4" />
+              <small class="text-gray-500">{{ otherCause.length || 0 }}/200 caracteres</small>
+            </div>
+            }
+            <p-button label="Cancelar orden" (onClick)="onSubmitCause()"
+              [disabled]="!selectedCause || (selectedCause === 'Otro' && !otherCause)" class="w-full" />
+          </div>
+      </ng-template>
+    </p-dialog>
 
     <p-dialog header="Detalles de la Orden" [(visible)]="displayDetailDialog" [modal]="true" [responsive]="true"
       [style]="{ width: '50vw' }">
@@ -134,8 +174,8 @@
               {{selectedOrder.address}}
 
               <google-map height="500px" width="100%" [center]="center" [zoom]="14">
-                  <map-marker [position]="markerPosition"></map-marker>
-                </google-map>
+                <map-marker [position]="markerPosition"></map-marker>
+              </google-map>
             </p>
           </div>
 
@@ -171,7 +211,8 @@
   <!-- Gráficos -->
   <div class="col-span-12 2xl:col-span-6">
     <div class="card">
-      <div class="font-semibold text-xl mb-4">Ventas Mensuales últimos 6 meses</div>
+      <div class="font-semibold text-xl mb-4">Ventas Mensuales últimos 6 meses <span class="text-sm text-gray-500">(Sin
+          costo domicilio)</span></div>
       <p-chart type="line" [data]="lineData" [options]="lineOptions"></p-chart>
     </div>
   </div>

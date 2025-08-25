@@ -11,6 +11,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { TextareaModule } from 'primeng/textarea';
+import { OrderService } from '../../service/order.service';
 
 @Component({
   selector: 'app-cancel-order',
@@ -55,7 +56,8 @@ export class CancelOrderComponent implements OnInit {
   constructor(
     private readonly route: ActivatedRoute,
     private readonly authService: AuthService,
-    private readonly cartService: CartService
+    private readonly cartService: CartService,
+    private readonly orderService: OrderService
   ) { }
 
   ngOnInit(): void {
@@ -81,7 +83,7 @@ export class CancelOrderComponent implements OnInit {
   onSubmitCause() {
     if (!this.selectedCause || !this.userId) return;
     this.status = 'PENDING';
-    this.cartService.cancelOrder(this.orderId, this.userId, this.selectedCause === 'Otro' ? `Otra: ${this.otherCause} ` : this.selectedCause)
+    this.orderService.cancelOrder(this.orderId, this.userId, this.selectedCause === 'Otro' ? `Otra: ${this.otherCause} ` : this.selectedCause)
       .subscribe({
         next: resp => this.status = resp.status,
         error: ()   => this.status = 'ERR'

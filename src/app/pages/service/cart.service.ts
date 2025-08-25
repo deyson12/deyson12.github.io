@@ -177,22 +177,4 @@ export class CartService {
   private handleError(error: HttpErrorResponse) {
     return throwError(() => new Error('Ocurrió un error creando la orden'));
   }
-
-  confirmOrder(orderId: string, userId: string): Observable<ConfirmOrderResponse> {
-    return this.http.post<ConfirmOrderResponse>(`${this.apiUrl}/${orderId}/confirm`, { userId }).pipe(
-      map(response => response),
-      catchError(this.handleConfirmError)
-    );
-  }
-
-  cancelOrder(orderId: string, userId: string, reason: string): Observable<ConfirmOrderResponse> {
-    return this.http.post<ConfirmOrderResponse>(`${this.apiUrl}/${orderId}/cancel`, { userId, reason }).pipe(
-      map(response => response),
-      catchError(this.handleConfirmError)
-    );
-  }
-
-  private handleConfirmError(error: HttpErrorResponse) {
-    return throwError(() => new Error('Ocurrió un error confirmando la orden'));
-  }
 }

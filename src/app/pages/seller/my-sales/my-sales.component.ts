@@ -13,6 +13,9 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { GoogleMapsModule } from '@angular/google-maps';
+import { ToastService } from '../../service/toast.service';
+import { DropdownModule } from 'primeng/dropdown';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-my-sales',
@@ -24,13 +27,15 @@ import { GoogleMapsModule } from '@angular/google-maps';
     TableModule, 
     DatePickerModule,
     DialogModule,
-    GoogleMapsModule
+    GoogleMapsModule,
+    DropdownModule,
+    ButtonModule
   ],
   templateUrl: './my-sales.component.html',
   styleUrl: './my-sales.component.scss'
 })
 export class MySalesComponent implements OnInit, OnDestroy {
-  
+
   es: any;
 
   lineData: any;
@@ -62,12 +67,29 @@ export class MySalesComponent implements OnInit, OnDestroy {
   center: google.maps.LatLngLiteral = { lat: 6.255504965127156, lng: -75.57746916699779 }; // Default center
   markerPosition!: google.maps.LatLngLiteral;
 
+  displayCancelDialog: boolean = false;
+  reason: string = '';
+  orderToCancel: Order | null = null;
+
+  otherCause: string = '';
+
+  causes = [
+  { label: 'Cliente no disponible', value: 'Cliente no disponible' },
+  { label: 'Producto agotado', value: 'Producto agotado' },
+  { label: 'No hago entregas en esa zona', value: 'No hago entregas en esa zona' },
+  { label: 'El cliente se retractó', value: 'El cliente se retractó' },
+  { label: 'Problemas personales o de salud', value: 'Problemas personales o de salud' },
+  { label: 'Otro', value: 'Otro' },
+];
+
+  selectedCause: string | null = null;
+
   constructor(
     private readonly layoutService: LayoutService,
     private readonly sellerService: SellerService,
     private readonly authService: AuthService,
-    private readonly orderService: OrderService
-
+    private readonly orderService: OrderService,
+    private readonly toastService: ToastService
   ) {
     this.subscription = this.layoutService.configUpdate$
       .pipe(debounceTime(25))
@@ -238,15 +260,60 @@ export class MySalesComponent implements OnInit, OnDestroy {
     this.initOrders();
   }
 
-  getTotal(order: any): string | number {
+  getTotal(order: Order): string | number {
     return order.products.reduce((sum: number, product: any) => sum + (product.product.price * product.quantity), 0);
   }
 
-  showOrderDetails(order: any) {
+  showOrderDetails(order: Order) {
     this.selectedOrder = order;
     this.center = { lat: order.location[0], lng: order.location[1] };
     this.markerPosition = { lat: order.location[0], lng: order.location[1] };
     this.displayDetailDialog = true;
+  }
+
+  confirmOrder(orderId: string) {
+    this.orderService.confirmOrder(orderId, this.authService.getValueFromToken('userId')).subscribe({
+      next: () => {
+        this.toastService.showInfo('Orden confirmada','La orden ha sido confirmada exitosamente.');
+        this.initAll();
+      },
+      error: (error) => {
+        console.error('Error al confirmar la orden:', error);
+        this.toastService.showError('Error al confirmar la orden', 'Por favor, inténtelo de nuevo más tarde.');
+      }
+    });
+  }
+
+  openCancelOrderDialog(order: Order) {
+    this.orderToCancel = order;
+    this.displayCancelDialog = true;
+  }
+
+  cancelOrder(orderId: string, userId: string, reason: string) {
+    this.orderService.cancelOrder(orderId, userId, reason).subscribe({
+      next: () => {
+        this.toastService.showInfo('Orden cancelada', 'La orden ha sido cancelada exitosamente.');
+        this.displayCancelDialog = false;
+        this.initAll();
+      },
+      error: (error) => {
+        console.error('Error al cancelar la orden:', error);
+        this.toastService.showError('Error al cancelar la orden', 'Por favor, inténtelo de nuevo más tarde.');
+      }
+    });
+  }
+
+  onSubmitCause() {
+    if (!this.selectedCause || !this.orderToCancel?.id) return;
+    this.cancelOrder(this.orderToCancel.id, this.authService.getValueFromToken('userId'), this.selectedCause === 'Otro' ? `Otra: ${this.otherCause} ` : this.selectedCause);
+  }
+
+  getClass(order: Order) {
+    return {
+      'bg-green-50': order.status === 'CONFIRMADO',
+      'bg-yellow-50': order.status === 'PENDIENTE',
+      'bg-red-50': order.status === 'CANCELADO'
+    };
   }
 
   ngOnDestroy() {

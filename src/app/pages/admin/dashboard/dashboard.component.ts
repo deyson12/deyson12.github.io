@@ -22,6 +22,7 @@ import { PlanService } from '../../service/plan.service';
 import { GenericResponse } from '../../../models/genericResponse';
 import { Order } from '../../../models/order';
 import { OrderService } from '../../service/order.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-dashboard',
@@ -173,8 +174,11 @@ export class DashboardComponent implements OnInit {
   }
 
   sendWhatsApp(order: Order): void {
+    
     const message = `Hola, el pedido con *ID ${order.id}* está pendiente de ser procesado.  
-Para generar la factura y evitar reprocesos, es necesario que confirme la orden o la cancele cuanto antes.`;
+Para generar la factura y evitar reprocesos, es necesario que confirme la orden o la cancele cuanto antes.
+
+Para realizarlo por favor ingresar al link ${environment.frontUrl}/pages/my-sales`;
     const phoneNumber = order.seller?.phone;
     const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');

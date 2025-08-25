@@ -9,6 +9,7 @@ import { PasswordModule } from 'primeng/password';
 import { AppFloatingConfigurator } from '../../../layout/component/app.floatingconfigurator';
 import { FormsModule, NgForm } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { OrderService } from '../../service/order.service';
 
 @Component({
   selector: 'app-confirm-order',
@@ -38,7 +39,8 @@ export class ConfirmOrderComponent implements OnInit {
   constructor(
     private readonly route: ActivatedRoute,
     private readonly authService: AuthService,
-    private readonly cartService: CartService
+    private readonly cartService: CartService,
+    private readonly orderService: OrderService
   ) { }
 
   ngOnInit(): void {
@@ -46,7 +48,7 @@ export class ConfirmOrderComponent implements OnInit {
     this.userId = this.authService.getValueFromToken('userId');
 
     if (this.userId) {
-      this.cartService.confirmOrder(this.orderId, this.userId).subscribe({
+      this.orderService.confirmOrder(this.orderId, this.userId).subscribe({
         next: (confirmOrderResponse) => {
           this.status = confirmOrderResponse.status;
         },
