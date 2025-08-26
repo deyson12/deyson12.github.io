@@ -9,40 +9,43 @@ import { RippleModule } from 'primeng/ripple';
 import { AppFloatingConfigurator } from '../../../layout/component/app.floatingconfigurator';
 import { AuthService } from '../../service/auth.service';
 import { CommonModule } from '@angular/common';
+import { ToastService } from '../../service/toast.service';
 
 @Component({
-    selector: 'app-login',
-    standalone: true,
-    imports: [
-        CommonModule,
-        ButtonModule, 
-        CheckboxModule, 
-        InputTextModule, 
-        PasswordModule, 
-        FormsModule, 
-        RouterModule, 
-        RippleModule, 
-        AppFloatingConfigurator
-    ],
-    templateUrl: './login.component.html'
+  selector: 'app-login',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ButtonModule,
+    CheckboxModule,
+    InputTextModule,
+    PasswordModule,
+    FormsModule,
+    RouterModule,
+    RippleModule,
+    AppFloatingConfigurator
+  ],
+  providers: [ToastService],
+  templateUrl: './login.component.html'
 })
 export class LoginComponent {
-    email: string = '';
-    password: string = '';
-    checked: boolean = false;
-    errorMessage: string = '';
-    returnUrl: string | null = null;
+  email: string = '';
+  password: string = '';
+  checked: boolean = false;
+  errorMessage: string = '';
+  returnUrl: string | null = null;
 
-    constructor(
-        private readonly authService: AuthService,
-        private readonly router: Router
-    ){
-      const urlParams = new URLSearchParams(window.location.search);
-      const returnUrl = urlParams.get('returnUrl');
-      this.returnUrl = returnUrl ? decodeURIComponent(returnUrl) : null;
-    }
+  constructor(
+    private readonly authService: AuthService,
+    private readonly router: Router,
+    private readonly toastService: ToastService
+  ) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const returnUrl = urlParams.get('returnUrl');
+    this.returnUrl = returnUrl ? decodeURIComponent(returnUrl) : null;
+  }
 
-    onSubmit(form: NgForm) {
+  onSubmit(form: NgForm) {
     if (form.invalid) {
       return;
     }
@@ -65,4 +68,24 @@ export class LoginComponent {
       }
     });
   }
+
+  forgotPassword(): void {
+    console.log(this.email);
+
+    if (!this.email) {
+      console.warn('Debes ingresar un correo electrónico');
+      return;
+    }
+
+    this.authService.forgotPassword(this.email).subscribe({
+      next: (response) => {
+        this.toastService.showInfo('Mensaje Enviado', 'Se envio un email para restablecer')
+      },
+      error: (error) => {
+        console.error('Error al enviar recuperación de contraseña', error);
+        // aquí podrías mostrar un mensaje de error
+      }
+    });
+  }
+
 }

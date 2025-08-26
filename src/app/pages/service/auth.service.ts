@@ -9,6 +9,7 @@ import { ResendCodeResponse } from '../../models/resendCodeResponse';
 import { UserPayload } from '../../models/selllerPayload';
 import { CreateSellerResponse } from '../../models/create-seller-response';
 import { Router } from '@angular/router';
+import { ValidateResp } from '../../models/ValidateResp';
 
 interface LoginResponse {
   token: string;
@@ -130,5 +131,17 @@ export class AuthService {
     } catch {
       return null;
     }
+  }
+
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/forgot-password`, { email });
+  }
+
+  validateResetPassword(token: string): Observable<ValidateResp> {
+    return this.http.get<ValidateResp>(`${this.apiUrl}/forgot/validate`, { params: { token } })
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<ValidateResp> {
+    return this.http.post<ValidateResp>(`${this.apiUrl}/reset-password`, { token, newPassword })
   }
 }
