@@ -1,4 +1,4 @@
-name: Build and Deploy Ventas 7 Lunas
+name: Deploy Web
 
 on:
   push:
@@ -11,37 +11,24 @@ permissions:
   id-token: write
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '22'
-          cache: npm
+      - name: Prepare docs folder
+        run: |
+          rm -rf docs
+          mkdir docs
+          cp index.html docs/
+          cp -r assets docs/ || true
+          cp favicon.ico docs/ || true
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Clean docs folder
-        run: rm -rf docs/*
-
-      - name: Build PDN into docs
-        run: npm run build -- --configuration=pdn
-
-      - name: Create SPA fallback & disable Jekyll
+      - name: SPA fallback & disable Jekyll
         run: |
           cp docs/index.html docs/404.html
           touch docs/.nojekyll
-      
-      - name: Add legal static pages (return 200 on these routes)
-        run: |
-          mkdir -p docs/privacy-and-policy docs/service-condition
-          cp legal/privacy-and-policy.html  docs/privacy-and-policy/index.html
-          cp legal/service-condition.html   docs/service-condition/index.html
-          cp src/assets/img/icon.ico docs/favicon.ico || true
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
