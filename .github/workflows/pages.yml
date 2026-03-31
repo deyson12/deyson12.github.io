@@ -21,7 +21,7 @@ jobs:
         run: |
           rm -rf docs
           mkdir docs
-          cp index.html docs/
+          cp . docs/
           cp -r assets docs/ || true
           cp favicon.ico docs/ || true
 
