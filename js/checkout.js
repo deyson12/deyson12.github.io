@@ -77,6 +77,7 @@ function renderPayment(ref, wompiId, status, rawAmount) {
 
 // ── WhatsApp send ──────────────────────────────────────────
 let _pending = null;
+let _waSent  = false;
 
 function sendOrderWhatsApp() {
   if (!_pending) return;
@@ -84,15 +85,22 @@ function sendOrderWhatsApp() {
   const ui          = statusUI(wompiParams.status);
   const { ref, od } = _pending;
 
-  saveOrderToHistory({
-    id: 'ORD-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase(),
-    date: new Date().toISOString(),
-    type: 'wompi', pago: 'Wompi',
-    nombre: od.nom, direccion: od.dir,
-    total: od.totalAmount, totalFmt: od.totalFmt || ('$' + Number(od.totalAmount).toLocaleString('es-CO')),
-    items: od.items || [], itemsBlock: od.itemsBlock, summaryHtml: od.summaryHtml,
-    wompiRef: ref, wompiId: wompiParams.id || null, wompiStatus: wompiParams.status || null,
-  });
+  // Save to history only on first send
+  if (!_waSent) {
+    saveOrderToHistory({
+      id: 'ORD-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase(),
+      date: new Date().toISOString(),
+      type: 'wompi', pago: 'Wompi',
+      nombre: od.nom, direccion: od.dir,
+      total: od.totalAmount, totalFmt: od.totalFmt || ('$' + Number(od.totalAmount).toLocaleString('es-CO')),
+      items: od.items || [], itemsBlock: od.itemsBlock, summaryHtml: od.summaryHtml,
+      wompiRef: ref, wompiId: wompiParams.id || null, wompiStatus: wompiParams.status || null,
+    });
+    _waSent = true;
+    // Change button to "Reenviar" so user knows it already went
+    const btn = document.getElementById('btnConfirmWa');
+    if (btn) btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:18px;height:18px" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Reenviar por WhatsApp';
+  }
 
   const msg = buildOrderMessage({
     saludo: 'confirmo mi pedido', itemsBlock: od.itemsBlock, nom: od.nom, dir: od.dir,
@@ -160,6 +168,13 @@ function init() {
 
   hide('stateLoader');
   show('stateContent');
+
+  // ── Auto-open WhatsApp for approved / pending payments ──
+  // (declined / voided / error never auto-send)
+  if (params.status !== 'declined' && params.status !== 'voided' && params.status !== 'error') {
+    // Small delay so the page finishes rendering before the browser switches tabs
+    setTimeout(sendOrderWhatsApp, 600);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', init);
