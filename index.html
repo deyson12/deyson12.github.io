@@ -29,19 +29,37 @@
       <div class="search-dropdown" id="searchDropdown"></div>
     </div>
     <div class="header-actions">
-      
-      <!-- Desktop: theme + wish -->
-      <button class="theme-toggle header-theme-desktop" id="themeToggle" onclick="toggleTheme()" title="Cambiar tema">
-        <svg id="iconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-        <svg id="iconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-      </button>
+
+      <!-- Wish (always visible) -->
       <button class="btn-icon btn-icon-wish header-wish-desktop" id="wishBtn" onclick="openWish()" title="Favoritos">
         <svg id="wishHeartIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
         <span class="wish-badge" id="wishBadge">0</span>
       </button>
-      <button class="btn-icon header-orders-desktop" onclick="openOrdersHistory()" title="Mis pedidos">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-      </button>
+
+      <!-- More dropdown -->
+      <div class="more-menu" id="moreMenu">
+        <button class="btn-icon more-menu-trigger header-more-desktop" id="moreMenuBtn" onclick="toggleMoreMenu()" title="Más opciones">
+          <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+        </button>
+        <div class="more-menu-dropdown" id="moreMenuDropdown">
+          <button class="more-menu-item" onclick="closeMoreMenu();openOrdersHistory()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            Mis pedidos
+          </button>
+          <button class="more-menu-item more-menu-item-wa" onclick="closeMoreMenu();window.open('https://wa.me/'+WA_PHONE+'?text='+encodeURIComponent('Hola! Necesito ayuda con algo en PideFacil \uD83D\uDE4F'),'_blank')">
+            <svg viewBox="0 0 24 24" width="20" height="20"><path fill="#25D366" d="M12 0C5.373 0 0 5.373 0 12c0 2.025.507 3.967 1.399 5.671L.1 23.9l6.499-1.699A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/><path fill="#fff" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/></svg>
+            Ayuda por WhatsApp
+          </button>
+          <div class="more-menu-divider"></div>
+          <button class="more-menu-item" onclick="closeMoreMenu();toggleTheme()" id="moreThemeBtn">
+            <svg id="moreIconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            <svg id="moreIconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            Cambiar tema
+          </button>
+        </div>
+      </div>
+
+      <!-- Cart (always visible) -->
       <button class="btn-icon" onclick="openCart()" title="Carrito">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
         <span class="cart-badge" id="cartBadge">0</span>
@@ -103,6 +121,10 @@
     <button class="ham-action-btn" onclick="closeHamDrawer();openOrdersHistory()">
       <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
       Mis pedidos
+    </button>
+    <button class="ham-action-btn ham-action-btn-wa" onclick="closeHamDrawer();window.open('https://wa.me/'+WA_PHONE+'?text='+encodeURIComponent('Hola! Necesito ayuda con algo en PideFacil 🙏'),'_blank')">
+      <svg viewBox="0 0 24 24" width="20" height="20"><path fill="#25D366" d="M12 0C5.373 0 0 5.373 0 12c0 2.025.507 3.967 1.399 5.671L.1 23.9l6.499-1.699A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/><path fill="#fff" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/></svg>
+      Ayuda por WhatsApp
     </button>
     <button class="ham-action-btn" onclick="toggleThemeAndClose()">
       <svg id="hamIconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
@@ -398,7 +420,7 @@
 </section>
 
 <footer class="footer">
-  <p>Hecho con ❤️ para el comercio local · <strong>PideFacil</strong> © 2025</p>
+  <p>Comercio local · <strong>PideFacil</strong> © 2026</p>
   <p style="margin-top:4px">Compra segura vía WhatsApp · Sin cargos ocultos</p>
 </footer>
 

@@ -523,7 +523,7 @@ async function submitWithWompi(od) {
   const hash        = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
   localStorage.setItem('cy_wompi_pending', JSON.stringify({ ref, od }));
   const redirectUrl = (WOMPI.redirectUrl || window.location.origin + window.location.pathname) + '?wref=' + encodeURIComponent(ref);
-  const url = `https://checkout.wompi.co/p/?public-key=${encodeURIComponent(WOMPI.publicKey)}&currency=${WOMPI.currency}&amount-in-cents=${amountCents}&reference=${encodeURIComponent(ref)}&signature:integrity=${hash}&redirect-url=${encodeURIComponent(redirectUrl)}`;
+  const url = `${WOMPI.checkoutUrl}?public-key=${encodeURIComponent(WOMPI.publicKey)}&currency=${WOMPI.currency}&amount-in-cents=${amountCents}&reference=${encodeURIComponent(ref)}&signature:integrity=${hash}&redirect-url=${encodeURIComponent(redirectUrl)}`;
   buyNowProduct = null;
   closeOrderPopup();
   window.location.href = url;
@@ -899,8 +899,10 @@ function applySavedTheme() {
 }
 function syncThemeIcon() {
   const dark = document.documentElement.dataset.theme === 'dark';
-  document.getElementById('iconSun').style.display  = dark ? 'block' : 'none';
-  document.getElementById('iconMoon').style.display = dark ? 'none'  : 'block';
+  // dropdown icons
+  const ms = document.getElementById('moreIconSun'),  mm = document.getElementById('moreIconMoon');
+  if (ms) ms.style.display = dark ? 'block' : 'none';
+  if (mm) mm.style.display = dark ? 'none'  : 'block';
   syncHamThemeIcons();
 }
 function syncHamThemeIcons() {
@@ -930,4 +932,21 @@ function openBannerPopup(filter, title) {
 function closeBannerPopup() { document.getElementById('bnrPopupOverlay').classList.remove('open'); document.body.style.overflow = ''; }
 function handleBnrPopupClick(e) { if (e.target === document.getElementById('bnrPopupOverlay')) closeBannerPopup(); }
 
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeCart(); closeOrderPopup(); closeBannerPopup(); closeSearchDropdown(); } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeCart(); closeOrderPopup(); closeBannerPopup(); closeSearchDropdown(); closeMoreMenu(); } });
+
+// ===== MORE MENU =====
+function toggleMoreMenu() {
+  const dd = document.getElementById('moreMenuDropdown');
+  const open = dd.classList.toggle('open');
+  document.getElementById('moreMenuBtn').classList.toggle('active', open);
+  if (open) setTimeout(() => document.addEventListener('click', _moreMenuOutside, { once: true }), 0);
+}
+function closeMoreMenu() {
+  document.getElementById('moreMenuDropdown')?.classList.remove('open');
+  document.getElementById('moreMenuBtn')?.classList.remove('active');
+}
+function _moreMenuOutside(e) {
+  if (!document.getElementById('moreMenu')?.contains(e.target)) closeMoreMenu();
+  else if (document.getElementById('moreMenuDropdown')?.classList.contains('open'))
+    setTimeout(() => document.addEventListener('click', _moreMenuOutside, { once: true }), 0);
+}
