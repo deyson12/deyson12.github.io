@@ -202,6 +202,16 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
 <script>
 const WA_PHONE = '573136090247';
 const STORE_NAME = 'PideFacil';
+const ORDERS_KEY = 'cy_orders_history';
+
+// ── Guardar en historial ───────────────────────────────────
+function saveOrderToHistory(record) {
+  let hist = [];
+  try { hist = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]'); } catch(e) {}
+  hist.unshift(record);
+  if (hist.length > 100) hist = hist.slice(0, 100);
+  localStorage.setItem(ORDERS_KEY, JSON.stringify(hist));
+}
 
 // ── Helpers ────────────────────────────────────────────────
 function fmtPrice(n) { return '$' + Number(n).toLocaleString('es-CO'); }
@@ -293,11 +303,11 @@ function buildWAMessage(pending, wompiParams, statusLabel) {
   msg += od.itemsBlock;
   msg += `*A nombre de:* ${od.nom}\n`;
   msg += `*Dirección de entrega:* ${od.dir}\n`;
-  msg += `*Método de pago:* 💳 Wompi\n`;
+  msg += `*Método de pago:* Wompi\n`;
   msg += `*Estado del pago:* ${statusLabel}\n`;
   msg += `*Referencia:* ${ref}\n`;
   if (wompiId) msg += `*ID Transacción:* ${wompiId}\n`;
-  msg += `\nGracias 🙏`;
+  msg += `\nGracias`;
   return msg;
 }
 
@@ -305,6 +315,26 @@ function sendOrderWhatsApp() {
   if (!_pending) return;
   const wompiParams = getWompiParams();
   const ui = statusUI(wompiParams.status);
+
+  // Guardar en historial antes de abrir WhatsApp
+  const { ref, od } = _pending;
+  saveOrderToHistory({
+    id: 'ORD-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase(),
+    date: new Date().toISOString(),
+    type: 'wompi',
+    pago: 'Wompi',
+    nombre: od.nom,
+    direccion: od.dir,
+    total: od.totalAmount,
+    totalFmt: od.totalFmt || ('$' + Number(od.totalAmount).toLocaleString('es-CO')),
+    items: od.items || [],
+    itemsBlock: od.itemsBlock,
+    summaryHtml: od.summaryHtml,
+    wompiRef: ref,
+    wompiId: wompiParams.id || null,
+    wompiStatus: wompiParams.status || null,
+  });
+
   const msg = buildWAMessage(_pending, wompiParams, ui.label);
   window.open(`https://wa.me/${WA_PHONE}?text=${encodeURIComponent(msg)}`, '_blank');
 }

@@ -89,6 +89,39 @@ h1,h2,h3,h4,h5{font-family:var(--font-head);font-weight:700;line-height:1.2}
 .wish-btn-cart:hover{background:var(--primary);color:#fff;}
 .wish-btn-remove{margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:18px;line-height:1;padding:2px;transition:var(--transition);}
 .wish-btn-remove:hover{color:#EF4444;transform:scale(1.2);}
+
+/* ORDERS HISTORY PANEL */
+.orders-panel{position:fixed;top:0;right:0;bottom:0;width:min(480px,100vw);background:var(--bg-card);z-index:201;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);box-shadow:-8px 0 32px rgba(0,0,0,.15);}
+.orders-panel.open{transform:translateX(0)}
+.orders-ph{padding:15px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.orders-ph-title{font-family:var(--font-head);font-size:16px;font-weight:800;display:flex;align-items:center;gap:7px;flex:1;min-width:0;}
+.orders-ph-count{background:var(--primary);color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:var(--radius-full);flex-shrink:0;}
+.btn-clear-orders{background:none;border:1.5px solid var(--border);cursor:pointer;padding:5px 10px;border-radius:var(--radius-full);font-family:var(--font-body);font-size:11px;color:var(--text-muted);transition:var(--transition);display:none;align-items:center;gap:4px;white-space:nowrap;flex-shrink:0;}
+.btn-clear-orders:hover{border-color:#EF4444;color:#EF4444;}
+.btn-clear-orders svg{width:11px;height:11px;}
+.orders-body{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;}
+.orders-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;color:var(--text-muted);}
+.orders-empty-icon{font-size:56px;opacity:.5}
+.ord-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;}
+.ord-card-head{padding:10px 13px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;border-bottom:1px solid var(--border);}
+.ord-card-ref{font-family:var(--font-head);font-size:12px;font-weight:700;color:var(--text-primary);}
+.ord-card-date{font-size:11px;color:var(--text-muted);margin-top:2px;}
+.ord-status-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:var(--radius-full);font-size:10px;font-weight:700;flex-shrink:0;white-space:nowrap;}
+.osc-approved{background:rgba(0,166,81,.12);color:#00A651;}
+.osc-pending{background:rgba(241,82,0,.12);color:var(--primary);}
+.osc-declined{background:rgba(239,68,68,.12);color:#EF4444;}
+.osc-wa{background:rgba(37,211,102,.12);color:#25D366;}
+.osc-unknown{background:var(--border-light);color:var(--text-muted);}
+.ord-card-items{padding:10px 13px;display:flex;flex-direction:column;gap:4px;border-bottom:1px solid var(--border);}
+.ord-item-row{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:var(--text-secondary);}
+.ord-item-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-right:8px;}
+.ord-item-price{font-weight:600;flex-shrink:0;color:var(--text-primary);}
+.ord-total-row{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--font-head);font-size:14px;font-weight:800;color:var(--text-primary);margin-top:6px;padding-top:7px;border-top:1px solid var(--border);}
+.ord-card-info{padding:10px 13px;display:flex;flex-direction:column;gap:5px;}
+.ord-info-row{display:flex;align-items:flex-start;gap:7px;font-size:12px;color:var(--text-secondary);}
+.ord-info-icon{flex-shrink:0;font-size:13px;margin-top:1px;}
+.ord-info-mono{font-family:monospace;font-size:11px;word-break:break-all;color:var(--text-muted);}
+
 /* Flat theme toggle — SVG only, inherits currentColor, no emoji */
 .theme-toggle{background:none;border:none;cursor:pointer;width:38px;height:38px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--text-secondary);transition:var(--transition);}
 .theme-toggle:hover{background:var(--bg);color:var(--text-primary)}
@@ -99,7 +132,7 @@ h1,h2,h3,h4,h5{font-family:var(--font-head);font-weight:700;line-height:1.2}
 .ham-btn svg{width:22px;height:22px;}
 .ham-badge{position:absolute;top:2px;right:2px;background:var(--primary);color:#fff;font-family:var(--font-head);font-size:10px;font-weight:700;min-width:18px;height:18px;border-radius:var(--radius-full);display:none;align-items:center;justify-content:center;padding:0 4px;}
 .ham-badge.visible{display:flex}
-@media(max-width:767px){.ham-btn{display:flex;}.header-wish-desktop,.header-theme-desktop{display:none!important;}}
+@media(max-width:767px){.ham-btn{display:flex;}.header-wish-desktop,.header-theme-desktop,.header-orders-desktop{display:none!important;}}
 .ham-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:150;opacity:0;pointer-events:none;transition:opacity .3s;backdrop-filter:blur(4px);}
 .ham-overlay.open{opacity:1;pointer-events:all}
 .ham-drawer{position:fixed;top:0;left:0;bottom:0;width:min(300px,85vw);background:var(--bg-card);z-index:151;display:flex;flex-direction:column;transform:translateX(-100%);transition:transform .35s cubic-bezier(.4,0,.2,1);box-shadow:8px 0 32px rgba(0,0,0,.15);}
@@ -624,6 +657,9 @@ select.order-input option{background:var(--bg-card);color:var(--text-primary);}
         <svg id="wishHeartIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
         <span class="wish-badge" id="wishBadge">0</span>
       </button>
+      <button class="btn-icon header-orders-desktop" onclick="openOrdersHistory()" title="Mis pedidos">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      </button>
       <button class="btn-icon" onclick="openCart()" title="Carrito">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
         <span class="cart-badge" id="cartBadge">0</span>
@@ -681,6 +717,10 @@ select.order-input option{background:var(--bg-card);color:var(--text-primary);}
       <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
       Mis favoritos
       <span class="ham-wish-count" id="hamWishCount">0</span>
+    </button>
+    <button class="ham-action-btn" onclick="closeHamDrawer();openOrdersHistory()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Mis pedidos
     </button>
     <button class="ham-action-btn" onclick="toggleThemeAndClose()">
       <svg id="hamIconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
@@ -1004,6 +1044,25 @@ select.order-input option{background:var(--bg-card);color:var(--text-primary);}
   </div>
   <div class="wish-body" id="wishItems">
   </div>
+</div>
+
+<!-- ORDERS HISTORY PANEL -->
+<div class="cart-overlay" id="ordersOverlay" onclick="closeOrdersHistory()"></div>
+<div class="orders-panel" id="ordersPanel">
+  <div class="orders-ph">
+    <div class="orders-ph-title">
+      📋 Mis pedidos
+      <span class="orders-ph-count" id="ordersCountPill">0</span>
+    </div>
+    <button class="btn-clear-orders" id="btnClearOrders" onclick="clearOrdersHistory()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+      Borrar
+    </button>
+    <button class="btn-close" onclick="closeOrdersHistory()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="orders-body" id="ordersBody"></div>
 </div>
 
 <!-- CART PANEL -->
@@ -1672,22 +1731,24 @@ function sendWhatsappOrder() {
   localStorage.setItem('cy_name', nom);
 
   // Build unified items block (used by both WhatsApp and Wompi flows)
-  let itemsBlock = '', totalAmount = 0, summaryHtml = '', selectedIds = [], bpId = null;
+  let itemsBlock = '', totalAmount = 0, summaryHtml = '', selectedIds = [], bpId = null, orderItems = [];
   if (buyNowProduct) {
     const p = buyNowProduct; bpId = p.id; totalAmount = p.price;
     itemsBlock = getMessage(p.id, p.name, 1, p.price) + `━━━━━━━━━━━━━━━━━━━━\n*TOTAL: ${fmtPrice(p.price)}*\n\n`;
     summaryHtml = `${p.name} &times; 1 &mdash; <strong>${fmtPrice(p.price)}</strong>`;
+    orderItems = [{ id: p.id, name: p.name, qty: 1, price: p.price }];
   } else {
     const selected = getCheckedItems(); selectedIds = selected.map(i => i.id); totalAmount = getSelectedTotal();
     const g = {}; selected.forEach(i => { if (!g[i.seller]) g[i.seller] = { items: [] }; g[i.seller].items.push(i); });
     Object.entries(g).forEach(([, grp]) => { grp.items.forEach(p => { itemsBlock += getMessage(p.id, p.name, p.qty, p.price); }); });
     summaryHtml = selected.map(i => `${i.name} &times;${i.qty} &mdash; <strong>${fmtPrice(i.price * i.qty)}</strong>`).join('<br>');
     itemsBlock += `━━━━━━━━━━━━━━━━━━━━\n*TOTAL: ${fmtPrice(totalAmount)}*\n\n`;
+    orderItems = selected.map(i => ({ id: i.id, name: i.name, qty: i.qty, price: i.price }));
   }
 
   // ── WOMPI ──────────────────────────────────────────────────
   if (pago === 'Wompi') {
-    submitWithWompi({ dir, nom, totalAmount, totalFmt: fmtPrice(totalAmount), itemsBlock, summaryHtml, selectedIds, bpId });
+    submitWithWompi({ dir, nom, totalAmount, totalFmt: fmtPrice(totalAmount), itemsBlock, summaryHtml, selectedIds, bpId, items: orderItems });
     return;
   }
 
@@ -1697,6 +1758,25 @@ function sendWhatsappOrder() {
   msg += `*A nombre de:* ${nom}\n*Direccion de entrega:* ${dir}\n*Metodo de pago:* ${pago}`;
   if (pago === 'Efectivo' && cambio) msg += `\n*Paga con:* $${cambio} (requiere devuelta)`;
   msg += `\n\nGracias`;
+
+  // Guardar en historial antes de abrir WhatsApp
+  saveOrderToHistory({
+    id: 'ORD-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase(),
+    date: new Date().toISOString(),
+    type: 'whatsapp',
+    pago,
+    nombre: nom,
+    direccion: dir,
+    total: totalAmount,
+    totalFmt: fmtPrice(totalAmount),
+    items: orderItems,
+    itemsBlock,
+    summaryHtml,
+    wompiRef: null,
+    wompiId: null,
+    wompiStatus: null,
+  });
+
   buyNowProduct = null;
   closeOrderPopup();
   window.open(`https://wa.me/${WA_PHONE}?text=${encodeURIComponent(msg)}`, '_blank');
@@ -1737,11 +1817,18 @@ function handleWompiReturn() {
   const sp = new URLSearchParams(window.location.search);
   const wref = sp.get('wref');
   if (!wref) return;
+  // Capturar params de Wompi antes de limpiar la URL
+  const wompiId = sp.get('id') || '';
+  const wompiStatus = (sp.get('status') || '').toLowerCase();
+  const wompiAmount = sp.get('amount-in-cents') || '';
   window.history.replaceState({}, document.title, window.location.pathname);
   const raw = localStorage.getItem('cy_wompi_pending');
   if (!raw) return;
   const pending = JSON.parse(raw);
   if (pending.ref !== decodeURIComponent(wref)) return;
+  // Enriquecer el pending con datos de Wompi
+  const enriched = { ...pending, wompiId, wompiStatus, wompiAmount };
+  localStorage.setItem('cy_wompi_pending', JSON.stringify(enriched));
   const { od } = pending;
   document.getElementById('wompiResultRef').textContent = 'Referencia: ' + pending.ref;
   document.getElementById('wompiResultSummary').innerHTML = od.summaryHtml + `<br><br><strong>Total: ${od.totalFmt}</strong>`;
@@ -1752,7 +1839,27 @@ function handleWompiReturn() {
 function confirmWompiPayment() {
   const raw = localStorage.getItem('cy_wompi_pending');
   if (!raw) { closeWompiResult(); return; }
-  const { ref, od } = JSON.parse(raw);
+  const pending = JSON.parse(raw);
+  const { ref, od } = pending;
+
+  // Guardar en historial antes de abrir WhatsApp
+  saveOrderToHistory({
+    id: 'ORD-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase(),
+    date: new Date().toISOString(),
+    type: 'wompi',
+    pago: 'Wompi',
+    nombre: od.nom,
+    direccion: od.dir,
+    total: od.totalAmount,
+    totalFmt: od.totalFmt,
+    items: od.items || [],
+    itemsBlock: od.itemsBlock,
+    summaryHtml: od.summaryHtml,
+    wompiRef: ref,
+    wompiId: pending.wompiId || null,
+    wompiStatus: pending.wompiStatus || null,
+  });
+
   localStorage.removeItem('cy_wompi_pending');
   let msg = `Hola, confirmo mi pedido en *PideFacil*\n━━━━━━━━━━━━━━━━━━━━\n\n`;
   msg += od.itemsBlock;
@@ -2000,6 +2107,104 @@ function showToast(msg, icon = '') {
   setTimeout(() => { t.classList.add('removing'); setTimeout(() => t.remove(), 300); }, 2200);
 }
 function bumpBadge() { const b = document.getElementById('cartBadge'); b.classList.add('bump'); setTimeout(() => b.classList.remove('bump'), 400); }
+
+// ===== ORDER HISTORY =====
+const ORDERS_KEY = 'cy_orders_history';
+
+function saveOrderToHistory(record) {
+  let hist = [];
+  try { hist = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]'); } catch(e) {}
+  hist.unshift(record);
+  if (hist.length > 100) hist = hist.slice(0, 100);
+  localStorage.setItem(ORDERS_KEY, JSON.stringify(hist));
+}
+
+function fmtDateOrder(iso) {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' }) +
+      ' · ' + d.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+  } catch(e) { return iso; }
+}
+
+function ordStatusChip(record) {
+  if (record.type === 'wompi' || record.pago === 'Wompi') {
+    const s = (record.wompiStatus || '').toLowerCase();
+    if (s === 'approved') return `<span class="ord-status-chip osc-approved">✅ APROBADO</span>`;
+    if (s === 'pending')  return `<span class="ord-status-chip osc-pending">⏳ EN PROCESO</span>`;
+    if (s === 'declined' || s === 'voided') return `<span class="ord-status-chip osc-declined">❌ RECHAZADO</span>`;
+    return `<span class="ord-status-chip osc-pending">💳 WOMPI</span>`;
+  }
+  return `<span class="ord-status-chip osc-wa">💬 WhatsApp</span>`;
+}
+
+function renderOrdersHistory() {
+  let hist = [];
+  try { hist = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]'); } catch(e) {}
+  const body = document.getElementById('ordersBody');
+  const pill = document.getElementById('ordersCountPill');
+  const clearBtn = document.getElementById('btnClearOrders');
+  if (pill) pill.textContent = hist.length;
+  if (clearBtn) clearBtn.style.display = hist.length ? 'flex' : 'none';
+  if (!hist.length) {
+    body.innerHTML = `<div class="orders-empty">
+      <div class="orders-empty-icon">📋</div>
+      <p style="font-weight:600;font-family:var(--font-head)">Sin pedidos aún</p>
+      <p style="font-size:11px;text-align:center;max-width:240px;line-height:1.6">Cuando hagas tu primer pedido, aparecerá aquí con todos los detalles para cualquier caso de soporte.</p>
+    </div>`;
+    return;
+  }
+  body.innerHTML = hist.map(ord => {
+    const items = ord.items || [];
+    const itemsHtml = items.length
+      ? items.map(it => `<div class="ord-item-row"><span class="ord-item-name">${it.name} ×${it.qty}</span><span class="ord-item-price">$${(it.price * it.qty).toLocaleString('es-CO')}</span></div>`).join('')
+      : `<div style="font-size:12px;color:var(--text-muted)">${(ord.summaryHtml || 'Detalle no disponible').replace(/<[^>]*>/g, ' ')}</div>`;
+    const wompiExtra = (ord.type === 'wompi' || ord.pago === 'Wompi') ? `
+      ${ord.wompiRef ? `<div class="ord-info-row"><span class="ord-info-icon">🧾</span><span>Ref: <span class="ord-info-mono">${ord.wompiRef}</span></span></div>` : ''}
+      ${ord.wompiId ? `<div class="ord-info-row"><span class="ord-info-icon">🔢</span><span>ID Trans: <span class="ord-info-mono">${ord.wompiId}</span></span></div>` : ''}
+    ` : '';
+    const displayRef = ord.wompiRef || ord.id;
+    return `<div class="ord-card">
+      <div class="ord-card-head">
+        <div>
+          <div class="ord-card-ref">${displayRef}</div>
+          <div class="ord-card-date">${fmtDateOrder(ord.date)}</div>
+        </div>
+        ${ordStatusChip(ord)}
+      </div>
+      <div class="ord-card-items">
+        ${itemsHtml}
+        <div class="ord-total-row"><span>Total</span><span>${ord.totalFmt}</span></div>
+      </div>
+      <div class="ord-card-info">
+        <div class="ord-info-row"><span class="ord-info-icon">👤</span><span>${ord.nombre}</span></div>
+        <div class="ord-info-row"><span class="ord-info-icon">📍</span><span>${ord.direccion}</span></div>
+        <div class="ord-info-row"><span class="ord-info-icon">💳</span><span>${ord.pago}</span></div>
+        ${wompiExtra}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openOrdersHistory() {
+  renderOrdersHistory();
+  document.getElementById('ordersOverlay').classList.add('open');
+  document.getElementById('ordersPanel').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeOrdersHistory() {
+  document.getElementById('ordersOverlay').classList.remove('open');
+  document.getElementById('ordersPanel').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function clearOrdersHistory() {
+  if (!confirm('¿Borrar todo el historial de pedidos? Esta acción no se puede deshacer.')) return;
+  localStorage.removeItem(ORDERS_KEY);
+  renderOrdersHistory();
+  showToast('Historial borrado', '🗑️');
+}
 
 // ===== THEME — flat SVG icons =====
 function applySavedTheme() {
