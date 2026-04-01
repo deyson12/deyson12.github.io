@@ -83,7 +83,7 @@ function buildCard(p, extra = '') {
     <div class="card-img-wrap">
       <img class="card-img" src="${p.image}" alt="${p.name}" loading="lazy" decoding="async" onload="this.classList.add('img-loaded')" onerror="this.classList.add('img-loaded')">
       <div class="badge-wrap">${badgeList.join('')}</div>
-      <button class="card-wishlist ${inWish ? 'active' : ''}" onclick="toggleWish(event,'${p.id}')">
+      <button class="card-wishlist ${inWish ? 'active' : ''}" data-wish-id="${p.id}" onclick="toggleWish(event,'${p.id}')">
         <svg viewBox="0 0 24 24" stroke="var(--primary)" stroke-width="2.5" fill="${inWish ? 'var(--primary)' : 'none'}"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
       </button>
     </div>
@@ -308,7 +308,7 @@ function updateAllBtns() {
 function removeFromCart(id) {
   cart = cart.filter(c => c.id !== id);
   checkedItems.delete(id);
-  saveCart(); updateCartUI(); renderCartPanel(); updateAllBtns(); renderOffers(); applyFilters();
+  saveCart(); updateCartUI(); renderCartPanel(); updateAllBtns();
 }
 function clearCart() {
   if (!cart.length) return;
@@ -698,18 +698,23 @@ function toggleWish(e, id) {
   else         { wishlist.push(id);     showToast('Guardado en favoritos',   '❤️'); }
   localStorage.setItem('cy_wish', JSON.stringify(wishlist));
   updateWishUI();
+  // Update heart buttons in-place — no grid re-render needed
+  const inWish = wishlist.includes(id);
+  document.querySelectorAll(`.card-wishlist[data-wish-id="${id}"]`).forEach(btn => {
+    btn.classList.toggle('active', inWish);
+    const svg = btn.querySelector('svg');
+    if (svg) svg.setAttribute('fill', inWish ? 'var(--primary)' : 'none');
+  });
   const mBtn = document.getElementById('modalWishBtn');
   if (mBtn) {
-    const wish = wishlist.includes(id);
-    mBtn.className = `btn btn-wish${wish ? ' active' : ''}`;
+    mBtn.className = `btn btn-wish${inWish ? ' active' : ''}`;
     mBtn.setAttribute('style', 'width:100%;padding:12px;font-size:14px');
     const txt = document.getElementById('modalWishText');
-    if (txt) txt.textContent = wish ? 'En favoritos' : 'Guardar en favoritos';
-    mBtn.querySelector('svg').setAttribute('fill',   wish ? '#fff' : 'none');
-    mBtn.querySelector('svg').setAttribute('stroke', wish ? '#fff' : 'var(--primary)');
+    if (txt) txt.textContent = inWish ? 'En favoritos' : 'Guardar en favoritos';
+    mBtn.querySelector('svg').setAttribute('fill',   inWish ? '#fff' : 'none');
+    mBtn.querySelector('svg').setAttribute('stroke', inWish ? '#fff' : 'var(--primary)');
   }
   if (document.getElementById('wishPanel').classList.contains('open')) renderWishPanel();
-  renderOffers(); applyFilters();
 }
 
 // ===== PRODUCT MODAL =====

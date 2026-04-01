@@ -43,6 +43,28 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .cat-select{padding:7px 30px 7px 12px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;background:#fff;cursor:pointer;outline:none;}
 .cat-select:focus{border-color:var(--primary);}
 
+/* ── TOKEN SECTION ── */
+.token-section{max-width:980px;margin:20px auto 0;padding:0 20px;}
+.token-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px;display:flex;flex-direction:column;gap:10px;border-left:4px solid var(--primary);}
+.token-card-head{display:flex;align-items:center;gap:12px;}
+.token-icon{font-size:20px;flex-shrink:0;}
+.token-card-head strong{font-size:14px;font-weight:700;display:block;}
+.token-status{font-size:12px;color:var(--text-2);}
+.token-status.valid{color:var(--secondary);font-weight:600;}
+.token-row{display:flex;gap:8px;}
+.token-row input{flex:1;padding:9px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:monospace;letter-spacing:.04em;}
+.token-row input:focus{border-color:var(--primary);}
+.btn-token-save{padding:9px 16px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;}
+.btn-token-save:hover{background:var(--primary-dark);}
+.btn-token-clear{padding:9px 14px;background:#fef2f2;color:#dc2626;border:1.5px solid #fca5a5;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;}
+.btn-token-clear:hover{background:#fee2e2;}
+.btn-token-toggle{margin-left:auto;padding:5px 12px;background:var(--bg);border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.btn-token-toggle:hover{border-color:var(--primary);color:var(--primary);}
+.token-help{background:var(--bg);border-radius:8px;padding:13px 16px;font-size:13px;line-height:1.9;}
+.token-help ol{padding-left:20px;}
+.token-help a{color:var(--primary);}
+.token-help p{margin-top:8px;font-size:11px;color:var(--text-3);}
+
 /* ── STATUS ── */
 .status-bar{max-width:980px;margin:12px auto 0;padding:0 20px;min-height:28px;}
 .status{font-size:13px;color:var(--text-2);display:flex;align-items:center;gap:8px;}
@@ -111,6 +133,34 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   ⚠️ Abriste el archivo directamente desde el disco (<code>file://</code>). Las peticiones a Mercado Libre se enrutarán a través de <strong>corsproxy.io</strong> para evitar el bloqueo de origen. Si prefieres usarlo sin proxy, súbelo a GitHub Pages o ábrelo con un servidor local.
 </div>
 <script>if(location.protocol==='file:') document.getElementById('proxyBanner').style.display='block';</script>
+
+<!-- TOKEN -->
+<div class="token-section">
+  <div class="token-card">
+    <div class="token-card-head">
+      <span class="token-icon">🔑</span>
+      <div>
+        <strong>Token de acceso — Mercado Libre API</strong>
+        <span class="token-status" id="tokenStatus">Sin token · la búsqueda fallará con 403 Forbidden</span>
+      </div>
+      <button class="btn-token-toggle" onclick="toggleTokenHelp()">¿Cómo obtenerlo?</button>
+    </div>
+    <div class="token-row">
+      <input type="password" id="mlTokenInput" placeholder="Pega aquí tu access_token de Mercado Libre…" autocomplete="off">
+      <button class="btn-token-save" onclick="saveToken()">Guardar</button>
+      <button class="btn-token-clear" id="btnClearToken" style="display:none" onclick="clearToken()">Borrar</button>
+    </div>
+    <div id="tokenHelp" style="display:none" class="token-help">
+      <ol>
+        <li>Crea una cuenta gratis en <a href="https://developers.mercadolibre.com" target="_blank" rel="noopener">developers.mercadolibre.com</a></li>
+        <li>Crea una nueva app → en <strong>Credenciales</strong> copia el <strong>Client ID</strong> y <strong>Client Secret</strong></li>
+        <li>Ve a <strong>Probador OAuth</strong> (dentro de tu app) y genera un <strong>access_token</strong> de prueba</li>
+        <li>Pega el token arriba y pulsa <strong>Guardar</strong> — dura 6 horas; puedes renovarlo en el mismo probador</li>
+      </ol>
+      <p>El token se guarda solo en tu navegador (localStorage). No se envía a ningún servidor externo salvo la API oficial de ML.</p>
+    </div>
+  </div>
+</div>
 
 <!-- SEARCH -->
 <div class="search-bar">
@@ -204,14 +254,56 @@ let _selected  = new Set();
 let _allSel    = false;
 
 // ── API routing ────────────────────────────────────────────
-// When opened as file:// the browser sends Origin: null which ML blocks (403).
-// A CORS proxy makes the request server-side, avoiding the null-origin rejection.
-const _IS_FILE = location.protocol === 'file:';
-const _PROXY   = 'https://corsproxy.io/?';
+// 1. ML requires Authorization: Bearer {token} for CORS requests (HTTP 403 without it).
+// 2. When opened as file:// the browser sends Origin: null which ML also blocks;
+//    a CORS proxy makes the request server-side, avoiding the null-origin rejection.
+const _IS_FILE  = location.protocol === 'file:';
+const _PROXY    = 'https://corsproxy.io/?';
+const _TOKEN_LS = '_ml_access_token';
+let   _mlToken  = localStorage.getItem(_TOKEN_LS) || '';
 
 function mlFetch(endpoint) {
   const fullUrl = 'https://api.mercadolibre.com' + endpoint;
-  return fetch(_IS_FILE ? _PROXY + encodeURIComponent(fullUrl) : fullUrl);
+  const url     = _IS_FILE ? _PROXY + encodeURIComponent(fullUrl) : fullUrl;
+  const headers = _mlToken ? { 'Authorization': 'Bearer ' + _mlToken } : {};
+  return fetch(url, { headers });
+}
+
+// ── Token UI ───────────────────────────────────────────────
+function saveToken() {
+  const val = document.getElementById('mlTokenInput').value.trim();
+  _mlToken  = val;
+  if (val) { localStorage.setItem(_TOKEN_LS, val); } else { localStorage.removeItem(_TOKEN_LS); }
+  updateTokenUI(true);
+}
+function clearToken() {
+  _mlToken = '';
+  document.getElementById('mlTokenInput').value = '';
+  localStorage.removeItem(_TOKEN_LS);
+  updateTokenUI();
+}
+function updateTokenUI(saved = false) {
+  const st  = document.getElementById('tokenStatus');
+  const clr = document.getElementById('btnClearToken');
+  if (_mlToken) {
+    const short = _mlToken.slice(0, 20) + '…';
+    st.textContent = saved ? `✅ Guardado · ${short}` : `Token cargado · ${short}`;
+    st.className   = 'token-status valid';
+    clr.style.display = '';
+  } else {
+    st.textContent = 'Sin token · la búsqueda fallará con 403 Forbidden';
+    st.className   = 'token-status';
+    clr.style.display = 'none';
+  }
+}
+function toggleTokenHelp() {
+  const el = document.getElementById('tokenHelp');
+  el.style.display = el.style.display === 'none' ? '' : 'none';
+}
+// Init token from localStorage on load
+if (_mlToken) {
+  document.getElementById('mlTokenInput').value = _mlToken;
+  updateTokenUI();
 }
 
 // ── Helpers ────────────────────────────────────────────────
@@ -239,6 +331,7 @@ async function doSearch() {
   document.getElementById('btnSearch').disabled = true;
   document.getElementById('resultsWrap').style.display = 'none';
   document.getElementById('outputWrap').style.display  = 'none';
+  if (!_mlToken) { setStatus('❌ Falta el <strong>token de acceso</strong>. Ingresa tu token de ML arriba y pulsa Guardar antes de buscar.', true); document.getElementById('btnSearch').disabled = false; return; }
   setStatus(`<span class="spinner"></span> Buscando en Mercado Libre${_IS_FILE ? ' (vía proxy)' : ''}…`);
 
   let qs = `/sites/${site}/search?q=${encodeURIComponent(q)}&limit=${limit}`;
@@ -263,7 +356,8 @@ async function doSearch() {
     // Try to load descriptions individually in background (best-effort, no 403 risk)
     loadDescriptions(_results);
   } catch(e) {
-    setStatus(`❌ Error al conectar con Mercado Libre: ${e.message}`, true);
+    const hint = e.message.includes('403') ? ' — Verifica que el token sea válido y no haya expirado.' : '';
+    setStatus(`❌ Error al conectar con Mercado Libre: ${e.message}${hint}`, true);
   }
   document.getElementById('btnSearch').disabled = false;
 }

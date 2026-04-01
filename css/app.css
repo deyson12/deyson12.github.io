@@ -240,18 +240,12 @@ h1,h2,h3,h4,h5{font-family:var(--font-head);font-weight:700;line-height:1.2}
 
 /* PRODUCT CARD */
 .product-card{background:var(--bg-card);border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--border);box-shadow:var(--shadow-sm);transition:var(--transition);cursor:pointer;position:relative;display:flex;flex-direction:column;}
-/* Hover sin transform para no desplazar el elemento en móvil (causa el doble-tap) */
 .product-card:hover{box-shadow:var(--shadow-lg);border-color:var(--primary);}
-/* Solo en dispositivos que soporten hover real (no táctil) se aplica el elevado */
-@media(hover:hover){.product-card:hover{transform:translateY(-4px);}}
 .card-img-wrap{position:relative;aspect-ratio:1;overflow:hidden;background:var(--bg);}
-.card-img{width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .3s ease,transform .4s ease;}
+.card-img{width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .3s ease;}
 .card-img.img-loaded{opacity:1}
-.product-card:hover .card-img{transform:scale(1.07)}
-.card-wishlist{position:absolute;top:7px;right:7px;background:var(--bg-card);border:none;cursor:pointer;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-sm);opacity:0;transition:var(--transition);z-index:2;}
+.card-wishlist{position:absolute;top:7px;right:7px;background:var(--bg-card);border:none;cursor:pointer;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-sm);opacity:1;transition:var(--transition);z-index:2;}
 .card-wishlist svg{width:15px;height:15px;transition:var(--transition);}
-/* Wishlist button visible on hover (desktop) and when active (all devices) */
-@media(hover:hover){.product-card:hover .card-wishlist{opacity:1;}}
 .card-wishlist.active{opacity:1;}
 .badge-wrap{position:absolute;top:7px;left:7px;display:flex;flex-direction:column;gap:3px;z-index:2;}
 .badge{display:inline-flex;align-items:center;gap:2px;padding:2px 6px;border-radius:6px;font-family:var(--font-head);font-size:9px;font-weight:700;line-height:1.4;letter-spacing:.2px;}
