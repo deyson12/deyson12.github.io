@@ -21,9 +21,7 @@ jobs:
         run: |
           rm -rf docs
           mkdir docs
-          cp . docs/
-          cp -r assets docs/ || true
-          cp favicon.ico docs/ || true
+          rsync -a --exclude='.git' --exclude='docs' . docs/
 
       - name: SPA fallback & disable Jekyll
         run: |
