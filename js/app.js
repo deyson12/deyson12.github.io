@@ -17,6 +17,19 @@ let buyNowProduct = null;
 let filteredList = [], pageOffset = 0, isLoadingMore = false, gridObserver = null;
 const PAGE_SIZE = 12;
 
+// ===== MAP STATE =====
+let _leafletLoaded  = false;
+let _mapInstance    = null;
+let _mapMarker      = null;
+let _googleLoaded   = false;
+let _googleMap      = null;
+let _googleMarker   = null;
+let _deliveryLat    = null;
+let _deliveryLng    = null;
+let _mapConfirmed   = false;
+let _lastGeoDir     = '';
+let _mapFieldInited = false;
+
 document.addEventListener('DOMContentLoaded', async () => {
   const grid = document.getElementById('productsGrid');
   grid.innerHTML = Array(PAGE_SIZE).fill(0).map(buildSkeleton).join('');
@@ -36,7 +49,337 @@ document.addEventListener('DOMContentLoaded', async () => {
   initSearch();
   applySavedTheme();
   handleWompiReturn();
+  initMapField();
+  // Scroll-to-top button visibility
+  const _scrollBtn = document.getElementById('btnScrollTop');
+  if (_scrollBtn) {
+    window.addEventListener('scroll', () => {
+      _scrollBtn.classList.toggle('visible', window.scrollY > 320);
+    }, { passive: true });
+  }
 });
+
+// ===== MAP / GEOCODING =====
+function initMapField() {
+  if (_mapFieldInited) return;
+  _mapFieldInited = true;
+  if (!MAPS_ENABLED) return;  // feature flag
+  const inp = document.getElementById('inputDireccion');
+  if (!inp) return;
+  inp.addEventListener('blur', () => {
+    const dir = inp.value.trim();
+    if (!dir || dir === _lastGeoDir) return;
+    _lastGeoDir = dir;
+    geocodeAddress(dir);
+  });
+}
+
+/**
+ * Normaliza direcciones colombianas para Nominatim.
+ * Ej: "Cr 99 # 65 - 265" → "Carrera 99 65 265"
+ */
+function normalizeColAddress(raw) {
+  return raw
+    .replace(/\bCr\.?/gi,       'Carrera')
+    .replace(/\bCll?\.?/gi,     'Calle')
+    .replace(/\bDg\.?/gi,       'Diagonal')
+    .replace(/\bTv\.?/gi,       'Transversal')
+    .replace(/\bAv\.?/gi,       'Avenida')
+    .replace(/\bAk\.?/gi,       'Autopista')
+    .replace(/#/g,               ' ')
+    .replace(/\s*-\s*/g,         ' ')
+    .replace(/\s+/g,             ' ')
+    .trim();
+}
+
+/** Extrae sólo la parte "Carrera/Calle N" de una dirección normalizada. */
+function extractStreet(norm) {
+  const m = norm.match(/^(Carrera|Calle|Diagonal|Transversal|Avenida|Autopista)\s+\d+[A-Z]?/i);
+  return m ? m[0] : null;
+}
+
+/** Llama a Nominatim para una sola query; devuelve el primer resultado o null. */
+async function nominatimFetch(q) {
+  const url  = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&countrycodes=co`;
+  const res  = await fetch(url, { headers: { 'Accept-Language': 'es', 'User-Agent': 'PideFacil/1.0' } });
+  const data = await res.json();
+  return data.length ? data[0] : null;
+}
+
+/**
+ * Geocodifica con cascada de 4 niveles:
+ *  1. Dirección completa normalizada + ciudad
+ *  2. Dirección completa normalizada + Colombia
+ *  3. Sólo la calle (sin número de puerta) + ciudad  ← resuelve "Carrera 99, Medellín"
+ *  4. Ciudad sola  ← fallback garantizado
+ * Devuelve { result, precision: 'address'|'street'|'city' }
+ */
+async function geocodeCascade(address) {
+  const norm   = normalizeColAddress(address);
+  const city   = (typeof DELIVERY_CITY !== 'undefined' && DELIVERY_CITY) ? DELIVERY_CITY : 'Colombia';
+  const street = extractStreet(norm);
+
+  let result;
+
+  result = await nominatimFetch(`${norm}, ${city}, Colombia`);
+  if (result) return { result, precision: 'address' };
+
+  result = await nominatimFetch(`${norm}, Colombia`);
+  if (result) return { result, precision: 'address' };
+
+  if (street) {
+    result = await nominatimFetch(`${street}, ${city}, Colombia`);
+    if (result) return { result, precision: 'street' };
+  }
+
+  // City-center fallback — always succeeds for known cities
+  result = await nominatimFetch(`${city}, Colombia`);
+  if (result) return { result, precision: 'city' };
+
+  return null;
+}
+
+async function geocodeAddress(address) {
+  if (!MAPS_ENABLED) return;  // feature flag
+
+  _mapConfirmed = false;
+  _deliveryLat  = null;
+  _deliveryLng  = null;
+
+  const wrap        = document.getElementById('mapConfirmWrap');
+  const loadingEl   = document.getElementById('mapLoadingEl');
+  const mapEl       = document.getElementById('mapEl');
+  const badge       = document.getElementById('mapConfirmedBadge');
+  const confirmBtns = document.getElementById('mapConfirmBtns');
+  const hint        = document.getElementById('mapConfirmHint');
+  const btnConfirm  = document.getElementById('btnMapConfirm');
+  const question    = document.getElementById('mapQuestion');
+  if (!wrap) return;
+
+  // Show loading state
+  wrap.classList.add('visible');
+  loadingEl.style.display = 'flex';
+  loadingEl.innerHTML     = '<div class="spin"></div> Buscando dirección…';
+  mapEl.style.display     = 'none';
+  badge.classList.remove('visible');
+  confirmBtns.style.display = 'flex';
+  hint.classList.remove('visible');
+  btnConfirm.classList.remove('visible');
+  question.textContent = '¿Tu domicilio llega aquí?';
+
+  const useGoogle = (typeof MAPS_PROVIDER !== 'undefined' && MAPS_PROVIDER === 'google');
+  try {
+    if (useGoogle) {
+      const found = await geocodeGoogle(address);
+      if (!found) { loadingEl.innerHTML = '⚠️ No se pudo cargar el mapa. Puedes continuar sin él.'; return; }
+      _deliveryLat = found.lat;
+      _deliveryLng = found.lng;
+      loadingEl.style.display = 'none';
+      mapEl.style.display     = 'block';
+      await loadGoogleMaps();
+      renderGoogleMap(_deliveryLat, _deliveryLng);
+      if (found.precision === 'city') {
+        question.textContent = 'No encontramos la dirección exacta. Mueve el pin a tu ubicación:';
+        enableMapDrag();
+      } else {
+        question.textContent = '¿Tu domicilio llega aquí?';
+      }
+    } else {
+      const found = await geocodeCascade(address);
+      if (!found) { loadingEl.innerHTML = '⚠️ No se pudo cargar el mapa. Puedes continuar sin él.'; return; }
+      _deliveryLat = parseFloat(found.result.lat);
+      _deliveryLng = parseFloat(found.result.lon);
+      loadingEl.style.display = 'none';
+      mapEl.style.display     = 'block';
+      await loadLeaflet();
+      renderDeliveryMap(_deliveryLat, _deliveryLng);
+      if (found.precision === 'address') {
+        question.textContent = '¿Tu domicilio llega aquí?';
+      } else if (found.precision === 'street') {
+        question.textContent = 'Encontramos la calle. ¿El pin está en el lugar correcto?';
+      } else {
+        question.textContent = 'No encontramos la dirección exacta. Mueve el pin a tu ubicación:';
+        enableMapDrag();
+      }
+    }
+  } catch (e) {
+    loadingEl.innerHTML = '⚠️ No se pudo cargar el mapa. Puedes continuar sin él.';
+  }
+}
+
+function loadLeaflet() {
+  if (_leafletLoaded) return Promise.resolve();
+  return new Promise(resolve => {
+    if (document.getElementById('leaflet-css')) { _leafletLoaded = true; resolve(); return; }
+    const css = document.createElement('link');
+    css.id   = 'leaflet-css';
+    css.rel  = 'stylesheet';
+    css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+    document.head.appendChild(css);
+    const js  = document.createElement('script');
+    js.src    = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    js.onload = () => { _leafletLoaded = true; resolve(); };
+    document.head.appendChild(js);
+  });
+}
+
+function renderDeliveryMap(lat, lng) {
+  if (_mapInstance) {
+    _mapInstance.setView([lat, lng], 16);
+    _mapMarker.setLatLng([lat, lng]);
+    _mapMarker.dragging.disable();
+    setTimeout(() => _mapInstance.invalidateSize(), 120);
+    return;
+  }
+  _mapInstance = L.map('mapEl', { zoomControl: true, scrollWheelZoom: false })
+    .setView([lat, lng], 16);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
+    maxZoom: 19,
+  }).addTo(_mapInstance);
+
+  // Custom pin
+  const icon = L.divIcon({
+    className: '',
+    html: `<div style="width:32px;height:32px;background:var(--primary,#F15200);border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.35)"></div>`,
+    iconSize: [32, 32], iconAnchor: [16, 32],
+  });
+  _mapMarker = L.marker([lat, lng], { draggable: false, icon }).addTo(_mapInstance);
+  _mapMarker.on('dragend', e => {
+    const p = e.target.getLatLng();
+    _deliveryLat = p.lat;
+    _deliveryLng = p.lng;
+  });
+  setTimeout(() => _mapInstance.invalidateSize(), 120);
+}
+
+/** Lazy-carga la API de Google Maps JS (requiere GOOGLE_MAPS_KEY en config.js). */
+function loadGoogleMaps() {
+  if (_googleLoaded && typeof google !== 'undefined' && google.maps) return Promise.resolve();
+  if (document.getElementById('google-maps-js')) {
+    return new Promise(resolve => { window._gmapsReady = () => { _googleLoaded = true; resolve(); }; });
+  }
+  return new Promise((resolve, reject) => {
+    window._gmapsReady = () => { _googleLoaded = true; resolve(); };
+    const s  = document.createElement('script');
+    s.id     = 'google-maps-js';
+    s.src    = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&callback=_gmapsReady`;
+    s.async  = true;
+    s.defer  = true;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+/**
+ * Geocodifica con Google Geocoding API.
+ * Intenta primero dirección + ciudad, luego ciudad sola como fallback.
+ * Devuelve { lat, lng, precision: 'address'|'city' } o null.
+ */
+async function geocodeGoogle(address) {
+  const city = (typeof DELIVERY_CITY !== 'undefined' && DELIVERY_CITY) ? DELIVERY_CITY : 'Colombia';
+  const tryQ = async q => {
+    const url  = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(q)}&key=${GOOGLE_MAPS_KEY}`;
+    const res  = await fetch(url);
+    const data = await res.json();
+    return (data.status === 'OK' && data.results.length) ? data.results[0].geometry.location : null;
+  };
+  let loc = await tryQ(`${address}, ${city}, Colombia`);
+  if (loc) return { lat: loc.lat, lng: loc.lng, precision: 'address' };
+  loc = await tryQ(`${city}, Colombia`);
+  if (loc) return { lat: loc.lat, lng: loc.lng, precision: 'city' };
+  return null;
+}
+
+/** Crea o actualiza el mapa de Google Maps con un marcador arrastrable. */
+function renderGoogleMap(lat, lng) {
+  const el = document.getElementById('mapEl');
+  if (_googleMap) {
+    _googleMap.setCenter({ lat, lng });
+    _googleMarker.setPosition({ lat, lng });
+    _googleMarker.setDraggable(false);
+    return;
+  }
+  _googleMap = new google.maps.Map(el, {
+    center: { lat, lng },
+    zoom: 16,
+    gestureHandling: 'cooperative',
+  });
+  _googleMarker = new google.maps.Marker({
+    position: { lat, lng },
+    map: _googleMap,
+    draggable: false,
+    icon: {
+      path: google.maps.SymbolPath.CIRCLE,
+      scale: 10,
+      fillColor: '#F15200',
+      fillOpacity: 1,
+      strokeColor: '#ffffff',
+      strokeWeight: 3,
+    },
+  });
+  _googleMarker.addListener('dragend', () => {
+    const pos = _googleMarker.getPosition();
+    _deliveryLat = pos.lat();
+    _deliveryLng = pos.lng();
+  });
+}
+
+function enableMapDrag() {
+  const useGoogle = (typeof MAPS_PROVIDER !== 'undefined' && MAPS_PROVIDER === 'google');
+  if (useGoogle) {
+    if (_googleMarker) _googleMarker.setDraggable(true);
+  } else {
+    if (!_mapMarker) return;
+    _mapMarker.dragging.enable();
+    const el = _mapMarker.getElement();
+    if (el) { el.style.cursor = 'grab'; el.style.transition = 'transform .2s'; }
+  }
+  document.getElementById('mapConfirmBtns').style.display = 'none';
+  document.getElementById('mapConfirmHint').classList.add('visible');
+  document.getElementById('btnMapConfirm').classList.add('visible');
+  document.getElementById('mapQuestion').textContent = 'Arrastra el pin a tu ubicación exacta:';
+}
+
+function confirmMapLocation() {
+  if (!_deliveryLat) return;
+  const useGoogle = (typeof MAPS_PROVIDER !== 'undefined' && MAPS_PROVIDER === 'google');
+  if (useGoogle) {
+    if (_googleMarker) {
+      const pos    = _googleMarker.getPosition();
+      _deliveryLat = pos.lat();
+      _deliveryLng = pos.lng();
+      _googleMarker.setDraggable(false);
+    }
+  } else {
+    if (_mapMarker) {
+      const pos    = _mapMarker.getLatLng();
+      _deliveryLat = pos.lat;
+      _deliveryLng = pos.lng;
+      _mapMarker.dragging.disable();
+    }
+  }
+  _mapConfirmed = true;
+  localStorage.setItem('cy_delivery_lat', _deliveryLat);
+  localStorage.setItem('cy_delivery_lng', _deliveryLng);
+
+  document.getElementById('mapConfirmBtns').style.display = 'none';
+  document.getElementById('mapConfirmHint').classList.remove('visible');
+  document.getElementById('btnMapConfirm').classList.remove('visible');
+  document.getElementById('mapConfirmedBadge').classList.add('visible');
+  document.getElementById('mapQuestion').textContent = '';
+}
+
+function resetMapState() {
+  _mapConfirmed = false;
+  _deliveryLat  = null;
+  _deliveryLng  = null;
+  _lastGeoDir   = '';
+  const wrap = document.getElementById('mapConfirmWrap');
+  if (wrap) wrap.classList.remove('visible');
+  const mapEl = document.getElementById('mapEl');
+  if (mapEl) mapEl.style.display = 'none';
+}
 
 // ===== BANNER =====
 function initBanner() {
@@ -418,7 +761,8 @@ function openOrderPopup() {
   summary += `<br><strong>Total: ${fmtPrice(getSelectedTotal())}</strong>`;
   document.getElementById('orderSummary').innerHTML = summary;
 
-  document.getElementById('inputDireccion').value = localStorage.getItem('cy_dir')  || '';
+  const savedDir = localStorage.getItem('cy_dir') || '';
+  document.getElementById('inputDireccion').value = savedDir;
   document.getElementById('inputNombre').value    = localStorage.getItem('cy_name') || '';
   const _psel = document.getElementById('inputPago');
   _psel.innerHTML = `<option value="">-- Seleccionar --</option>${WOMPI.enabled ? '<option value="Wompi">💳 Tarjeta / PSE (Wompi)</option>' : ''}<option value="Transferencia">🏦 Transferencia bancaria</option><option value="Efectivo">💵 Efectivo</option>`;
@@ -428,12 +772,19 @@ function openOrderPopup() {
   updateOrderBtn();
   document.getElementById('orderOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
+
+  // Auto-geocode saved address
+  resetMapState();
+  const mapWrap = document.getElementById('mapConfirmWrap');
+  if (mapWrap) mapWrap.style.display = MAPS_ENABLED ? '' : 'none';
+  if (MAPS_ENABLED && savedDir) { _lastGeoDir = ''; setTimeout(() => geocodeAddress(savedDir), 400); }
 }
 
 function closeOrderPopup() {
   buyNowProduct = null;
   document.getElementById('orderOverlay').classList.remove('open');
   document.body.style.overflow = '';
+  resetMapState();
 }
 function handleOrderOverlayClick(e) { if (e.target === document.getElementById('orderOverlay')) closeOrderPopup(); }
 function onPaymentChange() {
@@ -484,7 +835,8 @@ function sendWhatsappOrder() {
   }
 
   // ── WHATSAPP ────────────────────────────────────────────
-  const msg = buildOrderMessage({ saludo: 'quiero hacer un pedido', itemsBlock, nom, dir, pago, cambio });
+  const msg = buildOrderMessage({ saludo: 'quiero hacer un pedido', itemsBlock, nom, dir, pago, cambio,
+    mapLat: _deliveryLat, mapLng: _deliveryLng });
 
   saveOrderToHistory({
     id: 'ORD-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase(),
@@ -569,9 +921,12 @@ function confirmWompiPayment() {
   localStorage.removeItem('cy_wompi_pending');
 
   const statusLabel = pending.wompiStatus ? pending.wompiStatus.toUpperCase() : null;
+  const savedLat = parseFloat(localStorage.getItem('cy_delivery_lat')) || null;
+  const savedLng = parseFloat(localStorage.getItem('cy_delivery_lng')) || null;
   const msg = buildOrderMessage({
     saludo: 'confirmo mi pedido', itemsBlock: od.itemsBlock, nom: od.nom, dir: od.dir,
     pago: 'Wompi', wompiRef: ref, wompiId: pending.wompiId, statusLabel,
+    mapLat: savedLat, mapLng: savedLng,
   });
 
   if (!od.bpId && od.selectedIds?.length) {
@@ -611,7 +966,8 @@ function buyNow(id) {
   if (p.oldPrice) summary += `&nbsp;&nbsp;<small style="color:var(--text-muted);text-decoration:line-through">${fmtPrice(p.oldPrice)}</small><br>`;
   summary += `<br><strong>Total: ${fmtPrice(p.price)}</strong>`;
   document.getElementById('orderSummary').innerHTML = summary;
-  document.getElementById('inputDireccion').value   = localStorage.getItem('cy_dir')  || '';
+  const savedDir2 = localStorage.getItem('cy_dir') || '';
+  document.getElementById('inputDireccion').value   = savedDir2;
   document.getElementById('inputNombre').value      = localStorage.getItem('cy_name') || '';
   const _bpsel = document.getElementById('inputPago');
   _bpsel.innerHTML = `<option value="">-- Seleccionar --</option>${WOMPI.enabled ? '<option value="Wompi">💳 Tarjeta / PSE (Wompi)</option>' : ''}<option value="Transferencia">🏦 Transferencia bancaria</option><option value="Efectivo">💵 Efectivo</option>`;
@@ -621,6 +977,12 @@ function buyNow(id) {
   updateOrderBtn();
   document.getElementById('orderOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
+
+  // Auto-geocode saved address
+  resetMapState();
+  const mapWrap2 = document.getElementById('mapConfirmWrap');
+  if (mapWrap2) mapWrap2.style.display = MAPS_ENABLED ? '' : 'none';
+  if (MAPS_ENABLED && savedDir2) { _lastGeoDir = ''; setTimeout(() => geocodeAddress(savedDir2), 400); }
 }
 
 // ===== CART PANEL =====

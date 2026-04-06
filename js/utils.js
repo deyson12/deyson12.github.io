@@ -37,9 +37,11 @@ function buildItemLine(id, name, qty, price) {
  * @param {string}  [opts.wompiRef]   Referencia de la transacción Wompi
  * @param {string}  [opts.wompiId]    ID de la transacción Wompi
  * @param {string}  [opts.statusLabel] Etiqueta legible del estado Wompi (ej. 'APROBADO')
+ * @param {number}  [opts.mapLat]     Latitud confirmada por el usuario
+ * @param {number}  [opts.mapLng]     Longitud confirmada por el usuario
  */
 function buildOrderMessage({ saludo = 'quiero hacer un pedido', itemsBlock = '', nom = '', dir = '',
-  pago, cambio, wompiRef, wompiId, statusLabel } = {}) {
+  pago, cambio, wompiRef, wompiId, statusLabel, mapLat, mapLng } = {}) {
   let msg = `Hola, ${saludo} en *${STORE_NAME}*\n`;
   msg += `━━━━━━━━━━━━━━━━━━━━\n\n`;
   msg += itemsBlock;
@@ -52,6 +54,13 @@ function buildOrderMessage({ saludo = 'quiero hacer un pedido', itemsBlock = '',
   if (statusLabel) msg += `*Estado del pago:* ${statusLabel}\n`;
   if (wompiRef)    msg += `*Referencia:* ${wompiRef}\n`;
   if (wompiId)     msg += `*ID Transacción:* ${wompiId}\n`;
+
+  if (mapLat && mapLng) {
+    const lat = Number(mapLat).toFixed(6);
+    const lng = Number(mapLng).toFixed(6);
+    msg += `*Ubicación exacta:* https://maps.google.com/?q=${lat},${lng}\n`;
+  }
+
   msg += `\nGracias`;
   return msg;
 }

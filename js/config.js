@@ -7,6 +7,22 @@ const WA_PHONE   = '573136090247';
 const STORE_NAME = 'PideFacil';
 const ORDERS_KEY = 'cy_orders_history';
 
+// ── Mapa de entrega ───────────────────────────────────────
+// MAPS_ENABLED:    true  = muestra mapa de confirmación al pedir
+//                 false = desactiva el mapa (solo texto de dirección)
+// MAPS_PROVIDER:  'leaflet' = OpenStreetMap + Nominatim (gratis, sin API key)
+//                'google'  = Google Maps + Google Geocoding (más preciso,
+//                             requiere API key con Maps JS API y Geocoding API
+//                             habilitados en console.cloud.google.com)
+// DELIVERY_CITY:  ciudad que se agrega al geocoding para mayor
+//                precisión. Ej: 'Bogotá', 'Medellín', 'Cali'
+// GOOGLE_MAPS_KEY: tu API key de Google (solo se usa si MAPS_PROVIDER='google')
+// ────────────────────────────────────────
+const MAPS_ENABLED   = true;          // <── true | false
+const MAPS_PROVIDER  = 'google';     // <── 'leaflet' | 'google'
+const DELIVERY_CITY  = 'Medellín';    // <── ciudad principal de entrega
+const GOOGLE_MAPS_KEY = 'AIzaSyCZDKgSFqjayBMohK8lawKi2KPf8HLWdnM';           // <── API key de Google (si usas 'google')
+
 // ── Wompi — pagos en línea (tarjeta / PSE) ──────────────────
 // enabled:     true  = activa el flujo de pago Wompi
 //              false = solo WhatsApp (transferencia / efectivo)

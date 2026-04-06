@@ -105,6 +105,8 @@ function sendOrderWhatsApp() {
   const msg = buildOrderMessage({
     saludo: 'confirmo mi pedido', itemsBlock: od.itemsBlock, nom: od.nom, dir: od.dir,
     pago: 'Wompi', wompiRef: ref, wompiId: wompiParams.id, statusLabel: ui.label,
+    mapLat: parseFloat(localStorage.getItem('cy_delivery_lat')) || null,
+    mapLng: parseFloat(localStorage.getItem('cy_delivery_lng')) || null,
   });
   window.open(`https://wa.me/${WA_PHONE}?text=${encodeURIComponent(msg)}`, '_blank');
 }
