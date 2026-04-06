@@ -43,7 +43,7 @@ function buildItemLine(id, name, qty, price) {
 function buildOrderMessage({ saludo = 'quiero hacer un pedido', itemsBlock = '', nom = '', dir = '',
   pago, cambio, wompiRef, wompiId, statusLabel, mapLat, mapLng } = {}) {
   let msg = `Hola, ${saludo} en *${STORE_NAME}*\n`;
-  msg += `━━━━━━━━━━━━━━━━━━━━\n\n`;
+  msg += `━━━━━━━━━━━━━━\n\n`;
   msg += itemsBlock;
   msg += `*A nombre de:* ${nom}\n`;
   msg += `*Dirección de entrega:* ${dir}\n`;

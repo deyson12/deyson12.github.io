@@ -816,7 +816,7 @@ function sendWhatsappOrder() {
   if (buyNowProduct) {
     const p = buyNowProduct; bpId = p.id; totalAmount = p.price;
     itemsBlock  = buildItemLine(p.id, p.name, 1, p.price);
-    itemsBlock += `━━━━━━━━━━━━━━━━━━━━\n*TOTAL: ${fmtPrice(p.price)}*\n\n`;
+    itemsBlock += `━━━━━━━━━━━━━━\n*TOTAL: ${fmtPrice(p.price)}*\n\n`;
     summaryHtml = `${p.name} &times; 1 &mdash; <strong>${fmtPrice(p.price)}</strong>`;
     orderItems  = [{ id: p.id, name: p.name, qty: 1, price: p.price }];
   } else {
@@ -824,7 +824,7 @@ function sendWhatsappOrder() {
     const g = {}; selected.forEach(i => { if (!g[i.seller]) g[i.seller] = { items: [] }; g[i.seller].items.push(i); });
     Object.entries(g).forEach(([, grp]) => { grp.items.forEach(p => { itemsBlock += buildItemLine(p.id, p.name, p.qty, p.price); }); });
     summaryHtml = selected.map(i => `${i.name} &times;${i.qty} &mdash; <strong>${fmtPrice(i.price * i.qty)}</strong>`).join('<br>');
-    itemsBlock += `━━━━━━━━━━━━━━━━━━━━\n*TOTAL: ${fmtPrice(totalAmount)}*\n\n`;
+    itemsBlock += `━━━━━━━━━━━━━━\n*TOTAL: ${fmtPrice(totalAmount)}*\n\n`;
     orderItems  = selected.map(i => ({ id: i.id, name: i.name, qty: i.qty, price: i.price }));
   }
 
