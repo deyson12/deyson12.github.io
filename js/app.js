@@ -1179,10 +1179,11 @@ function ordStatusChip(record) {
   return ''; // Sin badge para pedidos WhatsApp
 }
 
-function toggleOrdCard(btn) {
-  const card = btn.closest('.ord-card');
+function toggleOrdCard(el) {
+  const card = el.closest('.ord-card');
   const body = card.querySelector('.ord-card-collapsible');
-  const open = body.style.display !== 'none';
+  const btn  = card.querySelector('.ord-toggle-btn');
+  const open = body.style.display === 'block';
   body.style.display = open ? 'none' : 'block';
   btn.classList.toggle('open', !open);
 }
@@ -1214,7 +1215,7 @@ function renderOrdersHistory() {
     ` : '';
     const displayRef = ord.wompiRef || ord.id;
     return `<div class="ord-card">
-      <div class="ord-card-head">
+      <div class="ord-card-head" onclick="toggleOrdCard(this)">
         <div style="flex:1;min-width:0">
           <div class="ord-card-ref">${displayRef}</div>
           <div class="ord-card-date">${fmtDateOrder(ord.date)}</div>
