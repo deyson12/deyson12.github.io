@@ -73,18 +73,8 @@
     </div>
   </div>
   <nav class="categories-nav">
-    <div class="categories-inner">
-      <button class="cat-btn active" onclick="filterCategory('all',this)">🛒 Todo</button>
-      <button class="cat-btn" onclick="filterCategory('hogar',this)">🏡 Hogar</button>
-      <button class="cat-btn" onclick="filterCategory('cuidado',this)">💄 Cuidado</button>
-      <button class="cat-btn" onclick="filterCategory('tecnologia',this)">📱 Tecnología</button>
-      <button class="cat-btn" onclick="filterCategory('ropa',this)">👟 Ropa</button>
-      <button class="cat-btn" onclick="filterCategory('mascotas',this)">🐾 Mascotas</button>
-      <button class="cat-btn" onclick="filterCategory('automotor',this)">🚗 Automotor</button>
-      <button class="cat-btn" onclick="filterCategory('juguetes',this)">🎮 Juguetes</button>
-      <button class="cat-btn" onclick="filterCategory('bebes',this)">👶 Bebés</button>
-      <button class="cat-btn" onclick="filterCategory('deportes',this)">🏃 Deportes</button>
-      <button class="cat-btn" onclick="filterCategory('oficina',this)">💼 Oficina</button>
+    <div class="categories-inner" id="categoriesInner">
+      <!-- populated by initCategories() -->
     </div>
   </nav>
 </header>
@@ -100,17 +90,9 @@
   </div>
   <div class="ham-drawer-body">
     <div class="ham-section-label">Categorías</div>
-    <button class="ham-cat-btn active" onclick="hamFilterCategory('all',this)">🛒 Todo</button>
-    <button class="ham-cat-btn" onclick="hamFilterCategory('hogar',this)">🏡 Hogar</button>
-    <button class="ham-cat-btn" onclick="hamFilterCategory('cuidado',this)">💄 Cuidado personal</button>
-    <button class="ham-cat-btn" onclick="hamFilterCategory('tecnologia',this)">📱 Tecnología</button>
-    <button class="ham-cat-btn" onclick="hamFilterCategory('ropa',this)">👟 Ropa y calzado</button>
-    <button class="ham-cat-btn" onclick="hamFilterCategory('mascotas',this)">🐾 Mascotas</button>
-    <button class="ham-cat-btn" onclick="hamFilterCategory('automotor',this)">🚗 Automotor</button>
-    <button class="ham-cat-btn" onclick="hamFilterCategory('juguetes',this)">🎮 Juguetes</button>
-    <button class="ham-cat-btn" onclick="hamFilterCategory('bebes',this)">👶 Bebés</button>
-    <button class="ham-cat-btn" onclick="hamFilterCategory('deportes',this)">🏃 Deportes</button>
-    <button class="ham-cat-btn" onclick="hamFilterCategory('oficina',this)">💼 Oficina</button>
+    <div id="hamCategoriesContainer">
+      <!-- populated by initCategories() -->
+    </div>
     <div class="ham-divider"></div>
     <div class="ham-section-label">Acciones</div>
     <button class="ham-action-btn" onclick="closeHamDrawer();openWish()">
@@ -553,6 +535,13 @@
           <input class="order-input" id="inputNombre" type="text" placeholder="Nombre completo del destinatario">
         </div>
         <div class="order-field">
+          <label class="order-label" for="inputCelular">📱 Celular <span class="req">*</span></label>
+          <div class="input-prefix-wrap">
+            <span class="input-prefix">🇨🇴 +57</span>
+            <input class="order-input order-input-prefixed" id="inputCelular" type="tel" placeholder="3001234567" inputmode="numeric" maxlength="10" oninput="fmtCelularInput(this)">
+          </div>
+        </div>
+        <div class="order-field">
           <label class="order-label" for="inputPago">💳 Método de pago <span class="req">*</span></label>
           <select class="order-input" id="inputPago" onchange="onPaymentChange()">
             <option value="">-- Seleccionar --</option>
@@ -653,6 +642,18 @@
 <button class="btn-scroll-top" id="btnScrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Volver al inicio">
   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
 </button>
+
+<!-- GUEST REGISTER ERROR POPUP -->
+<div class="reg-err-overlay" id="regErrOverlay">
+  <div class="reg-err-box">
+    <h2 class="reg-err-title">Error al procesar tu pedido</h2>
+    <p class="reg-err-body">Ocurrio un error al registrar tu informacion de contacto. Por favor comunicarte con nosotros y te ayudaremos a completar tu pedido sin problema.</p>
+    <div class="reg-err-actions">
+      <a class="btn-reg-err-wa" id="regErrWaBtn" href="#" target="_blank" rel="noopener noreferrer">Contactar por WhatsApp</a>
+      <button class="btn-reg-err-close" onclick="closeRegisterError()">Cerrar</button>
+    </div>
+  </div>
+</div>
 <div class="toast-container" id="toastContainer"></div>
 
 <script src="js/config.js"></script>

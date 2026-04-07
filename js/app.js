@@ -14,6 +14,7 @@ let checkedItems = new Set(JSON.parse(localStorage.getItem('cy_checked') || 'nul
 let currentCategory = 'all', currentPriceFilter = 'all', currentSearch = '', currentSort = 'popular';
 let bannerIdx = 0;
 let buyNowProduct = null;
+let repeatOrderItems = null; // array of {product, qty} — set by repeatOrder(), bypasses the cart
 let filteredList = [], pageOffset = 0, isLoadingMore = false, gridObserver = null;
 const PAGE_SIZE = 12;
 
@@ -34,9 +35,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   const grid = document.getElementById('productsGrid');
   grid.innerHTML = Array(PAGE_SIZE).fill(0).map(buildSkeleton).join('');
   try {
-    const res = await fetch('./products.json');
+    const res = await fetch(`${API_BASE}/api/products/pidefacil`);
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    PRODUCTS = (await res.json()).filter(p => p.stock !== 'no');
+    PRODUCTS = (await res.json())
+      .filter(p => p.active !== false)
+      .map(normalizeProduct);
   } catch (e) {
     console.error('Error cargando productos:', e);
     grid.innerHTML = '<div class="no-results"><div class="no-results-icon">⚠️</div><h3>Error al cargar</h3><p>Recarga la página</p></div>';
@@ -50,6 +53,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   applySavedTheme();
   handleWompiReturn();
   initMapField();
+  initCategories();
   // Scroll-to-top button visibility
   const _scrollBtn = document.getElementById('btnScrollTop');
   if (_scrollBtn) {
@@ -60,6 +64,34 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // ===== MAP / GEOCODING =====
+
+/**
+ * Normaliza la respuesta de /api/products al shape interno que usa la app.
+ * Campos nuevos → internos:
+ *   originalPrice → oldPrice
+ *   customOptions → badges (array de strings: 'top', 'new', etc.)
+ *   stock null    → 'ok'  (null = disponible)
+ *   active false  → filtrado antes de llegar aquí
+ */
+function normalizeProduct(raw) {
+  return {
+    id:          raw.id,
+    name:        raw.name,
+    description: raw.description || '',
+    price:       raw.price,
+    oldPrice:    raw.originalPrice || null,
+    image:       raw.image,
+    category:    raw.category,               // UUID — coincide con el id que usan los botones de categoría
+    seller:      raw.seller,                 // UUID — usado para agrupar en el carrito
+    badges:      (raw.customOptions || []).map(b => typeof b === 'string' ? b : (b.value || b.code || b.name || '')).filter(Boolean),
+    stock:       raw.stock === null ? 'ok' : (raw.stock || 'ok'),
+    rating:      0,
+    sales:       0,
+    featured:    raw.featured || false,
+    tags:        raw.tags || '',
+  };
+}
+
 function initMapField() {
   if (_mapFieldInited) return;
   _mapFieldInited = true;
@@ -536,8 +568,7 @@ function applyFilters() {
   if (currentCategory !== 'all') l = l.filter(p => p.category === currentCategory);
   if (currentSearch) l = l.filter(p =>
     p.name.toLowerCase().includes(currentSearch) ||
-    p.seller.toLowerCase().includes(currentSearch) ||
-    p.category.toLowerCase().includes(currentSearch) ||
+    p.tags.toLowerCase().includes(currentSearch) ||
     p.id.substring(0, 8).toLowerCase().includes(currentSearch)
   );
   if (currentPriceFilter !== 'all') {
@@ -548,7 +579,7 @@ function applyFilters() {
     case 'price-asc':  l.sort((a, b) => a.price - b.price); break;
     case 'price-desc': l.sort((a, b) => b.price - a.price); break;
     case 'newest':     l.sort((a, b) => (b.badges.includes('new') ? 1 : 0) - (a.badges.includes('new') ? 1 : 0)); break;
-    default:           l.sort((a, b) => b.sales - a.sales);
+    default:           l.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
   }
   filteredList = l;
   pageOffset   = 0;
@@ -557,21 +588,55 @@ function applyFilters() {
 
 function filterCategory(cat, btn) {
   currentCategory = cat;
-  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
   applyFilters();
   document.getElementById('gridSectionHeader').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 function hamFilterCategory(cat, btn) {
   currentCategory = cat;
-  document.querySelectorAll('.cat-btn').forEach(b => { b.classList.toggle('active', b.getAttribute('onclick')?.includes(`'${cat}'`)); });
-  document.querySelectorAll('.ham-cat-btn').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
+  document.querySelectorAll('.ham-cat-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
   applyFilters();
   closeHamDrawer();
   document.getElementById('gridSectionHeader').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 function openHamDrawer()  { document.getElementById('hamDrawer').classList.add('open'); document.getElementById('hamOverlay').classList.add('open'); document.body.style.overflow = 'hidden'; }
+
+// ===== CATEGORIES =====
+async function initCategories() {
+  // Lazy-load Iconify web component for icon rendering
+  if (!document.getElementById('iconify-script')) {
+    const s = document.createElement('script');
+    s.id  = 'iconify-script';
+    s.src = 'https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js';
+    document.head.appendChild(s);
+  }
+
+  const todoBtnNav = `<button class="cat-btn active" data-cat="all" onclick="filterCategory('all',this)">🛒 Todo</button>`;
+  const todoBtnHam = `<button class="ham-cat-btn active" data-cat="all" onclick="hamFilterCategory('all',this)">🛒 Todo</button>`;
+
+  const navInner    = document.getElementById('categoriesInner');
+  const hamContainer = document.getElementById('hamCategoriesContainer');
+
+  try {
+    const res  = await fetch(`${API_BASE}/api/categories/active`);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const cats = (await res.json()).sort((a, b) => a.order - b.order);
+
+    const makeNavBtn = c =>
+      `<button class="cat-btn" data-cat="${c.code}" onclick="filterCategory('${c.id}',this)"><iconify-icon icon="${c.icon}" style="font-size:1em;vertical-align:-.15em"></iconify-icon> ${c.name}</button>`;
+    const makeHamBtn = c =>
+      `<button class="ham-cat-btn" data-cat="${c.code}" onclick="hamFilterCategory('${c.id}',this)"><iconify-icon icon="${c.icon}" style="font-size:1.1em;vertical-align:-.15em"></iconify-icon> ${c.name}</button>`;
+
+    if (navInner)    navInner.innerHTML    = todoBtnNav + cats.map(makeNavBtn).join('');
+    if (hamContainer) hamContainer.innerHTML = todoBtnHam + cats.map(makeHamBtn).join('');
+  } catch (e) {
+    console.warn('No se pudieron cargar las categorías desde la API:', e);
+    // Fallback: show only the "Todo" button so the UI isn't broken
+    if (navInner)    navInner.innerHTML    = todoBtnNav;
+    if (hamContainer) hamContainer.innerHTML = todoBtnHam;
+  }
+}
 function closeHamDrawer() { document.getElementById('hamDrawer').classList.remove('open'); document.getElementById('hamOverlay').classList.remove('open'); document.body.style.overflow = ''; }
 function toggleThemeAndClose() { toggleTheme(); }
 function filterPrice(range, btn) {
@@ -749,23 +814,33 @@ function renderCartPanel() {
 
 // ===== ORDER POPUP =====
 function openOrderPopup() {
-  const selected = getCheckedItems();
-  if (!selected.length) { showToast('Selecciona al menos un producto', '⚠️'); return; }
-
-  const g = {}; selected.forEach(i => { if (!g[i.seller]) g[i.seller] = []; g[i.seller].push(i); });
-  let summary = '<strong>Resumen del pedido:</strong><br>';
-  Object.entries(g).forEach(([seller, items]) => {
-    summary += `🏪 ${seller}<br>`;
-    items.forEach(i => { summary += `&nbsp;&nbsp;• ${i.name} ×${i.qty} — ${fmtPrice(i.price * i.qty)}<br>`; });
-  });
-  summary += `<br><strong>Total: ${fmtPrice(getSelectedTotal())}</strong>`;
-  document.getElementById('orderSummary').innerHTML = summary;
+  // repeatOrderItems mode: use a fixed item list, ignore the regular cart
+  if (repeatOrderItems) {
+    const items = repeatOrderItems;
+    const totalAmount = items.reduce((s, i) => s + i.product.price * i.qty, 0);
+    let summary = '<strong>Resumen del pedido:</strong><br>';
+    items.forEach(i => { summary += `&nbsp;&nbsp;• ${i.product.name} ×${i.qty} — ${fmtPrice(i.product.price * i.qty)}<br>`; });
+    summary += `<br><strong>Total: ${fmtPrice(totalAmount)}</strong>`;
+    document.getElementById('orderSummary').innerHTML = summary;
+  } else {
+    const selected = getCheckedItems();
+    if (!selected.length) { showToast('Selecciona al menos un producto', '⚠️'); return; }
+    const g = {}; selected.forEach(i => { if (!g[i.seller]) g[i.seller] = []; g[i.seller].push(i); });
+    let summary = '<strong>Resumen del pedido:</strong><br>';
+    Object.entries(g).forEach(([seller, items]) => {
+      summary += `🏪 ${seller}<br>`;
+      items.forEach(i => { summary += `&nbsp;&nbsp;• ${i.name} ×${i.qty} — ${fmtPrice(i.price * i.qty)}<br>`; });
+    });
+    summary += `<br><strong>Total: ${fmtPrice(getSelectedTotal())}</strong>`;
+    document.getElementById('orderSummary').innerHTML = summary;
+  }
 
   const savedDir = localStorage.getItem('cy_dir') || '';
   document.getElementById('inputDireccion').value = savedDir;
-  document.getElementById('inputNombre').value    = localStorage.getItem('cy_name') || '';
+  document.getElementById('inputNombre').value    = localStorage.getItem('cy_name')  || '';
+  document.getElementById('inputCelular').value   = localStorage.getItem('cy_phone') || '';
   const _psel = document.getElementById('inputPago');
-  _psel.innerHTML = `<option value="">-- Seleccionar --</option>${WOMPI.enabled ? '<option value="Wompi">💳 Tarjeta / PSE (Wompi)</option>' : ''}<option value="Transferencia">🏦 Transferencia bancaria</option><option value="Efectivo">💵 Efectivo</option>`;
+  _psel.innerHTML = `<option value="">-- Seleccionar --</option>${WOMPI.enabled ? '<option value="Wompi">💳 Tarjeta / PSE</option>' : ''}<option value="Transferencia">🏦 Transferencia bancaria</option>`;
   _psel.value = '';
   document.getElementById('inputCambio').value = '';
   document.getElementById('cambioWrap').style.display = 'none';
@@ -782,6 +857,7 @@ function openOrderPopup() {
 
 function closeOrderPopup() {
   buyNowProduct = null;
+  repeatOrderItems = null;
   document.getElementById('orderOverlay').classList.remove('open');
   document.body.style.overflow = '';
   resetMapState();
@@ -796,22 +872,138 @@ function fmtCambioInput(el) {
   const raw = el.value.replace(/\D/g, '');
   el.value = raw ? Number(raw).toLocaleString('es-CO') : '';
 }
+function fmtCelularInput(el) {
+  el.value = el.value.replace(/\D/g, '').slice(0, 10);
+}
 
-function sendWhatsappOrder() {
-  const dir   = document.getElementById('inputDireccion').value.trim();
-  const nom   = document.getElementById('inputNombre').value.trim();
-  const pago  = document.getElementById('inputPago').value;
+// ===== ORDER API =====
+const _FIXED_SELLER_ID = 'd59ea1a4-5841-4740-950a-fb501a46ebae';
+const USER_ID_KEY      = 'cy_user_id';
+
+/**
+ * Registra al usuario como guest la primera vez.
+ * Si ya existe un userId en localStorage lo retorna directamente.
+ * Lanza un error si la API falla.
+ */
+async function ensureGuestUser(name, phone) {
+  const userId      = localStorage.getItem(USER_ID_KEY) || crypto.randomUUID();
+  const emailPrefix = 'user' + userId.replace(/-/g, '').slice(0, 8);
+  const res = await fetch(`${API_BASE}/api/auth/register`, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      userId,
+      name,
+      password: 'guess_checkout',
+      email:    `${emailPrefix}@noapply.com`,
+      phone,
+      image:    '',
+    }),
+  });
+  if (!res.ok) throw new Error('register_failed');
+  localStorage.setItem(USER_ID_KEY, userId);
+  return userId;
+}
+
+function openRegisterError(name, phone) {
+  const txt = `Hola, necesito ayuda. Tuve un error al intentar hacer un pedido en PideFacil. Nombre: ${name}. Celular: ${phone}. Por favor ayudame a completar mi pedido.`;
+  document.getElementById('regErrWaBtn').href = `https://wa.me/${WA_PHONE}?text=${encodeURIComponent(txt)}`;
+  document.getElementById('regErrOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeRegisterError() {
+  document.getElementById('regErrOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+/** Convierte el producto normalizado (interno) al shape que espera la API. */
+function _toApiProduct(p) {
+  return {
+    id:               p.id,
+    name:             p.name,
+    description:      p.description || '',
+    price:            p.price,
+    originalPrice:    p.oldPrice || null,
+    featured:         p.featured || false,
+    image:            p.image,
+    category:         p.category,
+    seller:           p.seller,
+    note:             null,
+    tags:             p.tags || '',
+    stock:            p.stock === 'ok' ? null : (p.stock || null),
+    active:           true,
+    dropshippingUrl:  null,
+    dropshippingPrice: null,
+    revenue:          null,
+    maxDeliveryTime:  null,
+    customOptions:    p.badges || [],
+  };
+}
+
+/**
+ * Envía el pedido a la API backend. Fire-and-forget: los errores se loguean
+ * pero no bloquean el flujo de WhatsApp/Wompi.
+ * @param {{ fullItems: Array<{product, qty}>, address: string, paymentType: string }} opts
+ */
+async function postOrderToApi({ fullItems, address, paymentType }) {
+  const lat    = parseFloat(localStorage.getItem('cy_delivery_lat')) || 0;
+  const lng    = parseFloat(localStorage.getItem('cy_delivery_lng')) || 0;
+  const userId = localStorage.getItem(USER_ID_KEY) || _FIXED_SELLER_ID;
+  const body = {
+    id:            crypto.randomUUID(),
+    sellerId:      _FIXED_SELLER_ID,
+    buyerId:       userId,
+    products:      fullItems.map(i => ({
+      product:         _toApiProduct(i.product),
+      quantity:        i.qty,
+      selectedOptions: {},
+    })),
+    status:        'PENDIENTE',
+    address,
+    paymentType,
+    changeFrom:    0,
+    location:      [lat, lng],
+    deliveryPrice: 0,
+  };
+  try {
+    const res = await fetch(`${API_BASE}/api/orders`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(body),
+    });
+    if (!res.ok) console.warn('postOrderToApi: HTTP', res.status, await res.text().catch(() => ''));
+    else console.log('postOrderToApi: orden creada', body.id);
+  } catch (e) {
+    console.warn('postOrderToApi error:', e);
+  }
+}
+
+async function sendWhatsappOrder() {
+  const dir    = document.getElementById('inputDireccion').value.trim();
+  const nom    = document.getElementById('inputNombre').value.trim();
+  const phone  = document.getElementById('inputCelular').value.replace(/\D/g, '');
+  const pago   = document.getElementById('inputPago').value;
   const cambio = document.getElementById('inputCambio').value.trim();
 
   if (!dir)  { showToast('Ingresa la dirección de entrega', '');   document.getElementById('inputDireccion').focus(); return; }
   if (!nom)  { showToast('Ingresa el nombre del destinatario', ''); document.getElementById('inputNombre').focus(); return; }
+  if (!/^3\d{9}$/.test(phone)) { showToast('Ingresa un celular colombiano válido, ej: 3001234567', ''); document.getElementById('inputCelular').focus(); return; }
   if (!pago) { showToast('Selecciona el método de pago', '');       document.getElementById('inputPago').focus(); return; }
   if (pago === 'Efectivo' && !cambio) { showToast('Ingresa el valor con que vas a pagar', ''); document.getElementById('inputCambio').focus(); return; }
 
-  localStorage.setItem('cy_dir',  dir);
-  localStorage.setItem('cy_name', nom);
+  localStorage.setItem('cy_dir',   dir);
+  localStorage.setItem('cy_name',  nom);
+  localStorage.setItem('cy_phone', phone);
 
-  let itemsBlock = '', totalAmount = 0, summaryHtml = '', selectedIds = [], bpId = null, orderItems = [];
+  // ── Guest checkout: register if first time ──────────────
+  try {
+    await ensureGuestUser(nom, phone);
+  } catch (e) {
+    openRegisterError(nom, phone);
+    return;
+  }
+
+  let itemsBlock = '', totalAmount = 0, summaryHtml = '', selectedIds = [], bpId = null, orderItems = [], fullItems = [];
 
   if (buyNowProduct) {
     const p = buyNowProduct; bpId = p.id; totalAmount = p.price;
@@ -819,6 +1011,15 @@ function sendWhatsappOrder() {
     itemsBlock += `━━━━━━━━━━━━━━\n*TOTAL: ${fmtPrice(p.price)}*\n\n`;
     summaryHtml = `${p.name} &times; 1 &mdash; <strong>${fmtPrice(p.price)}</strong>`;
     orderItems  = [{ id: p.id, name: p.name, qty: 1, price: p.price }];
+    fullItems   = [{ product: p, qty: 1 }];
+  } else if (repeatOrderItems) {
+    const items = repeatOrderItems;
+    totalAmount = items.reduce((s, i) => s + i.product.price * i.qty, 0);
+    items.forEach(i => { itemsBlock += buildItemLine(i.product.id, i.product.name, i.qty, i.product.price); });
+    itemsBlock += `━━━━━━━━━━━━━━\n*TOTAL: ${fmtPrice(totalAmount)}*\n\n`;
+    summaryHtml = items.map(i => `${i.product.name} &times;${i.qty} &mdash; <strong>${fmtPrice(i.product.price * i.qty)}</strong>`).join('<br>');
+    orderItems  = items.map(i => ({ id: i.product.id, name: i.product.name, qty: i.qty, price: i.product.price }));
+    fullItems   = items;
   } else {
     const selected = getCheckedItems(); selectedIds = selected.map(i => i.id); totalAmount = getSelectedTotal();
     const g = {}; selected.forEach(i => { if (!g[i.seller]) g[i.seller] = { items: [] }; g[i.seller].items.push(i); });
@@ -826,11 +1027,12 @@ function sendWhatsappOrder() {
     summaryHtml = selected.map(i => `${i.name} &times;${i.qty} &mdash; <strong>${fmtPrice(i.price * i.qty)}</strong>`).join('<br>');
     itemsBlock += `━━━━━━━━━━━━━━\n*TOTAL: ${fmtPrice(totalAmount)}*\n\n`;
     orderItems  = selected.map(i => ({ id: i.id, name: i.name, qty: i.qty, price: i.price }));
+    fullItems   = selected.map(({ qty, ...prod }) => ({ product: prod, qty }));
   }
 
   // ── WOMPI ──────────────────────────────────────────────
   if (pago === 'Wompi') {
-    submitWithWompi({ dir, nom, totalAmount, totalFmt: fmtPrice(totalAmount), itemsBlock, summaryHtml, selectedIds, bpId, items: orderItems });
+    submitWithWompi({ dir, nom, totalAmount, totalFmt: fmtPrice(totalAmount), itemsBlock, summaryHtml, selectedIds, bpId, items: orderItems, fullItems });
     return;
   }
 
@@ -847,7 +1049,10 @@ function sendWhatsappOrder() {
     wompiRef: null, wompiId: null, wompiStatus: null,
   });
 
+  postOrderToApi({ fullItems, address: dir, paymentType: 'TRANSFERENCIA' });
+
   buyNowProduct = null;
+  repeatOrderItems = null;
   closeOrderPopup();
   window.open(`https://wa.me/${WA_PHONE}?text=${encodeURIComponent(msg)}`, '_blank');
 }
@@ -920,6 +1125,8 @@ function confirmWompiPayment() {
 
   localStorage.removeItem('cy_wompi_pending');
 
+  postOrderToApi({ fullItems: od.fullItems || [], address: od.dir, paymentType: 'WOMPI' });
+
   const statusLabel = pending.wompiStatus ? pending.wompiStatus.toUpperCase() : null;
   const savedLat = parseFloat(localStorage.getItem('cy_delivery_lat')) || null;
   const savedLng = parseFloat(localStorage.getItem('cy_delivery_lng')) || null;
@@ -970,7 +1177,7 @@ function buyNow(id) {
   document.getElementById('inputDireccion').value   = savedDir2;
   document.getElementById('inputNombre').value      = localStorage.getItem('cy_name') || '';
   const _bpsel = document.getElementById('inputPago');
-  _bpsel.innerHTML = `<option value="">-- Seleccionar --</option>${WOMPI.enabled ? '<option value="Wompi">💳 Tarjeta / PSE (Wompi)</option>' : ''}<option value="Transferencia">🏦 Transferencia bancaria</option><option value="Efectivo">💵 Efectivo</option>`;
+  _bpsel.innerHTML = `<option value="">-- Seleccionar --</option>${WOMPI.enabled ? '<option value="Wompi">💳 Tarjeta / PSE (Wompi)</option>' : ''}<option value="Transferencia">🏦 Transferencia bancaria</option>`;
   _bpsel.value = '';
   document.getElementById('inputCambio').value = '';
   document.getElementById('cambioWrap').style.display = 'none';
@@ -1090,7 +1297,7 @@ function openProduct(id) {
         <img class="modal-main-img" id="modalMainImg" src="${p.image}" alt="${p.name}">
       </div>
       <div class="modal-info">
-        <div class="modal-seller">${p.seller}</div>
+        <div class="modal-seller">${typeof STORE_NAME !== 'undefined' ? STORE_NAME : 'PideFacil'}</div>
         <h2 class="modal-name">${p.name}</h2>
         <div class="modal-price-wrap">
           <span class="modal-price">${fmtPrice(p.price)}</span>
@@ -1204,7 +1411,7 @@ function renderOrdersHistory() {
     </div>`;
     return;
   }
-  body.innerHTML = hist.map(ord => {
+  body.innerHTML = hist.map((ord, idx) => {
     const items    = ord.items || [];
     const itemsHtml = items.length
       ? items.map(it => `<div class="ord-item-row"><span class="ord-item-name">${it.name} ×${it.qty}</span><span class="ord-item-price">$${(it.price * it.qty).toLocaleString('es-CO')}</span></div>`).join('')
@@ -1236,6 +1443,12 @@ function renderOrdersHistory() {
           <div class="ord-info-row"><span class="ord-info-icon">💳</span><span>${ord.pago}</span></div>
           ${wompiExtra}
         </div>
+        <div class="ord-card-actions">
+          <button class="btn-repeat-order" onclick="repeatOrder(${idx})">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+            Repetir pedido
+          </button>
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -1247,6 +1460,34 @@ function openOrdersHistory() {
   document.getElementById('ordersPanel').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
+
+function repeatOrder(idx) {
+  let hist = [];
+  try { hist = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]'); } catch (e) {}
+  const ord = hist[idx];
+  if (!ord) return;
+
+  // Build items from current PRODUCTS catalog (use current prices)
+  const items = (ord.items || []).reduce((acc, it) => {
+    const product = PRODUCTS.find(p => p.id === it.id);
+    if (product) acc.push({ product, qty: it.qty });
+    return acc;
+  }, []);
+
+  if (!items.length) { showToast('Los productos de este pedido ya no están disponibles', '⚠️'); return; }
+
+  repeatOrderItems = items; // bypass cart entirely
+
+  closeOrdersHistory();
+  setTimeout(() => {
+    openOrderPopup();
+    setTimeout(() => {
+      if (ord.direccion) document.getElementById('inputDireccion').value = ord.direccion;
+      if (ord.nombre)    document.getElementById('inputNombre').value    = ord.nombre;
+    }, 150);
+  }, 300);
+}
+
 function closeOrdersHistory() {
   document.getElementById('ordersOverlay').classList.remove('open');
   document.getElementById('ordersPanel').classList.remove('open');

@@ -18,6 +18,18 @@ const ORDERS_KEY = 'cy_orders_history';
 //                precisión. Ej: 'Bogotá', 'Medellín', 'Cali'
 // GOOGLE_MAPS_KEY: tu API key de Google (solo se usa si MAPS_PROVIDER='google')
 // ────────────────────────────────────────
+// ── API Backend ──────────────────────────────────────────────
+// API_ENV: 'local' → http://localhost:8080
+//          'prod'  → URL de producción en Cloud Run
+// ─────────────────────────────────────────────────────────────
+const API_ENV = 'local'; // <── 'local' | 'prod'
+
+const _API_URLS = {
+  local: 'http://localhost:8080',
+  prod:  'https://ventas-7-lunas-back-241033954184.southamerica-east1.run.app',
+};
+const API_BASE = _API_URLS[API_ENV] || _API_URLS.local;
+
 const MAPS_ENABLED   = true;          // <── true | false
 const MAPS_PROVIDER  = 'google';     // <── 'leaflet' | 'google'
 const DELIVERY_CITY  = 'Medellín';    // <── ciudad principal de entrega
