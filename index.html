@@ -177,7 +177,7 @@
   </div>
 </div-->
 
-<div class="bnr3">
+<div class="bnr3" id="bnr3El">
   <div class="bnr3-inner">
     <div class="bnr3-glow"></div>
     <div class="bnr3-label">PideFacil · Tu tienda facil online</div>
@@ -347,10 +347,10 @@
 </div-->
 
 <!-- OFFERS ONLY (no featured section) -->
-<section class="section">
+<section class="section" id="offersSection">
   <div class="section-header">
     <h2 class="section-title"><span class="section-title-dot"></span>🔥 Ofertas del día</h2>
-    <a class="section-link" href="#">Ver más →</a>
+    <a class="section-link" href="#" onclick="event.preventDefault();scrollCarousel('offersContainer',1)">Ver más →</a>
   </div>
   <div class="carousel-wrap">
     <button class="carousel-arrow prev" onclick="scrollCarousel('offersContainer',-1)">
@@ -371,8 +371,8 @@
     <h2 class="sbnr-title">¡Sorpréndelos<br><em>con algo increíble!</em></h2>
     <p class="sbnr-sub">Juguetes, ropa y más — porque hoy es su día</p>
     <div class="sbnr-btns">
-      <button class="sbnr-btn" onclick="filterCategory('juguetes',null)">Ver juguetes 🎁</button>
-      <button class="sbnr-ghost" onclick="filterCategory('bebes',null)">Bebés 👶</button>
+      <button class="sbnr-btn" onclick="filterCategory('1f82f739-eb58-41fa-8016-219fe52a4d09',null)">Ver juguetes 🎁</button>
+      <button class="sbnr-ghost" onclick="filterCategory('f85aefa9-0e31-4fe3-a354-948dbfc7721d',null)">Bebés 👶</button>
     </div>
   </div>
 </div>

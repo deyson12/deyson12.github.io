@@ -503,10 +503,15 @@ function buildMiniCard(p) {
 }
 
 function renderOffers() {
-  document.getElementById('offersContainer').innerHTML = PRODUCTS
+  const offers = PRODUCTS
     .filter(p => p.oldPrice && p.oldPrice > p.price)
-    .sort((a, b) => calcDiscount(b) - calcDiscount(a))
-    .map(p => buildCard(p)).join('');
+    .sort((a, b) => calcDiscount(b) - calcDiscount(a));
+  const hasOffers = offers.length > 0;
+  document.getElementById('offersContainer').innerHTML = offers.map(p => buildCard(p)).join('');
+  const sec = document.getElementById('offersSection');
+  const bnr = document.getElementById('bnr3El');
+  if (sec) sec.style.display = hasOffers ? '' : 'none';
+  if (bnr) bnr.style.display = hasOffers ? '' : 'none';
 }
 
 function buildSkeleton() {
