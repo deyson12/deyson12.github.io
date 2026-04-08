@@ -454,6 +454,8 @@ function buildCard(p, extra = '') {
     if (b === 'top') badgeList.push('<span class="badge badge-top">🏆 TOP</span>');
     else if (b === 'new') badgeList.push('<span class="badge badge-new">✨ Nuevo</span>');
   });
+  if (!badgeList.some(b => b.includes('badge-new')) && /\bnew\b/i.test(p.tags || ''))
+    badgeList.push('<span class="badge badge-new">✨ Nuevo</span>');
   return `<div class="product-card ${extra}" onclick="openProduct('${p.id}')">
     <div class="card-img-wrap">
       <img class="card-img" src="${p.image}" alt="${p.name}" loading="lazy" decoding="async" onload="this.classList.add('img-loaded')" onerror="this.classList.add('img-loaded')">

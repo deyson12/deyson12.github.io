@@ -47,7 +47,7 @@ const GOOGLE_MAPS_KEY = 'AIzaSyCZDKgSFqjayBMohK8lawKi2KPf8HLWdnM';           // 
 //   2. Llena publicKey y integrityKey de la sección prod con tus
 //      llaves reales de panel.wompi.co → "Llaves API"
 // ────────────────────────────────────────────────────────────
-const WOMPI_ENV = 'prod'; // <── 'test' | 'prod'
+const WOMPI_ENV = ['localhost', '127.0.0.1'].includes(window.location.hostname) ? 'test' : 'prod'; // auto
 
 const _WOMPI_ENVS = {
   test: {
