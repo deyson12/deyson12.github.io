@@ -1304,7 +1304,7 @@ function openProduct(id) {
           ${p.oldPrice && p.oldPrice > p.price ? `<span class="modal-old">${fmtPrice(p.oldPrice)}</span><span class="modal-off">-${calcDiscount(p)}%</span>` : ''}
         </div>
         ${p.stock === 'low' ? '<div class="low-stock" style="font-size:12px">⚠️ Últimas unidades</div>' : ''}
-        <p class="modal-desc">${p.description}</p>
+        ${buildModalDesc(p.description)}
         <p class="modal-ref">REF: ${p.id.substring(0, 8).toUpperCase()}</p>
         <div class="modal-actions">
           <button class="btn btn-cart" style="width:100%;padding:12px;font-size:14px" onclick="addToCart('${p.id}');closeModal()">🛒 Agregar al carrito</button>
@@ -1322,6 +1322,17 @@ function openProduct(id) {
     ${similar.length ? `<div class="similar-title"><span>Productos similares</span><span class="similar-more" onclick="scrollSimilar(1)">Ver más <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></div><div class="similar-nav"><button class="similar-nav-btn similar-nav-prev" onclick="scrollSimilar(-1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg></button><div class="similar-scroll" id="similarScroll">${similar.map(s => buildMiniCard(s)).join('')}</div><button class="similar-nav-btn similar-nav-next" onclick="scrollSimilar(1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></button></div>` : ''}`;
   document.getElementById('modalOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
+}
+function buildModalDesc(text) {
+  if (!text || text.length <= 180) return `<p class="modal-desc">${text || ''}</p>`;
+  return `<p class="modal-desc modal-desc-collapsed" id="modalDescEl">${text}</p><button class="btn-modal-desc-more" id="modalDescToggle" onclick="toggleModalDesc()">Ver más ▾</button>`;
+}
+function toggleModalDesc() {
+  const el  = document.getElementById('modalDescEl');
+  const btn = document.getElementById('modalDescToggle');
+  const collapsed = el.classList.toggle('modal-desc-collapsed');
+  btn.style.opacity = '0';
+  setTimeout(() => { btn.textContent = collapsed ? 'Ver más ▾' : 'Ver menos ▴'; btn.style.opacity = '1'; }, 200);
 }
 function scrollSimilar(dir) {
   const el   = document.getElementById('similarScroll'); if (!el) return;

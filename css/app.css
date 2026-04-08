@@ -479,7 +479,9 @@ select.order-input option{background:var(--bg-card);color:var(--text-primary);}
 .modal-price{font-family:var(--font-head);font-size:26px;font-weight:800;}
 .modal-old{font-size:15px;color:var(--text-muted);text-decoration:line-through}
 .modal-off{font-size:13px;font-weight:700;color:var(--secondary);background:rgba(0,166,81,.1);padding:2px 7px;border-radius:5px}
-.modal-desc{font-size:14px;color:var(--text-secondary);line-height:1.7}
+.modal-desc{font-size:14px;color:var(--text-secondary);line-height:1.7;overflow:hidden;max-height:2000px;transition:max-height .4s ease}
+.modal-desc-collapsed{max-height:5.6em;-webkit-mask-image:linear-gradient(to bottom,#000 60%,transparent 100%);mask-image:linear-gradient(to bottom,#000 60%,transparent 100%)}
+.btn-modal-desc-more{background:none;border:none;color:var(--primary);font-size:13px;font-weight:600;cursor:pointer;padding:2px 0 8px;display:block;transition:opacity .2s}
 .modal-actions{display:flex;flex-direction:column;gap:9px;margin-top:auto;padding-top:14px;border-top:1px solid var(--border)}
 .modal-actions .btn{padding:12px;font-size:14px}
 .btn-wish{background:var(--primary-light);color:var(--primary);border:1.5px solid rgba(241,82,0,.2);}

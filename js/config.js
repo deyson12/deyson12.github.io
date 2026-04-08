@@ -22,7 +22,7 @@ const ORDERS_KEY = 'cy_orders_history';
 // API_ENV: 'local' → http://localhost:8080
 //          'prod'  → URL de producción en Cloud Run
 // ─────────────────────────────────────────────────────────────
-const API_ENV = 'prod'; // <── 'local' | 'prod'
+const API_ENV = ['localhost', '127.0.0.1'].includes(window.location.hostname) ? 'local' : 'prod'; // auto
 
 const _API_URLS = {
   local: 'http://localhost:8080',
