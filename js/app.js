@@ -47,6 +47,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   initBanner();
   renderOffers();
   applyFilters();
+  // Hide loader
+  const _loader = document.getElementById('pageLoader');
+  if (_loader) { _loader.classList.add('hidden'); }
   updateCartUI();
   updateWishUI();
   initSearch();

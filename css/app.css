@@ -1,4 +1,18 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+/* ── PAGE LOADER ── */
+.page-loader{position:fixed;inset:0;z-index:9999;background:var(--bg-main,#fff);display:flex;align-items:center;justify-content:center;transition:opacity .5s ease,visibility .5s ease}
+.page-loader.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.page-loader-inner{display:flex;flex-direction:column;align-items:center;gap:12px}
+.page-loader-logo{width:64px;height:64px;object-fit:contain;animation:loader-pulse 1.2s ease-in-out infinite}
+.page-loader-brand{font-family:var(--font-head,'Plus Jakarta Sans'),sans-serif;font-weight:800;font-size:26px;color:var(--text-primary,#111);letter-spacing:-.5px}
+.page-loader-brand span{color:#F15200}
+.page-loader-dots{display:flex;gap:6px;margin-top:4px}
+.page-loader-dots span{width:7px;height:7px;border-radius:50%;background:#F15200;animation:loader-bounce 1.2s ease-in-out infinite}
+.page-loader-dots span:nth-child(2){animation-delay:.2s}
+.page-loader-dots span:nth-child(3){animation-delay:.4s}
+@keyframes loader-pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.92);opacity:.7}}
+@keyframes loader-bounce{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-8px);opacity:1}}
+
 :root{
   --primary:#F15200;--primary-dark:#CC4500;--primary-light:#FFF1EA;
   --secondary:#00A651;--accent:#FFB800;
