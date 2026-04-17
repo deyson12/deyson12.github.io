@@ -1,0 +1,5 @@
+[
+  { "code": "BIENVENIDO10", "type": "percent", "value": 10,   "label": "10% de descuento" },
+  { "code": "NINO2026",     "type": "percent", "value": 15,   "label": "15% Día del Niño" },
+  { "code": "ENVIO5000",    "type": "fixed",   "value": 5000, "label": "$5.000 de descuento" }
+]

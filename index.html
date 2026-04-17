@@ -346,6 +346,22 @@
   </div>
 </div-->
 
+<!-- RECENTLY VIEWED -->
+<section class="section recent-section" id="recentSection" style="display:none">
+  <div class="section-header">
+    <h2 class="section-title"><span class="section-title-dot"></span>&#128065;&#65039; Visto recientemente</h2>
+  </div>
+  <div class="carousel-wrap">
+    <button class="carousel-arrow prev" onclick="scrollCarousel('recentContainer',-1)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="carousel-scroll" id="recentContainer"></div>
+    <button class="carousel-arrow next" onclick="scrollCarousel('recentContainer',1)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </div>
+</section>
+
 <!-- OFFERS ONLY (no featured section) -->
 <section class="section" id="offersSection">
   <div class="section-header">
@@ -554,6 +570,14 @@
             <input class="order-input order-input-prefixed" id="inputCambio" type="text" placeholder="50.000" inputmode="numeric" oninput="fmtCambioInput(this)">
           </div>
         </div>
+        <div class="order-field" id="cuponWrap">
+          <label class="order-label" for="inputCupon">&#127991;&#65039; Cupón de descuento <span style="font-weight:400;color:var(--text-muted)">(opcional)</span></label>
+          <div class="cupon-row">
+            <input class="order-input" id="inputCupon" type="text" placeholder="Ej: CUPON10" autocomplete="off" oninput="this.value=this.value.toUpperCase()">
+            <button class="btn-apply-cupon" onclick="applyCupon()">Aplicar</button>
+          </div>
+          <div class="cupon-feedback" id="cuponFeedback"></div>
+        </div>
       </div>
     </div>
     <div class="order-footer">
@@ -655,6 +679,57 @@
   </div>
 </div>
 <div class="toast-container" id="toastContainer"></div>
+
+<!-- POPUP: BANNER AD -->
+<div class="ppb-overlay" id="ppBannerOverlay" onclick="handlePromoPopClick(event)">
+  <div class="ppb-box">
+    <button class="ppb-close" onclick="closePromoPopup()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <div class="ppb-hero" id="ppBannerHero">
+      <img class="ppb-img" id="ppBannerImg" src="" alt="">
+      <div class="ppb-grad"></div>
+      <div class="ppb-badge" id="ppBannerBadge"></div>
+    </div>
+    <div class="ppb-body">
+      <h2 class="ppb-title" id="ppBannerTitle"></h2>
+      <p class="ppb-sub" id="ppBannerSub"></p>
+      <button class="ppb-cta" id="ppBannerCta" onclick="promoPopCta()"></button>
+      <button class="ppb-dismiss" onclick="dismissPromoPopupForever()">No volver a mostrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- POPUP: PRODUCT -->
+<div class="ppp-overlay" id="ppProductOverlay" onclick="handlePromoPopClick(event)">
+  <div class="ppp-box">
+    <button class="ppp-close" onclick="closePromoPopup()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <div class="ppp-img-wrap">
+      <img class="ppp-img" id="ppProductImg" src="" alt="">
+      <div class="ppp-ribbon" id="ppProductRibbon">¡OFERTA!</div>
+      <div class="ppp-disc-chip" id="ppProductDisc"></div>
+    </div>
+    <div class="ppp-body">
+      <div class="ppp-badge-row">
+        <span class="ppp-badge" id="ppProductBadge"></span>
+      </div>
+      <h2 class="ppp-name" id="ppProductName"></h2>
+      <p class="ppp-desc" id="ppProductDesc"></p>
+      <div class="ppp-price-row">
+        <span class="ppp-price" id="ppProductPrice"></span>
+        <span class="ppp-old" id="ppProductOld"></span>
+      </div>
+      <div class="ppp-seller" id="ppProductSeller"></div>
+      <a class="ppp-wa" id="ppProductWa" href="#" target="_blank" rel="noopener noreferrer" onclick="dismissPromoPopupForever()">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12c0 2.025.507 3.967 1.399 5.671L.1 23.9l6.499-1.699A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/><path fill="#fff" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/></svg>
+        Contactar por WhatsApp
+      </a>
+      <button class="ppp-dismiss" onclick="dismissPromoPopupForever()">No volver a mostrar</button>
+    </div>
+  </div>
+</div>
 
 <!-- PAGE LOADER -->
 <div class="page-loader" id="pageLoader">

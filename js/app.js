@@ -18,6 +18,27 @@ let repeatOrderItems = null; // array of {product, qty} — set by repeatOrder()
 let filteredList = [], pageOffset = 0, isLoadingMore = false, gridObserver = null;
 const PAGE_SIZE = 12;
 
+// ===== PROMOTED PRODUCTS =====
+let PROMOTED = [];
+let _gridRenderedCount = 0; // reset on each applyFilters; drives promoted injection
+let _promoShownCount   = 0; // stops injecting once all promoted products have been shown once
+const PROMO_EVERY = 6;      // inject promoted cards every N regular cards
+
+// ===== POPUP AD =====
+let POPUP_AD = null;
+let _promoPopAction = null;
+const POPUP_DISMISSED_KEY = 'cy_popup_id'; // single key; value = last dismissed popup id
+
+// ===== COUPONS =====
+let COUPONS = [];
+let _appliedCoupon    = null;
+let _currentOrderTotal = 0;
+
+// ===== RECENTLY VIEWED =====
+const RECENT_KEY = 'cy_recent';
+const RECENT_MAX = 7;
+
+
 // ===== MAP STATE =====
 let _leafletLoaded  = false;
 let _mapInstance    = null;
@@ -44,6 +65,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.error('Error cargando productos:', e);
     grid.innerHTML = '<div class="no-results"><div class="no-results-icon">⚠️</div><h3>Error al cargar</h3><p>Recarga la página</p></div>';
   }
+  try {
+    const rp = await fetch('promoted/products.json');
+    if (rp.ok) PROMOTED = await rp.json();
+  } catch (_) { /* sin productos promocionados */ }
+  try {
+    const rc = await fetch('promoted/coupons.json');
+    if (rc.ok) COUPONS = await rc.json();
+  } catch (_) {}
+  try {
+    const rpp = await fetch('promoted/popup.json');
+    if (rpp.ok) {
+      const d = await rpp.json();
+      if (d && d.id) {
+        if (d.idProduct) {
+          const matched = PROMOTED.find(p => p.id === d.idProduct);
+          POPUP_AD = matched
+            ? { ...matched, id: d.id, type: 'product', badge: d.badge || matched.badge || '' }
+            : d;
+        } else {
+          POPUP_AD = d;
+        }
+      }
+    }
+  } catch (_) {}
   initBanner();
   renderOffers();
   applyFilters();
@@ -57,6 +102,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   handleWompiReturn();
   initMapField();
   initCategories();
+  renderRecentlyViewed();
+  if (POPUP_AD) showPromoPopup();
   // Scroll-to-top button visibility
   const _scrollBtn = document.getElementById('btnScrollTop');
   if (_scrollBtn) {
@@ -505,6 +552,104 @@ function buildMiniCard(p) {
   </div>`;
 }
 
+function promoWaUrl(p) {
+  const disc = (p.oldPrice && p.oldPrice > p.price)
+    ? Math.round((p.oldPrice - p.price) / p.oldPrice * 100) : 0;
+  const msg = encodeURIComponent(
+    `Hola ${p.sellerName}! Vi tu producto en PideFacil:\n\n` +
+    `*${p.name}*\n` +
+    `Precio: ${fmtPrice(p.price)}` +
+    (disc > 0 ? ` (antes ${fmtPrice(p.oldPrice)}, -${disc}%)` : '') +
+    `\n\n¿Está disponible?`
+  );
+  return `https://wa.me/${p.sellerPhone}?text=${msg}`;
+}
+
+function buildPromotedCard(p) {
+  const disc = (p.oldPrice && p.oldPrice > p.price)
+    ? Math.round((p.oldPrice - p.price) / p.oldPrice * 100) : 0;
+  const waUrl = promoWaUrl(p);
+  return `<div class="product-card promoted-card new-in" onclick="openPromotedProduct('${p.id}')">
+    <div class="card-img-wrap">
+      <img class="card-img" src="${p.image}" alt="${p.name}" loading="lazy" decoding="async" onload="this.classList.add('img-loaded')" onerror="this.classList.add('img-loaded')">
+      ${disc > 0 ? `<div class="badge-wrap"><span class="badge badge-offer">🔥 ${disc}% OFF</span></div>` : ''}
+      <div class="promo-label">Patrocinado</div>
+    </div>
+    <div class="card-body">
+      <div class="card-seller promo-seller-name">${p.sellerName}</div>
+      <div class="card-name">${p.name}</div>
+      <div class="card-prices">
+        <span class="card-price">${fmtPrice(p.price)}</span>
+        ${disc > 0 ? `<span class="card-old-price">${fmtPrice(p.oldPrice)}</span><span class="card-discount">-${disc}%</span>` : ''}
+      </div>
+      <div class="card-actions">
+        <a class="btn btn-promo-wa" href="${waUrl}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12c0 2.025.507 3.967 1.399 5.671L.1 23.9l6.499-1.699A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/><path fill="#fff" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/></svg>
+          Contactar
+        </a>
+      </div>
+    </div>
+  </div>`;
+}
+
+function openPromotedProduct(id) {
+  const p = PROMOTED.find(x => x.id === id);
+  if (!p) return;
+  const disc = (p.oldPrice && p.oldPrice > p.price)
+    ? Math.round((p.oldPrice - p.price) / p.oldPrice * 100) : 0;
+  const waUrl = promoWaUrl(p);
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-grid">
+      <div class="modal-gallery">
+        <img class="modal-main-img" src="${p.image}" alt="${p.name}">
+      </div>
+      <div class="modal-info">
+        <div class="modal-seller" style="display:flex;align-items:center;gap:7px">
+          <span class="promo-badge-modal">Patrocinado</span>
+          <span>${p.sellerName}</span>
+        </div>
+        <h2 class="modal-name">${p.name}</h2>
+        <div class="modal-price-wrap">
+          <span class="modal-price">${fmtPrice(p.price)}</span>
+          ${disc > 0 ? `<span class="modal-old">${fmtPrice(p.oldPrice)}</span><span class="modal-off">-${disc}%</span>` : ''}
+        </div>
+        ${buildModalDesc(p.description)}
+        <div class="modal-actions" style="margin-top:16px">
+          <a class="btn btn-promo-wa" href="${waUrl}" target="_blank" rel="noopener noreferrer" style="width:100%;padding:12px;font-size:14px;text-decoration:none">
+            <svg viewBox="0 0 24 24" style="width:18px;height:18px" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12c0 2.025.507 3.967 1.399 5.671L.1 23.9l6.499-1.699A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/><path fill="#fff" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/></svg>
+            Contactar por WhatsApp
+          </a>
+        </div>
+        <p class="modal-ref" style="margin-top:12px">Producto patrocinado · Vendedor externo a PideFacil</p>
+      </div>
+    </div>`;
+  document.getElementById('modalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function getVisiblePromoted() {
+  // Returns promoted items visible for the current category filter.
+  // categoryId === null / undefined → show in all. Otherwise only when currentCategory matches or is 'all'.
+  return PROMOTED.filter(p =>
+    p.categoryId == null || currentCategory === 'all' || p.categoryId === currentCategory
+  );
+}
+
+function weavePromoted(batch) {
+  const visible = getVisiblePromoted();
+  if (!visible.length) return batch.map(p => buildCard(p, 'new-in')).join('');
+  const html = [];
+  batch.forEach(p => {
+    html.push(buildCard(p, 'new-in'));
+    _gridRenderedCount++;
+    if (_promoShownCount < visible.length && _gridRenderedCount % PROMO_EVERY === 0) {
+      html.push(buildPromotedCard(visible[_promoShownCount]));
+      _promoShownCount++;
+    }
+  });
+  return html.join('');
+}
+
 function renderOffers() {
   const offers = PRODUCTS
     .filter(p => p.oldPrice && p.oldPrice > p.price)
@@ -550,7 +695,7 @@ function loadMore() {
   const grid  = document.getElementById('productsGrid');
   const batch = filteredList.slice(pageOffset, pageOffset + PAGE_SIZE);
   const wrap  = document.createElement('div');
-  wrap.innerHTML = batch.map(p => buildCard(p, 'new-in')).join('');
+  wrap.innerHTML = weavePromoted(batch);
   while (wrap.firstChild) grid.appendChild(wrap.firstChild);
   fixLoadedImages(grid);
   pageOffset += batch.length;
@@ -566,7 +711,7 @@ function renderFirstBatch() {
     if (gridObserver) { gridObserver.disconnect(); gridObserver = null; }
     return;
   }
-  grid.innerHTML = filteredList.slice(0, PAGE_SIZE).map(p => buildCard(p, 'new-in')).join('');
+  grid.innerHTML = weavePromoted(filteredList.slice(0, PAGE_SIZE));
   fixLoadedImages(grid);
   pageOffset = Math.min(PAGE_SIZE, filteredList.length);
   setupGridObserver();
@@ -591,8 +736,10 @@ function applyFilters() {
     case 'newest':     l.sort((a, b) => (b.badges.includes('new') ? 1 : 0) - (a.badges.includes('new') ? 1 : 0)); break;
     default:           l.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
   }
-  filteredList = l;
-  pageOffset   = 0;
+  filteredList       = l;
+  pageOffset         = 0;
+  _gridRenderedCount = 0;
+  _promoShownCount   = 0;
   renderFirstBatch();
 }
 
@@ -710,6 +857,7 @@ function addToCart(id) {
   else { cart.push({ ...p, qty: 1 }); checkedItems.add(id); }
   saveCart(); updateCartUI(); updateAllBtns(); bumpBadge();
   showToast(ex ? `+1 ${p.name.split(' ')[0]}` : `Agregado: ${p.name.split(' ').slice(0, 3).join(' ')}`, ex ? '🛒' : '✅');
+  trackRecent(id);
 }
 
 function updateAllBtns() {
@@ -1013,36 +1161,42 @@ async function sendWhatsappOrder() {
     return;
   }
 
+  // ── Compute totals and build item blocks ─────────────────
   let itemsBlock = '', totalAmount = 0, summaryHtml = '', selectedIds = [], bpId = null, orderItems = [], fullItems = [];
 
   if (buyNowProduct) {
     const p = buyNowProduct; bpId = p.id; totalAmount = p.price;
-    itemsBlock  = buildItemLine(p.id, p.name, 1, p.price);
-    itemsBlock += `━━━━━━━━━━━━━━\n*TOTAL: ${fmtPrice(p.price)}*\n\n`;
-    summaryHtml = `${p.name} &times; 1 &mdash; <strong>${fmtPrice(p.price)}</strong>`;
     orderItems  = [{ id: p.id, name: p.name, qty: 1, price: p.price }];
     fullItems   = [{ product: p, qty: 1 }];
+    summaryHtml = p.name + ' &times; 1 &mdash; <strong>' + fmtPrice(p.price) + '</strong>';
+    itemsBlock  = buildItemLine(p.id, p.name, 1, p.price);
   } else if (repeatOrderItems) {
     const items = repeatOrderItems;
     totalAmount = items.reduce((s, i) => s + i.product.price * i.qty, 0);
-    items.forEach(i => { itemsBlock += buildItemLine(i.product.id, i.product.name, i.qty, i.product.price); });
-    itemsBlock += `━━━━━━━━━━━━━━\n*TOTAL: ${fmtPrice(totalAmount)}*\n\n`;
-    summaryHtml = items.map(i => `${i.product.name} &times;${i.qty} &mdash; <strong>${fmtPrice(i.product.price * i.qty)}</strong>`).join('<br>');
     orderItems  = items.map(i => ({ id: i.product.id, name: i.product.name, qty: i.qty, price: i.product.price }));
     fullItems   = items;
+    summaryHtml = items.map(i => i.product.name + ' &times;' + i.qty + ' &mdash; <strong>' + fmtPrice(i.product.price * i.qty) + '</strong>').join('<br>');
+    items.forEach(i => { itemsBlock += buildItemLine(i.product.id, i.product.name, i.qty, i.product.price); });
   } else {
     const selected = getCheckedItems(); selectedIds = selected.map(i => i.id); totalAmount = getSelectedTotal();
     const g = {}; selected.forEach(i => { if (!g[i.seller]) g[i.seller] = { items: [] }; g[i.seller].items.push(i); });
     Object.entries(g).forEach(([, grp]) => { grp.items.forEach(p => { itemsBlock += buildItemLine(p.id, p.name, p.qty, p.price); }); });
-    summaryHtml = selected.map(i => `${i.name} &times;${i.qty} &mdash; <strong>${fmtPrice(i.price * i.qty)}</strong>`).join('<br>');
-    itemsBlock += `━━━━━━━━━━━━━━\n*TOTAL: ${fmtPrice(totalAmount)}*\n\n`;
+    summaryHtml = selected.map(i => i.name + ' &times;' + i.qty + ' &mdash; <strong>' + fmtPrice(i.price * i.qty) + '</strong>').join('<br>');
     orderItems  = selected.map(i => ({ id: i.id, name: i.name, qty: i.qty, price: i.price }));
     fullItems   = selected.map(({ qty, ...prod }) => ({ product: prod, qty }));
   }
 
+  // ── Apply coupon ─────────────────────────────────────
+  const cuponDisc  = calcCouponDiscount(totalAmount);
+  const finalTotal = totalAmount - cuponDisc;
+  const cuponLine  = cuponDisc > 0
+    ? ('\nCup\u00f3n ' + _appliedCoupon.code + ': -' + fmtPrice(cuponDisc))
+    : '';
+  itemsBlock += '\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501' + cuponLine + '\n*TOTAL: ' + fmtPrice(finalTotal) + '*\n\n';
+
   // ── WOMPI ──────────────────────────────────────────────
   if (pago === 'Wompi') {
-    submitWithWompi({ dir, nom, totalAmount, totalFmt: fmtPrice(totalAmount), itemsBlock, summaryHtml, selectedIds, bpId, items: orderItems, fullItems });
+    submitWithWompi({ dir, nom, totalAmount: finalTotal, totalFmt: fmtPrice(finalTotal), itemsBlock, summaryHtml, selectedIds, bpId, items: orderItems, fullItems });
     return;
   }
 
@@ -1054,7 +1208,7 @@ async function sendWhatsappOrder() {
     id: 'ORD-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase(),
     date: new Date().toISOString(),
     type: 'whatsapp', pago, nombre: nom, direccion: dir,
-    total: totalAmount, totalFmt: fmtPrice(totalAmount),
+    total: finalTotal, totalFmt: fmtPrice(finalTotal),
     items: orderItems, itemsBlock, summaryHtml,
     wompiRef: null, wompiId: null, wompiStatus: null,
   });
@@ -1272,6 +1426,7 @@ function renderWishPanel() {
 // ===== WISHLIST =====
 function toggleWish(e, id) {
   e.stopPropagation();
+  trackRecent(id);
   const i = wishlist.indexOf(id);
   if (i > -1) { wishlist.splice(i, 1); showToast('Eliminado de favoritos', '💔'); }
   else         { wishlist.push(id);     showToast('Guardado en favoritos',   '❤️'); }
@@ -1298,6 +1453,7 @@ function toggleWish(e, id) {
 
 // ===== PRODUCT MODAL =====
 function openProduct(id) {
+  trackRecent(id);
   const p      = PRODUCTS.find(x => x.id === id);
   const inWish = wishlist.includes(id);
   const similar = PRODUCTS.filter(x => x.category === p.category && x.id !== id).slice(0, 20);
@@ -1562,7 +1718,7 @@ function openBannerPopup(filter, title) {
 function closeBannerPopup() { document.getElementById('bnrPopupOverlay').classList.remove('open'); document.body.style.overflow = ''; }
 function handleBnrPopupClick(e) { if (e.target === document.getElementById('bnrPopupOverlay')) closeBannerPopup(); }
 
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeCart(); closeOrderPopup(); closeBannerPopup(); closeSearchDropdown(); closeMoreMenu(); } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeCart(); closeOrderPopup(); closeBannerPopup(); closeSearchDropdown(); closeMoreMenu(); closePromoPopup(); } });
 
 // ===== MORE MENU =====
 function toggleMoreMenu() {
@@ -1579,4 +1735,135 @@ function _moreMenuOutside(e) {
   if (!document.getElementById('moreMenu')?.contains(e.target)) closeMoreMenu();
   else if (document.getElementById('moreMenuDropdown')?.classList.contains('open'))
     setTimeout(() => document.addEventListener('click', _moreMenuOutside, { once: true }), 0);
+}
+
+// ===== POPUP AD =====
+function showPromoPopup() {
+  const ad = POPUP_AD;
+  if (!ad || !ad.id) return;
+  if (localStorage.getItem(POPUP_DISMISSED_KEY) === ad.id) return;
+  if (ad.type === 'product') _showProductPopup(ad);
+  else _showBannerPopup(ad);
+}
+function _showBannerPopup(ad) {
+  document.getElementById('ppBannerBadge').textContent = ad.badge || '';
+  document.getElementById('ppBannerTitle').textContent = ad.title || '';
+  document.getElementById('ppBannerSub').textContent   = ad.subtitle || '';
+  const img  = document.getElementById('ppBannerImg');
+  const hero = document.getElementById('ppBannerHero');
+  if (ad.image) { img.src = ad.image; hero.style.display = ''; }
+  else { hero.style.display = 'none'; }
+  document.getElementById('ppBannerCta').textContent = ad.cta || 'Ver más';
+  _promoPopAction = ad.ctaAction || null;
+  setTimeout(() => {
+    document.getElementById('ppBannerOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }, 800);
+}
+function _showProductPopup(ad) {
+  const disc = (ad.oldPrice && ad.oldPrice > ad.price)
+    ? Math.round((ad.oldPrice - ad.price) / ad.oldPrice * 100) : 0;
+  document.getElementById('ppProductImg').src            = ad.image || '';
+  document.getElementById('ppProductName').textContent   = ad.name || '';
+  document.getElementById('ppProductBadge').textContent  = ad.badge || '';
+  const descEl = document.getElementById('ppProductDesc');
+  descEl.textContent = ad.description || '';
+  descEl.style.display = ad.description ? '' : 'none';
+  document.getElementById('ppProductPrice').textContent  = fmtPrice(ad.price);
+  document.getElementById('ppProductSeller').textContent = ad.sellerName || '';
+  const oldEl  = document.getElementById('ppProductOld');
+  const discEl = document.getElementById('ppProductDisc');
+  const ribbon = document.getElementById('ppProductRibbon');
+  if (ad.oldPrice && disc > 0) {
+    oldEl.textContent    = fmtPrice(ad.oldPrice);
+    discEl.textContent   = '-' + disc + '%';
+    discEl.style.display = '';
+    ribbon.style.display = '';
+  } else {
+    oldEl.textContent    = '';
+    discEl.style.display = 'none';
+    ribbon.style.display = 'none';
+  }
+  document.getElementById('ppProductWa').href = promoWaUrl(ad);
+  setTimeout(() => {
+    document.getElementById('ppProductOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }, 800);
+}
+function closePromoPopup() {
+  document.getElementById('ppBannerOverlay').classList.remove('open');
+  document.getElementById('ppProductOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function handlePromoPopClick(e) {
+  const id = e.target?.id;
+  if (id === 'ppBannerOverlay' || id === 'ppProductOverlay') closePromoPopup();
+}
+function dismissPromoPopupForever() {
+  // Always overwrite the single key with the current popup id
+  if (POPUP_AD && POPUP_AD.id) localStorage.setItem(POPUP_DISMISSED_KEY, POPUP_AD.id);
+  closePromoPopup();
+}
+function promoPopCta() {
+  closePromoPopup();
+  if (_promoPopAction) filterCategory(_promoPopAction, null);
+}
+
+// ===== RECENTLY VIEWED =====
+function trackRecent(id) {
+  if (!id || !PRODUCTS.find(p => p.id === id)) return;
+  let recent = [];
+  try { recent = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch (_) {}
+  recent = [id, ...recent.filter(x => x !== id)].slice(0, RECENT_MAX);
+  localStorage.setItem(RECENT_KEY, JSON.stringify(recent));
+  renderRecentlyViewed();
+}
+function renderRecentlyViewed() {
+  let ids = [];
+  try { ids = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch (_) {}
+  const products = ids.map(id => PRODUCTS.find(p => p.id === id)).filter(Boolean);
+  const sec = document.getElementById('recentSection');
+  if (!sec) return;
+  if (!products.length) { sec.style.display = 'none'; return; }
+  sec.style.display = '';
+  document.getElementById('recentContainer').innerHTML = products.map(p => buildCard(p)).join('');
+}
+
+// ===== COUPONS =====
+function applyCupon() {
+  const raw  = (document.getElementById('inputCupon').value || '').trim().toUpperCase();
+  const fb   = document.getElementById('cuponFeedback');
+  if (!raw) { fb.textContent = ''; fb.className = 'cupon-feedback'; _appliedCoupon = null; _refreshSummaryDiscount(); return; }
+  const found = COUPONS.find(c => c.code.toUpperCase() === raw);
+  if (!found) {
+    fb.textContent = 'Cup\u00f3n no v\u00e1lido';
+    fb.className   = 'cupon-feedback err';
+    _appliedCoupon = null;
+  } else {
+    fb.textContent = '\u2705 ' + found.label + ' aplicado';
+    fb.className   = 'cupon-feedback ok';
+    _appliedCoupon = found;
+  }
+  _refreshSummaryDiscount();
+}
+function calcCouponDiscount(total) {
+  if (!_appliedCoupon) return 0;
+  if (_appliedCoupon.type === 'percent') return Math.round(total * _appliedCoupon.value / 100);
+  if (_appliedCoupon.type === 'fixed')   return Math.min(_appliedCoupon.value, total);
+  return 0;
+}
+function _refreshSummaryDiscount() {
+  const el = document.getElementById('orderSummary');
+  if (!el) return;
+  const existing = document.getElementById('cuponDiscountRow');
+  if (existing) existing.remove();
+  const disc = calcCouponDiscount(_currentOrderTotal);
+  if (disc > 0) {
+    const row = document.createElement('div');
+    row.id        = 'cuponDiscountRow';
+    row.innerHTML = '<br>\uD83C\uDFF7\uFE0F Cup\u00f3n <strong>' + _appliedCoupon.code + '</strong>: -' + fmtPrice(disc) +
+      '<br><strong>Total con descuento: ' + fmtPrice(_currentOrderTotal - disc) + '</strong>';
+    row.style.cssText = 'color:var(--secondary);font-size:13px;margin-top:6px;';
+    el.appendChild(row);
+  }
 }

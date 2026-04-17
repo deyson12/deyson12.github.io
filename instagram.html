@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instagram Creator · PideFacil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07090F;--sidebar:#0D1017;--border:#1A1E2E;
+  --text:#EDEEF5;--muted:#4B5563;--muted2:#6B7280;
+  --primary:#F15200;--accent:#7C3AED;--green:#10B981;--gold:#FFB800;
+  --font:'Plus Jakarta Sans',sans-serif;--r:12px;
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--font);background:var(--bg);color:var(--text);display:flex;}
+
+.sidebar{width:340px;min-width:300px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;}
+.sb-head{padding:18px 22px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.sb-head h1{font-size:17px;font-weight:800;background:linear-gradient(135deg,#FF6B35 0%,#F15200 45%,#C026D3 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-.3px;}
+.sb-head p{font-size:11px;color:var(--muted2);margin-top:2px;}
+.sb-body{flex:1;overflow-y:auto;padding:18px 22px;display:flex;flex-direction:column;gap:18px;}
+.sb-body::-webkit-scrollbar{width:4px}.sb-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+.ctrl-lbl{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted2);display:block;margin-bottom:7px;}
+textarea{width:100%;background:#090C13;border:1px solid var(--border);border-radius:var(--r);color:#B0B8C8;font-family:'Courier New',monospace;font-size:10.5px;padding:10px 12px;resize:vertical;min-height:140px;line-height:1.55;outline:none;transition:border-color .2s;tab-size:2;}
+textarea:focus{border-color:#2A3150;color:var(--text);}
+.ctrl-divider{height:1px;background:var(--border);margin:0 -22px;}
+
+.tpl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
+.tpl-btn{padding:10px 6px 9px;border-radius:var(--r);border:1.5px solid var(--border);background:transparent;color:var(--muted2);cursor:pointer;font-family:var(--font);font-size:11px;font-weight:600;text-align:center;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:4px;line-height:1;}
+.tpl-btn .ti{font-size:18px;}
+.tpl-btn:hover{border-color:#2A3150;background:#0D1220;color:var(--text);}
+.tpl-btn.active{border-color:var(--primary);background:rgba(241,82,0,.1);color:var(--primary);}
+
+.size-grid{display:flex;gap:7px;}
+.size-btn{flex:1;padding:8px 4px;border-radius:var(--r);border:1.5px solid var(--border);background:transparent;color:var(--muted2);cursor:pointer;font-family:var(--font);font-size:10px;font-weight:700;text-align:center;transition:all .2s;line-height:1.3;}
+.size-btn:hover{border-color:#2A3150;color:var(--text);}
+.size-btn.active{border-color:var(--accent);background:rgba(124,58,237,.1);color:#A78BFA;}
+
+.btn-dl{width:100%;padding:13px;border:1.5px solid var(--green);border-radius:var(--r);background:transparent;color:var(--green);font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;}
+.btn-dl:hover{background:rgba(16,185,129,.08);transform:translateY(-1px);}
+
+.status{font-size:11px;color:var(--muted2);text-align:center;min-height:15px;transition:color .2s;}
+.status.ok{color:var(--green);}
+.status.err{color:#F87171;}
+.status.loading{color:var(--gold);}
+
+.preview-main{flex:1;display:flex;align-items:center;justify-content:center;padding:28px;overflow:hidden;position:relative;}
+.preview-main::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(124,58,237,.04) 0%,transparent 70%);}
+
+.ig-outer{position:relative;overflow:hidden;border-radius:10px;box-shadow:0 0 0 1px rgba(255,255,255,.06),0 32px 80px rgba(0,0,0,.7);flex-shrink:0;}
+#igWrap{position:absolute;top:0;left:0;transform-origin:top left;}
+
+@media(max-width:860px){
+  body{flex-direction:column;overflow:auto;height:auto;}
+  .sidebar{width:100%;min-width:unset;max-height:55vh;border-right:none;border-bottom:1px solid var(--border);}
+  html,body{height:auto;overflow:auto;}
+}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sb-head">
+    <h1>Instagram Creator</h1>
+    <p>Genera imágenes para Instagram en segundos</p>
+  </div>
+  <div class="sb-body">
+    <div>
+      <span class="ctrl-lbl">JSON del producto</span>
+      <textarea id="jsonInput" spellcheck="false"></textarea>
+    </div>
+    <div class="ctrl-divider"></div>
+    <div>
+      <span class="ctrl-lbl">Plantilla</span>
+      <div class="tpl-grid" id="tplGrid"></div>
+    </div>
+    <div>
+      <span class="ctrl-lbl">Formato</span>
+      <div class="size-grid" id="sizeGrid"></div>
+    </div>
+    <button class="btn-dl" onclick="downloadCard()">↓ Descargar PNG</button>
+    <div class="status" id="status"></div>
+  </div>
+</aside>
+
+<main class="preview-main">
+  <div class="ig-outer" id="igOuter">
+    <div id="igWrap"></div>
+  </div>
+</main>
+
+<script>
+// ─────────────────────────────────────────────
+// CONFIG
+// ─────────────────────────────────────────────
+const TEMPLATES = [
+  { id:'fuego',   label:'Fuego',   icon:'🔥' },
+  { id:'noche',   label:'Noche',   icon:'🌑' },
+  { id:'oceano',  label:'Océano',  icon:'🌊' },
+  { id:'aurora',  label:'Aurora',  icon:'✨' },
+  { id:'cristal', label:'Cristal', icon:'🪟' },
+  { id:'minima',  label:'Mínima',  icon:'⬜' },
+  { id:'carbon',  label:'Carbón',  icon:'🖤' },
+  { id:'brasa',   label:'Brasa',   icon:'🔶' },
+  { id:'cemento', label:'Cemento', icon:'🩶' },
+];
+const SIZES = [
+  { id:'square',    label:'1:1\nFeed',    w:1080, h:1080 },
+  { id:'story',     label:'9:16\nStory',  w:1080, h:1920 },
+  { id:'landscape', label:'1.91:1\nLand', w:1200, h:628  },
+];
+
+let currentTpl  = 'fuego';
+let currentSize = SIZES[0];
+let lastCardHTML = '';
+let _debounce = null;
+let textDX = 0, textDY = 0, currentScale = 1;
+
+const DEFAULT_JSON = `{
+  "name": "Cortina Blackout 100% Anti Luz, 2 Paños 140x220 Textura Lino - Gris",
+  "description": "Disfruta de la apariencia de unas cortinas tradicionales. Tres capas de tela bondeadas con gran caída y toque elegante para tu hogar.",
+  "price": 156000,
+  "originalPrice": 169000,
+  "image": "https://http2.mlstatic.com/D_NQ_NP_644923-MCO84365426090_052025-O.webp",
+  "sellerName": "CasaTua"
+}`;
+
+// ─────────────────────────────────────────────
+// UTILS
+// ─────────────────────────────────────────────
+const fmtPrice = n => '$' + Number(n).toLocaleString('es-CO');
+const F = "'Plus Jakarta Sans',sans-serif";
+
+function esc(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function setStatus(msg, type) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status ' + (type || '');
+}
+
+// ─────────────────────────────────────────────
+// LAYOUT HELPER
+// ─────────────────────────────────────────────
+function getLayout(W, H) {
+  const portrait = H / W >= 1.4;
+  if (portrait) {
+    const iW = Math.round(W * .88), iH = Math.round(H * .34);
+    const iX = Math.round(W * .06), iY = Math.round(H * .04);
+    return { iX, iY, iW, iH,
+      tX: Math.round(W * .06), tY: Math.round(iY + iH + H * .024),
+      tW: Math.round(W * .88), portrait: true };
+  }
+  const landscape = W / H >= 1.6;
+  const iX = Math.round(landscape ? W * .52 : W * .50);
+  const iW = Math.round(landscape ? W * .44 : W * .46);
+  const iY = Math.round(H * .07);
+  const iH = Math.round(H - H * .14);
+  return { iX, iY, iW, iH,
+    tX: Math.round(W * .05), tY: Math.round(H * .08),
+    tW: Math.round(landscape ? W * .43 : W * .42), portrait: false };
+}
+
+function circCenter(L) {
+  return {
+    cx: L.iX + Math.round(L.iW / 2),
+    cy: L.iY + Math.round(L.iH / 2),
+    r:  Math.round(Math.min(L.iW, L.iH) / 2),
+  };
+}
+
+// ─────────────────────────────────────────────
+// HTML HELPERS
+// ─────────────────────────────────────────────
+function nameTxt(name, W, color, maxLines) {
+  const fsz = Math.round(W * .038);
+  return `<div style="font-family:${F};font-size:${fsz}px;font-weight:800;color:${color};line-height:1.25;overflow:hidden;display:-webkit-box;-webkit-line-clamp:${maxLines};-webkit-box-orient:vertical;margin-bottom:12px;">${esc(name)}</div>`;
+}
+
+function descTxt(desc, W, color, maxLines) {
+  if (!desc) return '';
+  const fsz = Math.round(W * .020);
+  return `<div style="font-family:${F};font-size:${fsz}px;font-weight:400;color:${color};line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:${maxLines};-webkit-box-orient:vertical;margin-top:12px;">${esc(desc)}</div>`;
+}
+
+function priceBlock(data, W, { color='#fff', oldColor='rgba(255,255,255,.5)', discBg='#FFD700', discFg='#000', align='left' } = {}) {
+  const op   = data.originalPrice || data.oldPrice || null;
+  const disc = op && op > data.price ? Math.round((op - data.price) / op * 100) : 0;
+  const fj   = align === 'center' ? 'center' : 'flex-start';
+  const pFz  = Math.round(W * .058);
+  const oFz  = Math.round(W * .022);
+  let h = '';
+  if (disc > 0) {
+    h += `<div style="display:flex;align-items:center;justify-content:${fj};margin-bottom:8px;">
+      <span style="font-family:${F};background:${discBg};color:${discFg};font-weight:800;font-size:13px;padding:4px 12px;border-radius:14px;">-${disc}%</span>
+    </div>
+    <div style="font-family:${F};font-size:${oFz}px;font-weight:500;color:${oldColor};text-decoration:line-through;text-align:${align};margin-bottom:6px;">${fmtPrice(op)}</div>`;
+  }
+  h += `<div style="font-family:${F};font-size:${pFz}px;font-weight:900;color:${color};line-height:1;text-align:${align};">${fmtPrice(data.price)}</div>`;
+  return h;
+}
+
+function sellerBadge(name, bg, border, color) {
+  return `<div style="font-family:${F};display:inline-block;padding:5px 12px;background:${bg};border:1.5px solid ${border};border-radius:15px;color:${color};font-size:12px;font-weight:600;margin-bottom:14px;">🛒 ${esc(name)}</div>`;
+}
+
+function imgRect(src, x, y, w, h, r, shadow) {
+  const sh = shadow ? `box-shadow:${shadow};` : '';
+  return `<div style="position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${h}px;border-radius:${r}px;overflow:hidden;${sh}">
+    <img src="${esc(src)}" crossorigin="anonymous" style="width:100%;height:100%;object-fit:cover;display:block;"/>
+  </div>`;
+}
+
+// Gradient ring circle image: outer has gradient bg + padding, inner clips
+function imgCircle(src, cx, cy, r, ringGrad, shadow) {
+  const pad = Math.max(3, Math.round(r * .02));
+  const outer = r + pad;
+  const sh = shadow ? `box-shadow:${shadow};` : '';
+  return `<div style="position:absolute;left:${cx - outer}px;top:${cy - outer}px;width:${outer * 2}px;height:${outer * 2}px;border-radius:50%;background:${ringGrad};padding:${pad}px;${sh}">
+    <div style="width:100%;height:100%;border-radius:50%;overflow:hidden;">
+      <img src="${esc(src)}" crossorigin="anonymous" style="width:100%;height:100%;object-fit:cover;display:block;"/>
+    </div>
+  </div>`;
+}
+
+function footer(textColor, bg) {
+  return `<div style="position:absolute;bottom:0;left:0;right:0;height:62px;background:${bg};display:flex;align-items:center;justify-content:center;z-index:5;">
+    <span style="font-family:${F};color:${textColor};font-size:15px;font-weight:700;">pidefacil.com</span>
+  </div>`;
+}
+
+// ─────────────────────────────────────────────
+// STARS (for Noche)
+// ─────────────────────────────────────────────
+const STAR_PTS = [
+  [5,2,1.6,.6],[12,8,1.1,.4],[25,3,1.5,.5],[38,1,1.0,.3],[48,7,1.7,.6],
+  [55,4,1.2,.5],[62,9,1.1,.4],[70,3,1.8,.7],[78,6,1.0,.5],[85,2,1.5,.6],
+  [92,5,0.9,.4],[3,12,1.2,.5],[18,11,1.7,.7],[35,14,1.0,.3],[47,10,1.4,.5],
+  [60,13,1.6,.6],[72,9,1.2,.4],[83,12,0.9,.35],[95,8,1.7,.7],[10,18,1.1,.45],
+  [22,16,1.5,.6],[40,20,1.2,.4],[53,17,1.8,.75],[66,19,1.0,.35],[76,15,1.4,.55],
+  [88,18,1.2,.45],[97,14,0.9,.4],[8,22,1.6,.6],[30,25,1.0,.35],[45,23,1.7,.65],
+  [58,21,1.3,.5],[70,24,1.0,.3],[80,22,1.5,.6],[90,20,0.9,.4],[15,28,1.2,.45],
+  [28,30,1.7,.7],[42,26,1.0,.35],[55,29,1.5,.55],[68,27,1.2,.45],[82,31,0.8,.4],
+  [93,28,1.6,.6],[5,32,1.3,.5],[20,35,1.0,.3],[33,33,1.7,.65],[48,36,1.2,.4],
+  [62,34,1.0,.35],[75,37,1.5,.6],[87,35,0.9,.4],[2,38,1.3,.45],[17,40,1.0,.3],
+  [32,42,1.8,.65],[44,39,1.3,.5],[58,43,1.0,.35],[72,41,1.6,.6],[85,44,0.8,.4],
+  [7,46,1.1,.3],[22,49,1.7,.65],[38,46,1.2,.4],[52,48,1.0,.35],[65,50,1.5,.6],
+];
+
+function starsHtml(W, H) {
+  return STAR_PTS.map(([px, py, pr, pa]) =>
+    `<div style="position:absolute;left:${px}%;top:${(py / 55 * 50).toFixed(1)}%;width:${(pr * 2.5).toFixed(1)}px;height:${(pr * 2.5).toFixed(1)}px;border-radius:50%;background:#fff;opacity:${pa.toFixed(2)};pointer-events:none;"></div>`
+  ).join('');
+}
+
+// ─────────────────────────────────────────────
+// TEMPLATE: FUEGO 🔥
+// ─────────────────────────────────────────────
+function buildFuego(data, W, H) {
+  const L = getLayout(W, H);
+  const src = data.image || null;
+  const imgHtml = src
+    ? `${imgRect(src, L.iX, L.iY, L.iW, L.iH, 22, '0 0 55px rgba(255,60,0,.75)')}
+       <div style="position:absolute;left:${L.iX}px;top:${L.iY}px;width:${L.iW}px;height:${L.iH}px;border-radius:22px;border:2px solid rgba(255,255,255,.2);pointer-events:none;box-sizing:border-box;z-index:1;"></div>`
+    : '';
+  return `<div style="position:relative;width:${W}px;height:${H}px;overflow:hidden;font-family:${F};background:linear-gradient(135deg,#FF2D00 0%,#E4006E 42%,#5C00D3 100%);">
+    <div style="position:absolute;right:-8%;top:-5%;width:45%;height:45%;border-radius:50%;background:#FF9900;opacity:.16;pointer-events:none;"></div>
+    <div style="position:absolute;left:-3%;bottom:-5%;width:30%;height:30%;border-radius:50%;background:#fff;opacity:.1;pointer-events:none;"></div>
+    <div style="position:absolute;right:10%;bottom:8%;width:20%;height:20%;border-radius:50%;background:#FFD700;opacity:.07;pointer-events:none;"></div>
+    <div style="position:absolute;inset:0;background:repeating-linear-gradient(-65deg,transparent,transparent 84px,rgba(255,255,255,.07) 84px,rgba(255,255,255,.07) 86px);pointer-events:none;"></div>
+    ${imgHtml}
+    <div style="position:absolute;left:${L.tX}px;top:${L.tY}px;width:${L.tW}px;">
+      ${sellerBadge(data.sellerName || 'PideFacil', 'rgba(255,255,255,.15)', 'rgba(255,255,255,.28)', '#fff')}
+      ${nameTxt(data.name, W, '#fff', L.portrait ? 3 : 2)}
+      <div style="margin-bottom:12px;">${priceBlock(data, W, { color:'#fff', oldColor:'rgba(255,255,255,.5)', discBg:'#FFD700', discFg:'#000' })}</div>
+      ${descTxt(data.description, W, 'rgba(255,255,255,.72)', 2)}
+    </div>
+    ${footer('rgba(255,255,255,.8)', 'rgba(0,0,0,.28)')}
+  </div>`;
+}
+
+// ─────────────────────────────────────────────
+// TEMPLATE: NOCHE 🌑
+// ─────────────────────────────────────────────
+function buildNoche(data, W, H) {
+  const L  = getLayout(W, H);
+  const { cx, cy, r } = circCenter(L);
+  const src = data.image || null;
+  const imgHtml = src ? imgCircle(src, cx, cy, r, 'linear-gradient(135deg,#FFD700,#FF6B00)', '0 0 60px #FFB800') : '';
+  return `<div style="position:relative;width:${W}px;height:${H}px;overflow:hidden;font-family:${F};background:#07090F;">
+    <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,#FFB800 30%,#FF6B00 70%,transparent);pointer-events:none;"></div>
+    <div style="position:absolute;right:-10%;top:-8%;width:65%;height:65%;border-radius:50%;background:radial-gradient(circle,rgba(255,180,0,.20) 0%,rgba(255,90,0,.06) 50%,transparent 70%);pointer-events:none;"></div>
+    <div style="position:absolute;left:-10%;bottom:-10%;width:55%;height:55%;border-radius:50%;background:radial-gradient(circle,rgba(100,20,220,.22) 0%,transparent 70%);pointer-events:none;"></div>
+    ${starsHtml(W, H)}
+    ${imgHtml}
+    <div style="position:absolute;left:${L.tX}px;top:${L.tY}px;width:${L.tW}px;">
+      <div style="font-family:${F};display:inline-block;padding:4px 14px;background:linear-gradient(90deg,#FFB800,#FF6B00);border-radius:14px;color:#000;font-size:12px;font-weight:800;margin-bottom:14px;">⭐ Producto Destacado</div>
+      ${nameTxt(data.name, W, '#F0E5C8', L.portrait ? 3 : 2)}
+      <div style="margin-bottom:12px;">${priceBlock(data, W, { color:'#FFD700', oldColor:'rgba(255,200,50,.5)', discBg:'#FF6B00', discFg:'#fff' })}</div>
+      ${descTxt(data.description, W, 'rgba(220,195,140,.65)', 2)}
+    </div>
+    <div style="position:absolute;bottom:2px;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,#FFB800 30%,#FF6B00 70%,transparent);pointer-events:none;"></div>
+    <div style="position:absolute;bottom:0;left:0;right:0;height:30px;display:flex;align-items:center;justify-content:center;">
+      <span style="font-family:${F};color:rgba(255,185,0,.55);font-size:14px;font-weight:600;">pidefacil.com</span>
+    </div>
+  </div>`;
+}
+
+// ─────────────────────────────────────────────
+// TEMPLATE: OCÉANO 🌊
+// ─────────────────────────────────────────────
+function buildOceano(data, W, H) {
+  const portrait = H / W >= 1.4;
+  const L = getLayout(W, H);
+  const cardY  = portrait ? Math.max(L.tY - 30, Math.round(H * .38)) : Math.round(H * .46);
+  const cardX  = Math.round(W * .04);
+  const cardW  = Math.round(W * .92);
+  const cardH  = H - cardY - Math.round(W * .03);
+  const imgR   = portrait ? Math.round(W * .20) : Math.round(W * .18);
+  const imgCX  = Math.round(W / 2);
+  const imgCY  = cardY - Math.round(imgR * .35);
+  const tStartY = cardY + Math.round(imgR * (data.image ? 1.35 : 0.4));
+  const cTW    = cardW - 52;
+  const cTextX = cardX + 26;
+  const cMaxH  = Math.max(0, cardY + cardH - 24 - tStartY);
+  const nameCl = portrait ? 3 : 2;
+  const src = data.image || null;
+  const imgHtml = src ? `<div style="position:absolute;left:${imgCX - imgR - 5}px;top:${imgCY - imgR - 5}px;width:${(imgR + 5) * 2}px;height:${(imgR + 5) * 2}px;border-radius:50%;background:#fff;padding:5px;box-shadow:0 0 35px rgba(0,100,255,.35);">
+    <div style="width:100%;height:100%;border-radius:50%;overflow:hidden;">
+      <img src="${esc(src)}" crossorigin="anonymous" style="width:100%;height:100%;object-fit:cover;display:block;"/>
+    </div>
+  </div>` : '';
+  return `<div style="position:relative;width:${W}px;height:${H}px;overflow:hidden;font-family:${F};background:linear-gradient(135deg,#0055FF 0%,#00B4D8 50%,#00D4AA 100%);">
+    <div style="position:absolute;right:-15%;top:-5%;width:55%;height:55%;border-radius:50%;background:rgba(255,255,255,.12);pointer-events:none;"></div>
+    <div style="position:absolute;left:-8%;bottom:-8%;width:55%;height:55%;border-radius:50%;background:rgba(255,255,255,.08);pointer-events:none;"></div>
+    <div style="position:absolute;top:0;left:0;right:0;height:${Math.round(H * .055)}px;display:flex;align-items:center;justify-content:center;z-index:5;">
+      <span style="font-family:${F};color:rgba(255,255,255,.85);font-size:14px;font-weight:700;">pidefacil.com</span>
+    </div>
+    <div style="position:absolute;left:${cardX}px;top:${cardY}px;width:${cardW}px;height:${cardH}px;background:#fff;border-radius:26px 26px 16px 16px;box-shadow:0 20px 80px rgba(0,100,255,.2);"></div>
+    ${imgHtml}
+    <div style="position:absolute;left:${cTextX}px;top:${tStartY}px;width:${cTW}px;${cMaxH > 0 ? `max-height:${cMaxH}px;overflow:hidden;` : ''}">
+      <div style="font-family:${F};font-size:12px;font-weight:700;color:#0055FF;text-align:center;margin-bottom:10px;">🛒 ${esc(data.sellerName || 'PideFacil')}</div>
+      <div style="font-family:${F};font-size:${Math.round(W * .034)}px;font-weight:800;color:#0A1628;line-height:1.25;text-align:center;overflow:hidden;display:-webkit-box;-webkit-line-clamp:${nameCl};-webkit-box-orient:vertical;margin-bottom:12px;">${esc(data.name)}</div>
+      <div style="text-align:center;">${priceBlock(data, W, { color:'#0055FF', oldColor:'#9CA3AF', discBg:'#EF4444', discFg:'#fff', align:'center' })}</div>
+      ${data.description ? `<div style="font-family:${F};font-size:${Math.round(W * .019)}px;font-weight:400;color:#6B7280;line-height:1.5;text-align:center;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-top:10px;">${esc(data.description)}</div>` : ''}
+    </div>
+  </div>`;
+}
+
+// ─────────────────────────────────────────────
+// TEMPLATE: AURORA ✨
+// ─────────────────────────────────────────────
+function buildAurora(data, W, H) {
+  const L  = getLayout(W, H);
+  const { cx, cy, r } = circCenter(L);
+  const src = data.image || null;
+  const imgHtml = src ? imgCircle(src, cx, cy, r, 'linear-gradient(135deg,#FF3CAC,#06B6D4,#784BA0)', '0 0 50px rgba(255,60,172,.65)') : '';
+  return `<div style="position:relative;width:${W}px;height:${H}px;overflow:hidden;font-family:${F};background:linear-gradient(135deg,#FF3CAC 0%,#784BA0 35%,#2B86C5 72%,#06B6D4 100%);">
+    <div style="position:absolute;left:-3%;top:2%;width:25%;height:25%;border-radius:50%;background:rgba(255,255,255,.12);pointer-events:none;"></div>
+    <div style="position:absolute;right:-5%;bottom:-5%;width:32%;height:32%;border-radius:50%;background:rgba(255,255,255,.1);pointer-events:none;"></div>
+    <div style="position:absolute;right:3%;top:0;width:16%;height:16%;border-radius:50%;background:rgba(255,255,255,.14);pointer-events:none;"></div>
+    <div style="position:absolute;inset:0;background:repeating-linear-gradient(-65deg,transparent,transparent 84px,rgba(255,255,255,.07) 84px,rgba(255,255,255,.07) 86px);pointer-events:none;"></div>
+    <div style="position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,.025) 1px,transparent 1px);background-size:28px 28px;pointer-events:none;"></div>
+    ${imgHtml}
+    <div style="position:absolute;left:${L.tX}px;top:${L.tY}px;width:${L.tW}px;">
+      ${sellerBadge(data.sellerName || 'PideFacil', 'rgba(255,255,255,.15)', 'rgba(255,255,255,.28)', '#fff')}
+      ${nameTxt(data.name, W, '#fff', L.portrait ? 3 : 2)}
+      <div style="margin-bottom:12px;">${priceBlock(data, W, { color:'#fff', oldColor:'rgba(255,255,255,.5)', discBg:'#FFD700', discFg:'#000' })}</div>
+      ${descTxt(data.description, W, 'rgba(255,255,255,.72)', 2)}
+    </div>
+    ${footer('rgba(255,255,255,.85)', 'rgba(0,0,0,.25)')}
+  </div>`;
+}
+
+// ─────────────────────────────────────────────
+// TEMPLATE: CRISTAL 🪟
+// ─────────────────────────────────────────────
+function buildCristal(data, W, H) {
+  const portrait = H / W >= 1.4;
+  const cX = Math.round(W * .06);
+  const cY = Math.round(H * .13);
+  const cW = Math.round(W * .88);
+  const cH = Math.round(H * (portrait ? .72 : .66)) - 10;
+  const iR = portrait ? Math.round(W * .20) : Math.round(W * .18);
+  const iCX = Math.round(W / 2);
+  const iCY = cY + iR + 12;
+  const tStartY = iCY + iR + 20;
+  const cTW = cW - 52;
+  const cMaxH = Math.max(0, cY + cH - 24 - tStartY);
+  const nameCl = portrait ? 3 : 2;
+  const src = data.image || null;
+  const blurBg  = src ? `<img src="${esc(src)}" crossorigin="anonymous" style="position:absolute;inset:-30px;width:calc(100% + 60px);height:calc(100% + 60px);object-fit:cover;filter:blur(28px);transform:scale(1.05);pointer-events:none;"/>` : '';
+  const imgHtml = src ? `
+    <div style="position:absolute;left:${iCX - iR - 3}px;top:${iCY - iR - 3}px;width:${(iR + 3) * 2}px;height:${(iR + 3) * 2}px;border-radius:50%;border:2.5px solid rgba(255,255,255,.32);box-shadow:0 0 25px rgba(255,255,255,.22);box-sizing:border-box;pointer-events:none;z-index:3;"></div>
+    <div style="position:absolute;left:${iCX - iR}px;top:${iCY - iR}px;width:${iR * 2}px;height:${iR * 2}px;border-radius:50%;overflow:hidden;z-index:2;">
+      <img src="${esc(src)}" crossorigin="anonymous" style="width:100%;height:100%;object-fit:cover;display:block;"/>
+    </div>` : '';
+  return `<div style="position:relative;width:${W}px;height:${H}px;overflow:hidden;font-family:${F};background:#0e1422;">
+    ${blurBg}
+    <div style="position:absolute;inset:0;background:rgba(0,0,0,.60);pointer-events:none;z-index:0;"></div>
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 28%,rgba(0,0,0,.38) 100%);pointer-events:none;z-index:0;"></div>
+    <div style="position:absolute;left:${cX}px;top:${cY}px;width:${cW}px;height:${cH}px;background:rgba(255,255,255,.10);border:1.5px solid rgba(255,255,255,.22);border-radius:28px;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);overflow:hidden;z-index:1;">
+      <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.08) 0%,transparent 55%);pointer-events:none;"></div>
+    </div>
+    ${imgHtml}
+    <div style="position:absolute;left:${cX + 26}px;top:${tStartY}px;width:${cTW}px;${cMaxH > 0 ? `max-height:${cMaxH}px;overflow:hidden;` : ''}z-index:4;">
+      <div style="font-family:${F};font-size:12px;font-weight:700;color:rgba(255,255,255,.55);text-align:center;margin-bottom:10px;">🛒 ${esc(data.sellerName || 'PideFacil')}</div>
+      <div style="font-family:${F};font-size:${Math.round(W * .036)}px;font-weight:800;color:#fff;line-height:1.25;text-align:center;overflow:hidden;display:-webkit-box;-webkit-line-clamp:${nameCl};-webkit-box-orient:vertical;margin-bottom:12px;">${esc(data.name)}</div>
+      <div style="text-align:center;">${priceBlock(data, W, { color:'#fff', oldColor:'rgba(255,255,255,.45)', discBg:'rgba(255,210,0,.9)', discFg:'#000', align:'center' })}</div>
+      ${data.description ? `<div style="font-family:${F};font-size:${Math.round(W * .019)}px;font-weight:400;color:rgba(255,255,255,.58);line-height:1.5;text-align:center;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-top:10px;">${esc(data.description)}</div>` : ''}
+    </div>
+    <div style="position:absolute;left:0;right:0;top:${cY + cH + 10}px;text-align:center;z-index:4;">
+      <span style="font-family:${F};color:rgba(255,255,255,.38);font-size:13px;font-weight:600;">pidefacil.com</span>
+    </div>
+  </div>`;
+}
+
+// ─────────────────────────────────────────────
+// TEMPLATE: MÍNIMA ⬜
+// ─────────────────────────────────────────────
+function buildMinima(data, W, H) {
+  const L = getLayout(W, H);
+  const src = data.image || null;
+  const imgHtml = src
+    ? `${imgRect(src, L.iX, L.iY, L.iW, L.iH, 20, '0 10px 28px rgba(0,0,0,.12)')}
+       <div style="position:absolute;left:${L.iX}px;top:${L.iY}px;width:${L.iW}px;height:${L.iH}px;border-radius:20px;border:1.5px solid rgba(0,0,0,.06);pointer-events:none;box-sizing:border-box;"></div>`
+    : '';
+  return `<div style="position:relative;width:${W}px;height:${H}px;overflow:hidden;font-family:${F};background:#F8F9FB;">
+    <div style="position:absolute;top:0;left:0;right:0;height:${Math.round(W * .02)}px;background:linear-gradient(to right,#F15200,#FF6B35 60%,#FFB800);pointer-events:none;"></div>
+    <div style="position:absolute;inset:0;background-image:radial-gradient(circle,rgba(0,0,0,.035) 1.5px,transparent 1.5px);background-size:38px 38px;pointer-events:none;"></div>
+    <div style="position:absolute;right:-2%;bottom:-4%;width:46%;height:46%;border-radius:50%;background:rgba(241,82,0,.055);pointer-events:none;"></div>
+    <div style="position:absolute;left:-3%;top:.5%;width:20%;height:20%;border-radius:50%;background:rgba(241,82,0,.04);pointer-events:none;"></div>
+    ${imgHtml}
+    <div style="position:absolute;left:${L.tX}px;top:${L.tY}px;width:${L.tW}px;">
+      <div style="font-family:${F};display:inline-block;padding:5px 12px;background:rgba(241,82,0,.09);border:1.5px solid rgba(241,82,0,.22);border-radius:15px;color:#F15200;font-size:12px;font-weight:600;margin-bottom:14px;">🛒 ${esc(data.sellerName || 'PideFacil')}</div>
+      ${nameTxt(data.name, W, '#111827', L.portrait ? 3 : 2)}
+      <div style="margin-bottom:12px;">${priceBlock(data, W, { color:'#F15200', oldColor:'#9CA3AF', discBg:'#EF4444', discFg:'#fff' })}</div>
+      ${descTxt(data.description, W, '#6B7280', 2)}
+    </div>
+    <div style="position:absolute;bottom:0;left:0;right:0;height:62px;background:rgba(241,82,0,.04);border-top:1px solid rgba(241,82,0,.13);display:flex;align-items:center;justify-content:center;">
+      <span style="font-family:${F};color:#9CA3AF;font-size:14px;font-weight:700;">pidefacil.com</span>
+    </div>
+  </div>`;
+}
+
+// ─────────────────────────────────────────────
+// BUILDERS MAP
+// ─────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// TEMPLATE: CARBÓN 🖤
+// Fondo negro carbón profundo, anillo naranja sólido, resplandor lateral naranja
+// ─────────────────────────────────────────────
+function buildCarbon(data, W, H) {
+  const L  = getLayout(W, H);
+  const { cx, cy, r } = circCenter(L);
+  const src = data.image || null;
+  const imgHtml = src ? imgCircle(src, cx, cy, r, 'linear-gradient(145deg,#F15200,#FF8C42,#F15200)', '0 0 55px rgba(241,82,0,.6)') : '';
+  // Diagonal stripe pattern using repeating-linear-gradient
+  return `<div style="position:relative;width:${W}px;height:${H}px;overflow:hidden;font-family:${F};background:#0A0A0A;">
+    <!-- Orange glow blooms -->
+    <div style="position:absolute;right:-5%;top:-5%;width:55%;height:55%;border-radius:50%;background:radial-gradient(circle,rgba(241,82,0,.22) 0%,rgba(241,82,0,.06) 45%,transparent 70%);pointer-events:none;"></div>
+    <div style="position:absolute;left:-6%;bottom:-6%;width:40%;height:40%;border-radius:50%;background:radial-gradient(circle,rgba(241,82,0,.14) 0%,transparent 65%);pointer-events:none;"></div>
+    <!-- Subtle cross-hatch grid -->
+    <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:54px 54px;pointer-events:none;"></div>
+    <!-- Top accent bar -->
+    <div style="position:absolute;top:0;left:0;right:0;height:${Math.round(W*.018)}px;background:linear-gradient(to right,transparent,#F15200 25%,#FF8C42 75%,transparent);pointer-events:none;"></div>
+    ${imgHtml}
+    <div style="position:absolute;left:${L.tX}px;top:${L.tY}px;width:${L.tW}px;">
+      ${sellerBadge(data.sellerName || 'PideFacil', 'rgba(241,82,0,.15)', 'rgba(241,82,0,.4)', '#FF8C42')}
+      ${nameTxt(data.name, W, '#FFFFFF', L.portrait ? 3 : 2)}
+      <div style="margin-bottom:12px;">${priceBlock(data, W, { color:'#F15200', oldColor:'rgba(255,255,255,.4)', discBg:'#F15200', discFg:'#fff' })}</div>
+      ${descTxt(data.description, W, 'rgba(255,255,255,.55)', 2)}
+    </div>
+    ${footer('rgba(255,140,66,.7)', 'rgba(241,82,0,.06)')}
+    <div style="position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,#F15200 30%,#FF8C42 70%,transparent);pointer-events:none;"></div>
+  </div>`;
+}
+
+// ─────────────────────────────────────────────
+// TEMPLATE: BRASA 🔶
+// Negro puro con formas geométricas naranjas audaces, imagen circular con borde blanco
+// ─────────────────────────────────────────────
+function buildBrasa(data, W, H) {
+  const L  = getLayout(W, H);
+  const { cx, cy, r } = circCenter(L);
+  const src = data.image || null;
+  const imgHtml = src ? imgCircle(src, cx, cy, r, '#fff', '0 0 45px rgba(241,82,0,.5)') : '';
+  const tri1X = Math.round(W*.55), tri1Y = 0, tri1S = Math.round(W*.62);
+  const tri2X = 0, tri2Y = Math.round(H*.62), tri2S = Math.round(W*.38);
+  return `<div style="position:relative;width:${W}px;height:${H}px;overflow:hidden;font-family:${F};background:#000000;">
+    <!-- Large background triangle top-right -->
+    <div style="position:absolute;left:${tri1X}px;top:${tri1Y}px;width:0;height:0;border-left:${tri1S}px solid transparent;border-top:${tri1S}px solid rgba(241,82,0,.12);pointer-events:none;"></div>
+    <!-- Smaller triangle bottom-left -->
+    <div style="position:absolute;left:${tri2X}px;bottom:0;width:0;height:0;border-right:${tri2S}px solid transparent;border-bottom:${tri2S}px solid rgba(241,82,0,.09);pointer-events:none;"></div>
+    <!-- Orange bold top bar -->
+    <div style="position:absolute;top:0;left:0;right:0;height:${Math.round(W*.032)}px;background:#F15200;pointer-events:none;"></div>
+    <!-- White thin accent under bar -->
+    <div style="position:absolute;top:${Math.round(W*.032)}px;left:0;right:0;height:2px;background:rgba(255,255,255,.12);pointer-events:none;"></div>
+    <!-- Dot grid -->
+    <div style="position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,.04) 1.5px,transparent 1.5px);background-size:40px 40px;pointer-events:none;"></div>
+    ${imgHtml}
+    <div style="position:absolute;left:${L.tX}px;top:${L.tY}px;width:${L.tW}px;">
+      <div style="font-family:${F};display:inline-flex;align-items:center;gap:6px;padding:5px 13px;background:#F15200;border-radius:4px;color:#fff;font-size:12px;font-weight:800;margin-bottom:16px;letter-spacing:.3px;text-transform:uppercase;">🛒 ${esc(data.sellerName || 'PideFacil')}</div>
+      ${nameTxt(data.name, W, '#FFFFFF', L.portrait ? 3 : 2)}
+      <div style="margin-bottom:12px;">${priceBlock(data, W, { color:'#F15200', oldColor:'rgba(255,255,255,.4)', discBg:'#fff', discFg:'#F15200' })}</div>
+      ${descTxt(data.description, W, 'rgba(255,255,255,.52)', 2)}
+    </div>
+    <div style="position:absolute;bottom:0;left:0;right:0;height:58px;display:flex;align-items:center;padding:0 ${Math.round(W*.05)}px;justify-content:space-between;">
+      <div style="display:flex;gap:5px;">${[...Array(3)].map((_,i)=>`<div style="width:${6+i*2}px;height:6px;border-radius:3px;background:${i===0?'#F15200':'rgba(255,255,255,.22)'};"></div>`).join('')}</div>
+      <span style="font-family:${F};color:rgba(255,255,255,.45);font-size:13px;font-weight:700;">pidefacil.com</span>
+    </div>
+  </div>`;
+}
+
+// ─────────────────────────────────────────────
+// TEMPLATE: CEMENTO 🩶
+// Gris medio + naranja vibrante como único acento, imagen circular con sombra naranja
+// ─────────────────────────────────────────────
+function buildCemento(data, W, H) {
+  const L  = getLayout(W, H);
+  const { cx, cy, r } = circCenter(L);
+  const src = data.image || null;
+  const ringGrad = 'linear-gradient(145deg,#F15200 0%,#FF8C42 50%,#fff 100%)';
+  const imgHtml = src ? imgCircle(src, cx, cy, r, ringGrad, '0 0 50px rgba(241,82,0,.45)') : '';
+  const aSz = Math.round(W*.28), aOff = Math.round(W*.04);
+  return `<div style="position:relative;width:${W}px;height:${H}px;overflow:hidden;font-family:${F};background:#2B2B2B;">
+    <!-- Lighter gray top half wash -->
+    <div style="position:absolute;top:0;left:0;right:0;height:55%;background:linear-gradient(to bottom,#383838,transparent);pointer-events:none;"></div>
+    <!-- Large soft circle accent, image side -->
+    <div style="position:absolute;left:${L.iX - aOff}px;top:${L.iY - aOff}px;width:${L.iW + aOff*2}px;height:${L.iH + aOff*2}px;border-radius:50%;background:rgba(241,82,0,.08);pointer-events:none;"></div>
+    <!-- Diagonal thin lines -->
+    <div style="position:absolute;inset:0;background:repeating-linear-gradient(-55deg,transparent,transparent 70px,rgba(255,255,255,.025) 70px,rgba(255,255,255,.025) 71px);pointer-events:none;"></div>
+    <!-- Corner orange geometric -->
+    <div style="position:absolute;right:0;top:0;width:${aSz}px;height:${aSz}px;overflow:hidden;pointer-events:none;">
+      <div style="position:absolute;right:-${Math.round(aSz*.35)}px;top:-${Math.round(aSz*.35)}px;width:${aSz}px;height:${aSz}px;border-radius:50%;background:rgba(241,82,0,.18);"></div>
+    </div>
+    <div style="position:absolute;left:0;bottom:0;width:${Math.round(aSz*.7)}px;height:${Math.round(aSz*.7)}px;overflow:hidden;pointer-events:none;">
+      <div style="position:absolute;left:-30px;bottom:-30px;width:${Math.round(aSz*.7)}px;height:${Math.round(aSz*.7)}px;border-radius:50%;background:rgba(241,82,0,.12);"></div>
+    </div>
+    <!-- Left orange vertical stripe -->
+    <div style="position:absolute;left:0;top:0;bottom:0;width:${Math.round(W*.008)}px;background:linear-gradient(to bottom,transparent,#F15200 30%,#F15200 70%,transparent);pointer-events:none;"></div>
+    ${imgHtml}
+    <div style="position:absolute;left:${L.tX}px;top:${L.tY}px;width:${L.tW}px;">
+      ${sellerBadge(data.sellerName || 'PideFacil', 'rgba(255,255,255,.08)', 'rgba(255,255,255,.2)', '#E5E5E5')}
+      ${nameTxt(data.name, W, '#FFFFFF', L.portrait ? 3 : 2)}
+      <div style="margin-bottom:12px;">${priceBlock(data, W, { color:'#F15200', oldColor:'rgba(255,255,255,.45)', discBg:'#F15200', discFg:'#fff' })}</div>
+      ${descTxt(data.description, W, 'rgba(255,255,255,.58)', 2)}
+    </div>
+    <div style="position:absolute;bottom:0;left:0;right:0;height:62px;background:rgba(0,0,0,.3);border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;">
+      <span style="font-family:${F};color:rgba(255,255,255,.45);font-size:14px;font-weight:700;">pidefacil.com</span>
+    </div>
+  </div>`;
+}
+
+// ─────────────────────────────────────────────
+// BUILDERS MAP
+// ─────────────────────────────────────────────
+const BUILDERS = {
+  fuego: buildFuego, noche: buildNoche, oceano: buildOceano,
+  aurora: buildAurora, cristal: buildCristal, minima: buildMinima,
+  carbon: buildCarbon, brasa: buildBrasa, cemento: buildCemento,
+};
+
+// ─────────────────────────────────────────────
+// DRAG
+// ─────────────────────────────────────────────
+function attachDrag(tb) {
+  let startX, startY, startDX, startDY;
+
+  function onMoveM(e) {
+    textDX = startDX + (e.clientX - startX) / currentScale;
+    textDY = startDY + (e.clientY - startY) / currentScale;
+    tb.style.transform = `translate(${textDX}px,${textDY}px)`;
+  }
+  function onMoveT(e) {
+    e.preventDefault();
+    textDX = startDX + (e.touches[0].clientX - startX) / currentScale;
+    textDY = startDY + (e.touches[0].clientY - startY) / currentScale;
+    tb.style.transform = `translate(${textDX}px,${textDY}px)`;
+  }
+  function onUp() {
+    tb.style.cursor = 'grab';
+    document.removeEventListener('mousemove', onMoveM);
+    document.removeEventListener('mouseup', onUp);
+    document.removeEventListener('touchmove', onMoveT);
+    document.removeEventListener('touchend', onUp);
+  }
+
+  tb.addEventListener('mousedown', e => {
+    e.preventDefault();
+    startX = e.clientX; startY = e.clientY;
+    startDX = textDX; startDY = textDY;
+    tb.style.cursor = 'grabbing';
+    tb.style.outline = '';
+    document.addEventListener('mousemove', onMoveM);
+    document.addEventListener('mouseup', onUp);
+  });
+
+  tb.addEventListener('mouseenter', () => {
+    if (tb.style.cursor !== 'grabbing') {
+      tb.style.outline = '2px dashed rgba(241,82,0,.55)';
+      tb.style.outlineOffset = '10px';
+      tb.style.borderRadius = '4px';
+    }
+  });
+  tb.addEventListener('mouseleave', () => {
+    tb.style.outline = '';
+    tb.style.outlineOffset = '';
+  });
+
+  tb.addEventListener('dblclick', () => {
+    textDX = textDY = 0;
+    tb.style.transform = 'translate(0px,0px)';
+  });
+
+  tb.addEventListener('touchstart', e => {
+    e.preventDefault();
+    startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+    startDX = textDX; startDY = textDY;
+    document.addEventListener('touchmove', onMoveT, { passive: false });
+    document.addEventListener('touchend', onUp);
+  }, { passive: false });
+}
+
+// ─────────────────────────────────────────────
+// GENERATE
+// ─────────────────────────────────────────────
+function generateCard() {
+  let data;
+  try { data = JSON.parse(document.getElementById('jsonInput').value); }
+  catch (e) { setStatus('⚠ JSON inválido', 'err'); return; }
+
+  setStatus('Generando…', 'loading');
+
+  const W = currentSize.w, H = currentSize.h;
+  const html = BUILDERS[currentTpl](data, W, H);
+  lastCardHTML = html;
+
+  const wrap  = document.getElementById('igWrap');
+  const outer = document.getElementById('igOuter');
+  // Inject draggable id into text block (first abs-positioned div without explicit height)
+  const marked = html.replace(
+    /(<div )(style="position:absolute;left:\d+px;top:\d+px;width:\d+px;(?!height:)[^"]*")/,
+    '$1id="igTextBlock" $2'
+  );
+  wrap.innerHTML = marked;
+
+  const main  = document.querySelector('.preview-main');
+  currentScale = Math.min((main.clientWidth - 56) / W, (main.clientHeight - 56) / H, 1);
+  outer.style.width  = Math.round(W * currentScale) + 'px';
+  outer.style.height = Math.round(H * currentScale) + 'px';
+  wrap.style.width   = W + 'px';
+  wrap.style.height  = H + 'px';
+  wrap.style.transform      = `scale(${currentScale})`;
+  wrap.style.transformOrigin = 'top left';
+
+  const tb = document.getElementById('igTextBlock');
+  if (tb) {
+    tb.style.cursor = 'grab';
+    tb.style.userSelect = 'none';
+    tb.style.transform = `translate(${textDX}px,${textDY}px)`;
+    attachDrag(tb);
+  }
+
+  setStatus('Listo ✓', 'ok');
+}
+
+// ─────────────────────────────────────────────
+// DOWNLOAD
+// ─────────────────────────────────────────────
+async function downloadCard() {
+  if (!lastCardHTML) { setStatus('Genera primero', 'err'); return; }
+  setStatus('Preparando descarga…', 'loading');
+
+  const W = currentSize.w, H = currentSize.h;
+
+  // Render off-screen at full size, re-inject id and apply text offset
+  const offscreen = document.createElement('div');
+  offscreen.style.cssText = `position:fixed;left:-${W + 50}px;top:0;width:${W}px;height:${H}px;overflow:hidden;pointer-events:none;`;
+  const offMarked = lastCardHTML.replace(
+    /(<div )(style="position:absolute;left:\d+px;top:\d+px;width:\d+px;(?!height:)[^"]*")/,
+    '$1id="igTextBlock" $2'
+  );
+  offscreen.innerHTML = offMarked;
+  const offTB = offscreen.querySelector('#igTextBlock');
+  if (offTB && (textDX !== 0 || textDY !== 0)) {
+    offTB.style.transform = `translate(${textDX}px,${textDY}px)`;
+  }
+  document.body.appendChild(offscreen);
+
+  // Wait for fonts and images
+  await document.fonts.ready;
+  const imgs = Array.from(offscreen.querySelectorAll('img'));
+  await Promise.all(imgs.map(img =>
+    img.complete ? Promise.resolve() : new Promise(r => { img.onload = r; img.onerror = r; })
+  ));
+  // Small buffer for rendering
+  await new Promise(r => setTimeout(r, 80));
+
+  try {
+    const card = offscreen.firstElementChild || offscreen;
+    const canvas = await html2canvas(card, {
+      useCORS:     true,
+      allowTaint:  true,
+      scale:       1,
+      width:       W,
+      height:      H,
+      scrollX:     -(W + 50),
+      scrollY:     0,
+      windowWidth: W,
+      windowHeight: H,
+    });
+    const a = document.createElement('a');
+    a.download = `pidefacil-${currentTpl}-${currentSize.id}-${Date.now()}.png`;
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+    setStatus('Descargado ✓', 'ok');
+  } catch (e) {
+    console.error(e);
+    setStatus('Error: ' + e.message, 'err');
+  } finally {
+    document.body.removeChild(offscreen);
+  }
+}
+
+// ─────────────────────────────────────────────
+// UI INIT
+// ─────────────────────────────────────────────
+function initUI() {
+  const tplGrid = document.getElementById('tplGrid');
+  TEMPLATES.forEach(t => {
+    const btn = document.createElement('button');
+    btn.className = 'tpl-btn' + (t.id === currentTpl ? ' active' : '');
+    btn.innerHTML = `<span class="ti">${t.icon}</span><span>${t.label}</span>`;
+    btn.onclick = () => {
+      currentTpl = t.id;
+      textDX = textDY = 0;
+      document.querySelectorAll('.tpl-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      generateCard();
+    };
+    tplGrid.appendChild(btn);
+  });
+
+  const sizeGrid = document.getElementById('sizeGrid');
+  SIZES.forEach(s => {
+    const btn = document.createElement('button');
+    btn.className = 'size-btn' + (s.id === currentSize.id ? ' active' : '');
+    btn.style.whiteSpace = 'pre-wrap';
+    btn.textContent = s.label;
+    btn.onclick = () => {
+      currentSize = s;
+      textDX = textDY = 0;
+      document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      generateCard();
+    };
+    sizeGrid.appendChild(btn);
+  });
+
+  document.getElementById('jsonInput').value = DEFAULT_JSON;
+  document.getElementById('jsonInput').addEventListener('input', () => {
+    clearTimeout(_debounce);
+    _debounce = setTimeout(generateCard, 600);
+  });
+
+  generateCard();
+}
+
+window.addEventListener('load', initUI);
+window.addEventListener('resize', () => {
+  if (lastCardHTML) generateCard();
+});
+</script>
+</body>
+</html>
