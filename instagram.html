@@ -107,7 +107,12 @@ const TEMPLATES = [
   { id:'minima',  label:'Mínima',  icon:'⬜' },
   { id:'carbon',  label:'Carbón',  icon:'🖤' },
   { id:'brasa',   label:'Brasa',   icon:'🔶' },
-  { id:'cemento', label:'Cemento', icon:'🩶' },
+  { id:'cemento',  label:'Cemento',  icon:'🩶' },
+  { id:'nino',     label:'Día Niño', icon:'🧸' },
+  { id:'madre',    label:'Día Mamá', icon:'🌸' },
+  { id:'valentin', label:'Valentín', icon:'❤️' },
+  { id:'navidad',  label:'Navidad',  icon:'🎄' },
+  { id:'halloween',label:'Halloween',icon:'🎃' },
 ];
 const SIZES = [
   { id:'square',    label:'1:1\nFeed',    w:1080, h:1080 },
@@ -560,12 +565,234 @@ function buildCemento(data, W, H) {
 }
 
 // ─────────────────────────────────────────────
+// TEMPLATE: DÍA DEL NIÑO 🧸
+// Fondo azul cielo degradado, globos, confeti, imagen circular con borde arcoíris
+// ─────────────────────────────────────────────
+function buildNino(data, W, H) {
+  const L  = getLayout(W, H);
+  const { cx, cy, r } = circCenter(L);
+  const src = data.image || null;
+  const imgHtml = src ? imgCircle(src, cx, cy, r, 'linear-gradient(135deg,#FF6B6B,#FFD93D,#6BCB77,#4D96FF,#C77DFF)', '0 0 50px rgba(77,150,255,.55)') : '';
+  // Confetti dots
+  const confetti = [
+    [8,6,'#FF6B6B'],[15,18,'#FFD93D'],[25,8,'#6BCB77'],[38,14,'#4D96FF'],[50,5,'#FF6B6B'],[62,16,'#C77DFF'],[73,9,'#FFD93D'],[85,5,'#6BCB77'],[93,14,'#4D96FF'],
+    [5,28,'#C77DFF'],[18,32,'#FF6B6B'],[30,25,'#FFD93D'],[44,30,'#6BCB77'],[56,22,'#4D96FF'],[68,28,'#FF6B6B'],[80,24,'#C77DFF'],[95,30,'#FFD93D'],
+    [10,42,'#4D96FF'],[22,48,'#6BCB77'],[35,38,'#FF6B6B'],[48,44,'#C77DFF'],[60,40,'#FFD93D'],[72,46,'#6BCB77'],[88,42,'#FF6B6B'],[97,38,'#4D96FF'],
+  ].map(([px,py,col]) => `<div style="position:absolute;left:${px}%;top:${py}%;width:${Math.round(W*.018)}px;height:${Math.round(W*.018)}px;border-radius:3px;background:${col};opacity:.75;transform:rotate(${(px*7)%45}deg);pointer-events:none;"></div>`).join('');
+  // Balloons
+  const balloons = [
+    { x:W*.08, y:H*.06, s:W*.065, col:'#FF6B6B', hl:'rgba(255,255,255,.3)' },
+    { x:W*.18, y:H*.02, s:W*.05,  col:'#FFD93D', hl:'rgba(255,255,255,.3)' },
+    { x:W*.88, y:H*.05, s:W*.06,  col:'#6BCB77', hl:'rgba(255,255,255,.25)' },
+    { x:W*.78, y:H*.01, s:W*.045, col:'#C77DFF', hl:'rgba(255,255,255,.25)' },
+  ].map(b => `<div style="position:absolute;left:${b.x}px;top:${b.y}px;width:${b.s}px;height:${b.s*1.15}px;border-radius:50% 50% 50% 50%/55% 55% 45% 45%;background:${b.col};box-shadow:inset -4px -4px 8px rgba(0,0,0,.15),inset 4px 4px 10px ${b.hl};pointer-events:none;"></div>`).join('');
+  return `<div style="position:relative;width:${W}px;height:${H}px;overflow:hidden;font-family:${F};background:linear-gradient(160deg,#E8F6FF 0%,#D0ECFF 35%,#FFF9E6 70%,#FFE8F0 100%);">
+    ${confetti}
+    ${balloons}
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 110%,rgba(100,180,255,.18) 0%,transparent 65%);pointer-events:none;"></div>
+    ${imgHtml}
+    <div style="position:absolute;left:${L.tX}px;top:${L.tY}px;width:${L.tW}px;">
+      <div style="font-family:${F};display:inline-block;padding:5px 14px;background:linear-gradient(90deg,#FF6B6B,#FF9F43);border-radius:20px;color:#fff;font-size:12px;font-weight:800;margin-bottom:14px;box-shadow:0 4px 12px rgba(255,107,107,.35);">🧸 ${esc(data.sellerName || 'PideFacil')}</div>
+      ${nameTxt(data.name, W, '#1A3A5C', L.portrait ? 3 : 2)}
+      <div style="margin-bottom:12px;">${priceBlock(data, W, { color:'#FF6B6B', oldColor:'rgba(0,0,0,.35)', discBg:'#FFD93D', discFg:'#333' })}</div>
+      ${descTxt(data.description, W, 'rgba(30,70,120,.65)', 2)}
+    </div>
+    <div style="position:absolute;bottom:0;left:0;right:0;height:62px;background:rgba(255,255,255,.55);display:flex;align-items:center;justify-content:center;">
+      <span style="font-family:${F};color:#4D96FF;font-size:14px;font-weight:800;">pidefacil.com</span>
+    </div>
+  </div>`;
+}
+
+// ─────────────────────────────────────────────
+// TEMPLATE: DÍA DE LA MADRE 🌸
+// Fondo rosa pastel degradado, flores, imagen circular con anillo dorado
+// ─────────────────────────────────────────────
+function buildMadre(data, W, H) {
+  const L  = getLayout(W, H);
+  const { cx, cy, r } = circCenter(L);
+  const src = data.image || null;
+  const imgHtml = src ? imgCircle(src, cx, cy, r, 'linear-gradient(135deg,#FFD6E0,#FFACC7,#FF78A9,#FFD6E0)', '0 0 50px rgba(255,120,169,.45)') : '';
+  // Petal shapes via transform
+  const petals = [
+    [5,5,.09,'#FFACC7',.35],[85,4,.07,'#FFD6E0',.3],[90,12,.055,'#FF78A9',.25],
+    [2,18,.065,'#FFD6E0',.3],[8,30,.045,'#FFACC7',.25],[78,28,.06,'#FF78A9',.2],
+    [92,35,.05,'#FFD6E0',.28],[4,60,.055,'#FFACC7',.22],[88,60,.07,'#FF78A9',.25],
+    [3,72,.045,'#FFD6E0',.3],[88,75,.055,'#FFACC7',.2],
+  ].map(([px,py,ps,col,op]) => {
+    const size = Math.round(W*ps);
+    return `<div style="position:absolute;left:${px}%;top:${py}%;width:${size}px;height:${size*1.4}px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:${col};opacity:${op};transform:rotate(${(px*13)%360}deg);pointer-events:none;"></div>`;
+  }).join('');
+  return `<div style="position:relative;width:${W}px;height:${H}px;overflow:hidden;font-family:${F};background:linear-gradient(145deg,#FFF0F5 0%,#FFD6E0 40%,#FFF5E0 80%,#FFECF2 100%);">
+    ${petals}
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 30% 20%,rgba(255,240,245,.6) 0%,transparent 60%);pointer-events:none;"></div>
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 80% 90%,rgba(255,200,220,.35) 0%,transparent 55%);pointer-events:none;"></div>
+    ${imgHtml}
+    <div style="position:absolute;left:${L.tX}px;top:${L.tY}px;width:${L.tW}px;">
+      <div style="font-family:${F};display:inline-block;padding:5px 14px;background:linear-gradient(90deg,#FF78A9,#FFACC7);border-radius:20px;color:#fff;font-size:12px;font-weight:800;margin-bottom:14px;box-shadow:0 4px 14px rgba(255,120,169,.4);">🌸 ${esc(data.sellerName || 'PideFacil')}</div>
+      ${nameTxt(data.name, W, '#7B1D4A', L.portrait ? 3 : 2)}
+      <div style="margin-bottom:12px;">${priceBlock(data, W, { color:'#D63384', oldColor:'rgba(120,0,60,.35)', discBg:'#FF78A9', discFg:'#fff' })}</div>
+      ${descTxt(data.description, W, 'rgba(100,20,60,.58)', 2)}
+    </div>
+    <div style="position:absolute;bottom:0;left:0;right:0;height:62px;background:rgba(255,240,245,.65);display:flex;align-items:center;justify-content:center;">
+      <span style="font-family:${F};color:#D63384;font-size:14px;font-weight:800;">pidefacil.com</span>
+    </div>
+  </div>`;
+}
+
+// ─────────────────────────────────────────────
+// TEMPLATE: SAN VALENTÍN ❤️
+// Fondo rojo/vino degradado, corazones flotando, imagen circular con anillo dorado
+// ─────────────────────────────────────────────
+function buildValentin(data, W, H) {
+  const L  = getLayout(W, H);
+  const { cx, cy, r } = circCenter(L);
+  const src = data.image || null;
+  const imgHtml = src ? imgCircle(src, cx, cy, r, 'linear-gradient(145deg,#FFD700,#FF4D6D,#FFD700)', '0 0 55px rgba(255,77,109,.55)') : '';
+  // Heart shapes via CSS clip-path approximation (border-radius trick + rotation)
+  const hearts = [
+    [8,4,.055,'rgba(255,77,109,.55)'],[18,2,.038,'rgba(255,200,200,.45)'],
+    [82,3,.06,'rgba(255,77,109,.5)'],[90,8,.042,'rgba(255,200,200,.4)'],
+    [4,22,.044,'rgba(255,77,109,.4)'],[94,20,.05,'rgba(255,200,200,.5)'],
+    [12,40,.036,'rgba(255,77,109,.35)'],[88,42,.04,'rgba(255,200,200,.4)'],
+    [6,60,.048,'rgba(255,77,109,.45)'],[91,65,.038,'rgba(255,200,200,.35)'],
+    [10,80,.042,'rgba(255,77,109,.4)'],[85,82,.055,'rgba(255,200,200,.4)'],
+    [50,2,.032,'rgba(255,77,109,.3)'],[50,92,.04,'rgba(255,200,200,.35)'],
+  ].map(([px,py,ps,col]) => {
+    const s = Math.round(W * ps);
+    const h = Math.round(s * .95);
+    // Two overlapping rotated squares = approximated heart via border-radius
+    return `<div style="position:absolute;left:${px}%;top:${py}%;width:${s}px;height:${h}px;pointer-events:none;">
+      <div style="position:absolute;inset:0;background:${col};border-radius:50% 50% 0 50%;transform:rotate(-45deg);transform-origin:bottom right;"></div>
+      <div style="position:absolute;inset:0;background:${col};border-radius:50% 50% 50% 0;transform:rotate(45deg);transform-origin:bottom left;"></div>
+    </div>`;
+  }).join('');
+  return `<div style="position:relative;width:${W}px;height:${H}px;overflow:hidden;font-family:${F};background:linear-gradient(145deg,#2D0010 0%,#6B0025 40%,#A00035 70%,#6B0025 100%);">
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 75% 25%,rgba(255,77,109,.25) 0%,transparent 55%);pointer-events:none;"></div>
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 20% 85%,rgba(255,77,109,.18) 0%,transparent 50%);pointer-events:none;"></div>
+    ${hearts}
+    ${imgHtml}
+    <div style="position:absolute;left:${L.tX}px;top:${L.tY}px;width:${L.tW}px;">
+      <div style="font-family:${F};display:inline-block;padding:5px 14px;background:linear-gradient(90deg,#FF4D6D,#FF8FA3);border-radius:20px;color:#fff;font-size:12px;font-weight:800;margin-bottom:14px;box-shadow:0 4px 14px rgba(255,77,109,.5);">❤️ ${esc(data.sellerName || 'PideFacil')}</div>
+      ${nameTxt(data.name, W, '#FFD6E0', L.portrait ? 3 : 2)}
+      <div style="margin-bottom:12px;">${priceBlock(data, W, { color:'#FFD700', oldColor:'rgba(255,200,200,.45)', discBg:'#FF4D6D', discFg:'#fff' })}</div>
+      ${descTxt(data.description, W, 'rgba(255,180,190,.65)', 2)}
+    </div>
+    ${footer('rgba(255,192,208,.75)', 'rgba(0,0,0,.35)')}
+  </div>`;
+}
+
+// ─────────────────────────────────────────────
+// TEMPLATE: NAVIDAD 🎄
+// Fondo verde oscuro/rojo navideño, copos de nieve, imagen circular con anillo rojo+dorado
+// ─────────────────────────────────────────────
+function buildNavidad(data, W, H) {
+  const L  = getLayout(W, H);
+  const { cx, cy, r } = circCenter(L);
+  const src = data.image || null;
+  const imgHtml = src ? imgCircle(src, cx, cy, r, 'linear-gradient(135deg,#FFD700,#CC0000,#FFD700)', '0 0 55px rgba(255,215,0,.45)') : '';
+  // Snowflakes (simplified as ❄ unicode in divs)
+  const snowflakes = [
+    [5,3,W*.028,.6],[16,1,W*.02,.4],[28,5,W*.022,.5],[40,2,W*.018,.35],
+    [55,4,W*.025,.55],[67,1,W*.02,.4],[78,6,W*.032,.65],[89,3,W*.02,.45],
+    [95,8,W*.018,.35],[3,18,W*.022,.45],[12,14,W*.016,.3],[24,20,W*.02,.4],
+    [48,16,W*.018,.35],[60,20,W*.024,.5],[72,15,W*.016,.3],[84,19,W*.022,.45],
+    [96,22,W*.018,.35],[2,35,W*.02,.4],[88,38,W*.024,.5],[94,42,W*.018,.35],
+  ].map(([px,py,fs,op]) =>
+    `<div style="position:absolute;left:${px}%;top:${py}%;font-size:${Math.round(fs)}px;opacity:${op};color:#fff;pointer-events:none;user-select:none;">❄</div>`
+  ).join('');
+  // Garland dots along top
+  const garland = Array.from({length:22},(_,i) => {
+    const cols = ['#FF3333','#FFD700','#33CC33','#FF3333','#FFD700'];
+    const col = cols[i % cols.length];
+    const yOff = Math.round(Math.sin(i * .48) * W * .018);
+    return `<div style="position:absolute;left:${Math.round(i/21*W*.95+W*.03)}px;top:${Math.round(W*.035)+yOff}px;width:${Math.round(W*.02)}px;height:${Math.round(W*.02)}px;border-radius:50%;background:${col};box-shadow:0 0 ${Math.round(W*.008)}px ${col};pointer-events:none;"></div>`;
+  }).join('');
+  return `<div style="position:relative;width:${W}px;height:${H}px;overflow:hidden;font-family:${F};background:linear-gradient(160deg,#0A2010 0%,#0D3318 35%,#1A1A0A 70%,#0D0A00 100%);">
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 80% 15%,rgba(204,0,0,.2) 0%,transparent 55%);pointer-events:none;"></div>
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 20% 90%,rgba(255,215,0,.1) 0%,transparent 55%);pointer-events:none;"></div>
+    ${snowflakes}
+    ${garland}
+    ${imgHtml}
+    <div style="position:absolute;left:${L.tX}px;top:${L.tY}px;width:${L.tW}px;">
+      <div style="font-family:${F};display:inline-block;padding:5px 14px;background:linear-gradient(90deg,#CC0000,#FF4444);border-radius:20px;color:#FFD700;font-size:12px;font-weight:800;margin-bottom:14px;box-shadow:0 4px 14px rgba(204,0,0,.5);">🎄 ${esc(data.sellerName || 'PideFacil')}</div>
+      ${nameTxt(data.name, W, '#F5FFE8', L.portrait ? 3 : 2)}
+      <div style="margin-bottom:12px;">${priceBlock(data, W, { color:'#FFD700', oldColor:'rgba(255,255,255,.4)', discBg:'#CC0000', discFg:'#FFD700' })}</div>
+      ${descTxt(data.description, W, 'rgba(200,240,190,.62)', 2)}
+    </div>
+    <div style="position:absolute;bottom:0;left:0;right:0;height:62px;background:rgba(10,30,10,.55);border-top:2px solid #CC0000;display:flex;align-items:center;justify-content:center;">
+      <span style="font-family:${F};color:#FFD700;font-size:14px;font-weight:800;">pidefacil.com</span>
+    </div>
+  </div>`;
+}
+
+// ─────────────────────────────────────────────
+// TEMPLATE: HALLOWEEN 🎃
+// Fondo negro/naranja oscuro, lunas, telarañas, imagen circular con anillo naranja
+// ─────────────────────────────────────────────
+function buildHalloween(data, W, H) {
+  const L  = getLayout(W, H);
+  const { cx, cy, r } = circCenter(L);
+  const src = data.image || null;
+  const imgHtml = src ? imgCircle(src, cx, cy, r, 'linear-gradient(135deg,#FF6B00,#FF9D4D,#FF6B00)', '0 0 60px rgba(255,107,0,.65)') : '';
+  // Bat shapes (two semicircles + body)
+  const bats = [
+    [15,8,W*.04],[72,5,W*.05],[88,14,W*.032],[6,30,W*.028],[82,32,W*.038],
+  ].map(([px,py,bs]) => {
+    const w2=bs, h2=Math.round(bs*.45);
+    return `<div style="position:absolute;left:${px}%;top:${py}%;pointer-events:none;opacity:.55;">
+      <div style="position:relative;width:${Math.round(w2*2.2)}px;height:${h2}px;">
+        <div style="position:absolute;left:0;top:0;width:${w2}px;height:${h2}px;background:#1A0A00;border-radius:50% 50% 0 0;"></div>
+        <div style="position:absolute;right:0;top:0;width:${w2}px;height:${h2}px;background:#1A0A00;border-radius:50% 50% 0 0;"></div>
+        <div style="position:absolute;left:50%;top:0;transform:translateX(-50%);width:${Math.round(w2*.6)}px;height:${Math.round(h2*.7)}px;background:#1A0A00;border-radius:40% 40% 50% 50%;"></div>
+      </div>
+    </div>`;
+  }).join('');
+  // Moon
+  const moonX = Math.round(W * .82), moonY = Math.round(H * .04), moonR = Math.round(W * .09);
+  const moon = `
+    <div style="position:absolute;left:${moonX}px;top:${moonY}px;width:${moonR*2}px;height:${moonR*2}px;border-radius:50%;background:#FFF5C8;box-shadow:0 0 ${Math.round(W*.03)}px #FFD700,0 0 ${Math.round(W*.07)}px rgba(255,215,0,.25);pointer-events:none;">
+      <div style="position:absolute;left:${Math.round(moonR*.3)}px;top:-${Math.round(moonR*.1)}px;width:${Math.round(moonR*1.4)}px;height:${Math.round(moonR*1.4)}px;border-radius:50%;background:#0D0500;"></div>
+    </div>`;
+  // Spider web corner (lines)
+  const webR = Math.round(W * .16);
+  const webLines = Array.from({length:5},(_,i) => {
+    const angle = 90 + i * (90/4);
+    const rad = angle * Math.PI / 180;
+    const x2 = Math.round(webR * Math.cos(rad));
+    const y2 = Math.round(webR * Math.sin(rad));
+    return `<line x1="0" y1="0" x2="${x2}" y2="${y2}" stroke="rgba(255,255,255,.22)" stroke-width="1"/>`;
+  }).join('');
+  const webArcs = [.3,.6,.9].map(pct => {
+    const rr = Math.round(webR * pct);
+    return `<path d="M ${Math.round(rr*Math.cos(Math.PI*90/180))} ${Math.round(rr*Math.sin(Math.PI*90/180))} Q 0 ${-rr} ${Math.round(rr*Math.cos(Math.PI*180/180))} 0" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="1"/>`;
+  }).join('');
+  const web = `<svg style="position:absolute;left:0;top:0;width:${webR}px;height:${webR}px;pointer-events:none;" viewBox="${-webR} ${-webR} ${webR} ${webR}">${webLines}${webArcs}</svg>`;
+  return `<div style="position:relative;width:${W}px;height:${H}px;overflow:hidden;font-family:${F};background:linear-gradient(160deg,#060200 0%,#1A0800 35%,#0D0300 70%,#200800 100%);">
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 85% 20%,rgba(255,107,0,.14) 0%,transparent 50%);pointer-events:none;"></div>
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 15% 85%,rgba(120,0,200,.12) 0%,transparent 50%);pointer-events:none;"></div>
+    ${web}${moon}${bats}
+    ${imgHtml}
+    <div style="position:absolute;left:${L.tX}px;top:${L.tY}px;width:${L.tW}px;">
+      <div style="font-family:${F};display:inline-block;padding:5px 14px;background:linear-gradient(90deg,#FF6B00,#FF9D4D);border-radius:4px;color:#000;font-size:12px;font-weight:900;margin-bottom:14px;letter-spacing:.5px;">🎃 ${esc(data.sellerName || 'PideFacil')}</div>
+      ${nameTxt(data.name, W, '#FFD59E', L.portrait ? 3 : 2)}
+      <div style="margin-bottom:12px;">${priceBlock(data, W, { color:'#FF6B00', oldColor:'rgba(255,200,100,.4)', discBg:'#FF6B00', discFg:'#000' })}</div>
+      ${descTxt(data.description, W, 'rgba(255,190,100,.58)', 2)}
+    </div>
+    <div style="position:absolute;bottom:0;left:0;right:0;height:62px;background:rgba(0,0,0,.45);border-top:2px solid rgba(255,107,0,.4);display:flex;align-items:center;justify-content:center;">
+      <span style="font-family:${F};color:rgba(255,107,0,.8);font-size:14px;font-weight:800;">pidefacil.com</span>
+    </div>
+  </div>`;
+}
+
+// ─────────────────────────────────────────────
 // BUILDERS MAP
 // ─────────────────────────────────────────────
 const BUILDERS = {
   fuego: buildFuego, noche: buildNoche, oceano: buildOceano,
   aurora: buildAurora, cristal: buildCristal, minima: buildMinima,
   carbon: buildCarbon, brasa: buildBrasa, cemento: buildCemento,
+  nino: buildNino, madre: buildMadre, valentin: buildValentin,
+  navidad: buildNavidad, halloween: buildHalloween,
 };
 
 // ─────────────────────────────────────────────
