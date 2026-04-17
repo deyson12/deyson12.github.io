@@ -1757,7 +1757,7 @@ function _showBannerPopup(ad) {
   _promoPopAction = ad.ctaAction || null;
   setTimeout(() => {
     document.getElementById('ppBannerOverlay').classList.add('open');
-    document.body.style.overflow = 'hidden';
+    _lockPromoScroll();
   }, 800);
 }
 function _showProductPopup(ad) {
@@ -1787,13 +1787,28 @@ function _showProductPopup(ad) {
   document.getElementById('ppProductWa').href = promoWaUrl(ad);
   setTimeout(() => {
     document.getElementById('ppProductOverlay').classList.add('open');
-    document.body.style.overflow = 'hidden';
+    _lockPromoScroll();
   }, 800);
+}
+let _promoScrollY = 0;
+function _lockPromoScroll() {
+  _promoScrollY = window.scrollY;
+  document.body.style.position   = 'fixed';
+  document.body.style.top        = `-${_promoScrollY}px`;
+  document.body.style.width      = '100%';
+  document.body.style.overflowY  = 'scroll';
+}
+function _unlockPromoScroll() {
+  document.body.style.position  = '';
+  document.body.style.top       = '';
+  document.body.style.width     = '';
+  document.body.style.overflowY = '';
+  window.scrollTo(0, _promoScrollY);
 }
 function closePromoPopup() {
   document.getElementById('ppBannerOverlay').classList.remove('open');
   document.getElementById('ppProductOverlay').classList.remove('open');
-  document.body.style.overflow = '';
+  _unlockPromoScroll();
 }
 function handlePromoPopClick(e) {
   const id = e.target?.id;
