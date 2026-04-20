@@ -1,0 +1,26 @@
+[
+  {
+    "id": "promo-001",
+    "name": "Audífonos Bluetooth TWS con cancelación de ruido activa",
+    "description": "Sonido premium con cancelación de ruido activa, hasta 30h de batería, conexión rápida y estuche de carga compacto. Compatibles con iOS y Android.",
+    "price": 89000,
+    "oldPrice": 130000,
+    "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&auto=format",
+    "sellerName": "TechZone Colombia",
+    "sellerPhone": "573136090247",
+    "tags": "audifonos bluetooth tecnologia musica",
+    "categoryId": "999ad8a9-0dd6-4feb-83ca-8edb4d1aac1d"
+  },
+  {
+    "id": "promo-002",
+    "name": "Camiseta Oversize 100% algodón — Colección Urbana 2026",
+    "description": "Tela 100% algodón peinado de 220g, corte oversize para máxima comodidad. Disponible en tallas S–XXL y varios colores de temporada.",
+    "price": 45000,
+    "oldPrice": null,
+    "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&auto=format",
+    "sellerName": "UrbanThreads",
+    "sellerPhone": "573136090247",
+    "tags": "ropa camiseta moda urbano",
+    "categoryId": "6f51640f-a38d-4e98-b82a-27cc4b058585"
+  }
+]

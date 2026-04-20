@@ -55,6 +55,23 @@ textarea:focus{border-color:#2A3150;color:var(--text);}
 .ig-outer{position:relative;overflow:hidden;border-radius:10px;box-shadow:0 0 0 1px rgba(255,255,255,.06),0 32px 80px rgba(0,0,0,.7);flex-shrink:0;}
 #igWrap{position:absolute;top:0;left:0;transform-origin:top left;}
 
+/* CUSTOM PANEL */
+.cust-sep{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted2);padding:4px 0 2px;border-bottom:1px solid var(--border);margin-bottom:4px;}
+.cust-btns{display:flex;flex-wrap:wrap;gap:5px;}
+.cust-btn{padding:5px 11px;border-radius:8px;border:1.5px solid var(--border);background:transparent;color:var(--muted2);cursor:pointer;font-family:var(--font);font-size:11px;font-weight:600;transition:all .18s;}
+.cust-btn:hover{border-color:#2A3150;color:var(--text);}
+.cust-btn.active{border-color:var(--primary);background:rgba(241,82,0,.1);color:var(--primary);}
+.cust-row{display:flex;gap:10px;}
+.cust-field{flex:1;display:flex;flex-direction:column;gap:5px;min-width:0;}
+.cust-lbl{font-size:10px;color:var(--muted2);font-weight:600;}
+.cust-select{width:100%;background:#090C13;border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font);font-size:11px;padding:7px 10px;outline:none;cursor:pointer;}
+.cust-range{width:100%;accent-color:var(--primary);cursor:pointer;margin-top:6px;}
+input[type=color]{width:100%;height:34px;border-radius:8px;border:1.5px solid var(--border);background:#090C13;cursor:pointer;padding:2px;}
+input[type=color]::-webkit-color-swatch-wrapper{padding:2px;}
+input[type=color]::-webkit-color-swatch{border-radius:5px;border:none;}
+.cust-hint{font-size:10px;color:var(--muted2);text-align:center;padding:6px 0 2px;}
+/* Prevent browser native image-drag ghost from appearing over the preview */
+#igWrap img{pointer-events:none;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-drag:none;}
 @media(max-width:860px){
   body{flex-direction:column;overflow:auto;height:auto;}
   .sidebar{width:100%;min-width:unset;max-height:55vh;border-right:none;border-bottom:1px solid var(--border);}
@@ -83,6 +100,83 @@ textarea:focus{border-color:#2A3150;color:var(--text);}
       <span class="ctrl-lbl">Formato</span>
       <div class="size-grid" id="sizeGrid"></div>
     </div>
+    <!-- CUSTOM PANEL -->
+    <div id="customPanel" style="display:flex;flex-direction:column;gap:12px;">
+      <div class="ctrl-divider"></div>
+      <div class="cust-sep">🎨 Fondo</div>
+      <div>
+        <span class="ctrl-lbl" style="margin-bottom:5px;">Tipo</span>
+        <div class="cust-btns" id="bgTypeGroup">
+          <button class="cust-btn active" onclick="setCustVal('bgType','gradient',this,this.closest('#bgTypeGroup'))">Degradado</button>
+          <button class="cust-btn" onclick="setCustVal('bgType','radial',this,this.closest('#bgTypeGroup'))">Radial</button>
+          <button class="cust-btn" onclick="setCustVal('bgType','solid',this,this.closest('#bgTypeGroup'))">Sólido</button>
+        </div>
+      </div>
+      <div class="cust-row">
+        <div class="cust-field">
+          <label class="cust-lbl">Color 1</label>
+          <input type="color" id="custColor1" value="#1A0040" oninput="customOpts.color1=this.value;triggerCustom()">
+        </div>
+        <div class="cust-field" id="custColor2Wrap">
+          <label class="cust-lbl">Color 2</label>
+          <input type="color" id="custColor2" value="#F15200" oninput="customOpts.color2=this.value;triggerCustom()">
+        </div>
+      </div>
+      <div id="custGradDirWrap">
+        <span class="ctrl-lbl">Dirección</span>
+        <select class="cust-select" id="custGradDir" onchange="customOpts.gradDir=this.value;triggerCustom()">
+          <option value="135deg">↘ Diagonal</option>
+          <option value="to right">→ Horizontal</option>
+          <option value="to bottom">↓ Vertical</option>
+          <option value="to top right">↗ Diagonal ↗</option>
+          <option value="225deg">↙ Diagonal ↙</option>
+        </select>
+      </div>
+      <div class="cust-sep">◼ Patrón</div>
+      <div>
+        <div class="cust-btns" id="patternTypeGroup">
+          <button class="cust-btn active" onclick="setCustVal('patternType','none',this,this.closest('#patternTypeGroup'))">Ninguno</button>
+          <button class="cust-btn" onclick="setCustVal('patternType','dots',this,this.closest('#patternTypeGroup'))">Puntos</button>
+          <button class="cust-btn" onclick="setCustVal('patternType','lines',this,this.closest('#patternTypeGroup'))">Líneas</button>
+          <button class="cust-btn" onclick="setCustVal('patternType','grid',this,this.closest('#patternTypeGroup'))">Cuadrícula</button>
+          <button class="cust-btn" onclick="setCustVal('patternType','crosshatch',this,this.closest('#patternTypeGroup'))">Cruz</button>
+        </div>
+      </div>
+      <div class="cust-row" id="custPatternControls" style="display:none">
+        <div class="cust-field">
+          <label class="cust-lbl">Color patrón</label>
+          <input type="color" id="custPatternColor" value="#ffffff" oninput="customOpts.patternColor=this.value;triggerCustom()">
+        </div>
+        <div class="cust-field">
+          <label class="cust-lbl">Opacidad</label>
+          <input type="range" min="1" max="50" value="7" class="cust-range" id="custPatternOpacity" oninput="customOpts.patternOpacity=this.value/100;triggerCustom()">
+        </div>
+      </div>
+      <div class="cust-sep">📷 Imagen</div>
+      <div>
+        <span class="ctrl-lbl">Forma</span>
+        <div class="cust-btns" id="imgShapeGroup">
+          <button class="cust-btn active" onclick="setCustVal('imgShape','ring',this,this.closest('#imgShapeGroup'))">Anillo</button>
+          <button class="cust-btn" onclick="setCustVal('imgShape','circle',this,this.closest('#imgShapeGroup'))">Círculo</button>
+          <button class="cust-btn" onclick="setCustVal('imgShape','rect',this,this.closest('#imgShapeGroup'))">Rectángulo</button>
+        </div>
+      </div>
+      <div class="cust-sep">✏️ Texto</div>
+      <div class="cust-row">
+        <div class="cust-field">
+          <label class="cust-lbl">Color acento</label>
+          <input type="color" id="custAccentColor" value="#F15200" oninput="customOpts.accentColor=this.value;triggerCustom()">
+        </div>
+        <div class="cust-field">
+          <label class="cust-lbl">Texto</label>
+          <div class="cust-btns" id="textThemeGroup">
+            <button class="cust-btn active" onclick="setCustVal('textTheme','light',this,this.closest('#textThemeGroup'))">Blanco</button>
+            <button class="cust-btn" onclick="setCustVal('textTheme','dark',this,this.closest('#textThemeGroup'))">Negro</button>
+          </div>
+        </div>
+      </div>
+      <div class="cust-hint">💡 Arrastra imagen o texto para moverlos</div>
+    </div>
     <button class="btn-dl" onclick="downloadCard()">↓ Descargar PNG</button>
     <div class="status" id="status"></div>
   </div>
@@ -99,6 +193,7 @@ textarea:focus{border-color:#2A3150;color:var(--text);}
 // CONFIG
 // ─────────────────────────────────────────────
 const TEMPLATES = [
+  { id:'custom',   label:'Custom',   icon:'🎨' },
   { id:'fuego',   label:'Fuego',   icon:'🔥' },
   { id:'noche',   label:'Noche',   icon:'🌑' },
   { id:'oceano',  label:'Océano',  icon:'🌊' },
@@ -120,11 +215,36 @@ const SIZES = [
   { id:'landscape', label:'1.91:1\nLand', w:1200, h:628  },
 ];
 
-let currentTpl  = 'fuego';
+let currentTpl  = 'custom';
 let currentSize = SIZES[0];
 let lastCardHTML = '';
 let _debounce = null;
-let textDX = 0, textDY = 0, currentScale = 1;
+let textDX = 0, textDY = 0, imageDX = 0, imageDY = 0, currentScale = 1;
+let textW = null, textH = null; // null = use original size from JSON
+
+// Custom template state
+const customOpts = {
+  bgType:'gradient', color1:'#1A0040', color2:'#F15200', gradDir:'135deg',
+  patternType:'none', patternColor:'#ffffff', patternOpacity:.07,
+  imgShape:'ring', accentColor:'#F15200', textTheme:'light',
+};
+function setCustVal(key, val, btn, group) {
+  customOpts[key] = val;
+  if (group) group.querySelectorAll('.cust-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  // Show/hide dependent controls
+  const isSolid = customOpts.bgType === 'solid';
+  const c2 = document.getElementById('custColor2Wrap');
+  const gd = document.getElementById('custGradDirWrap');
+  if (c2) c2.style.display = isSolid ? 'none' : '';
+  if (gd) gd.style.display = customOpts.bgType === 'radial' || isSolid ? 'none' : '';
+  const pc = document.getElementById('custPatternControls');
+  if (pc) pc.style.display = customOpts.patternType === 'none' ? 'none' : 'flex';
+  triggerCustom();
+}
+function triggerCustom() {
+  if (currentTpl === 'custom') generateCard();
+}
 
 const DEFAULT_JSON = `{
   "name": "Cortina Blackout 100% Anti Luz, 2 Paños 140x220 Textura Lino - Gris",
@@ -218,7 +338,7 @@ function sellerBadge(name, bg, border, color) {
 
 function imgRect(src, x, y, w, h, r, shadow) {
   const sh = shadow ? `box-shadow:${shadow};` : '';
-  return `<div style="position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${h}px;border-radius:${r}px;overflow:hidden;${sh}">
+  return `<div id="igImageBlock" style="position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${h}px;border-radius:${r}px;overflow:hidden;${sh}">
     <img src="${esc(src)}" crossorigin="anonymous" style="width:100%;height:100%;object-fit:cover;display:block;"/>
   </div>`;
 }
@@ -228,7 +348,7 @@ function imgCircle(src, cx, cy, r, ringGrad, shadow) {
   const pad = Math.max(3, Math.round(r * .02));
   const outer = r + pad;
   const sh = shadow ? `box-shadow:${shadow};` : '';
-  return `<div style="position:absolute;left:${cx - outer}px;top:${cy - outer}px;width:${outer * 2}px;height:${outer * 2}px;border-radius:50%;background:${ringGrad};padding:${pad}px;${sh}">
+  return `<div id="igImageBlock" style="position:absolute;left:${cx - outer}px;top:${cy - outer}px;width:${outer * 2}px;height:${outer * 2}px;border-radius:50%;background:${ringGrad};padding:${pad}px;${sh}">
     <div style="width:100%;height:100%;border-radius:50%;overflow:hidden;">
       <img src="${esc(src)}" crossorigin="anonymous" style="width:100%;height:100%;object-fit:cover;display:block;"/>
     </div>
@@ -237,7 +357,7 @@ function imgCircle(src, cx, cy, r, ringGrad, shadow) {
 
 function footer(textColor, bg) {
   return `<div style="position:absolute;bottom:0;left:0;right:0;height:62px;background:${bg};display:flex;align-items:center;justify-content:center;z-index:5;">
-    <span style="font-family:${F};color:${textColor};font-size:15px;font-weight:700;">pidefacil.com</span>
+    <span style="font-family:${F};color:${textColor};font-size:15px;font-weight:700;">pidefacil.shop</span>
   </div>`;
 }
 
@@ -313,7 +433,7 @@ function buildNoche(data, W, H) {
     </div>
     <div style="position:absolute;bottom:2px;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,#FFB800 30%,#FF6B00 70%,transparent);pointer-events:none;"></div>
     <div style="position:absolute;bottom:0;left:0;right:0;height:30px;display:flex;align-items:center;justify-content:center;">
-      <span style="font-family:${F};color:rgba(255,185,0,.55);font-size:14px;font-weight:600;">pidefacil.com</span>
+      <span style="font-family:${F};color:rgba(255,185,0,.55);font-size:14px;font-weight:600;">pidefacil.shop</span>
     </div>
   </div>`;
 }
@@ -337,7 +457,7 @@ function buildOceano(data, W, H) {
   const cMaxH  = Math.max(0, cardY + cardH - 24 - tStartY);
   const nameCl = portrait ? 3 : 2;
   const src = data.image || null;
-  const imgHtml = src ? `<div style="position:absolute;left:${imgCX - imgR - 5}px;top:${imgCY - imgR - 5}px;width:${(imgR + 5) * 2}px;height:${(imgR + 5) * 2}px;border-radius:50%;background:#fff;padding:5px;box-shadow:0 0 35px rgba(0,100,255,.35);">
+  const imgHtml = src ? `<div id="igImageBlock" style="position:absolute;left:${imgCX - imgR - 5}px;top:${imgCY - imgR - 5}px;width:${(imgR + 5) * 2}px;height:${(imgR + 5) * 2}px;border-radius:50%;background:#fff;padding:5px;box-shadow:0 0 35px rgba(0,100,255,.35);">
     <div style="width:100%;height:100%;border-radius:50%;overflow:hidden;">
       <img src="${esc(src)}" crossorigin="anonymous" style="width:100%;height:100%;object-fit:cover;display:block;"/>
     </div>
@@ -346,7 +466,7 @@ function buildOceano(data, W, H) {
     <div style="position:absolute;right:-15%;top:-5%;width:55%;height:55%;border-radius:50%;background:rgba(255,255,255,.12);pointer-events:none;"></div>
     <div style="position:absolute;left:-8%;bottom:-8%;width:55%;height:55%;border-radius:50%;background:rgba(255,255,255,.08);pointer-events:none;"></div>
     <div style="position:absolute;top:0;left:0;right:0;height:${Math.round(H * .055)}px;display:flex;align-items:center;justify-content:center;z-index:5;">
-      <span style="font-family:${F};color:rgba(255,255,255,.85);font-size:14px;font-weight:700;">pidefacil.com</span>
+      <span style="font-family:${F};color:rgba(255,255,255,.85);font-size:14px;font-weight:700;">pidefacil.shop</span>
     </div>
     <div style="position:absolute;left:${cardX}px;top:${cardY}px;width:${cardW}px;height:${cardH}px;background:#fff;border-radius:26px 26px 16px 16px;box-shadow:0 20px 80px rgba(0,100,255,.2);"></div>
     ${imgHtml}
@@ -404,7 +524,7 @@ function buildCristal(data, W, H) {
   const blurBg  = src ? `<img src="${esc(src)}" crossorigin="anonymous" style="position:absolute;inset:-30px;width:calc(100% + 60px);height:calc(100% + 60px);object-fit:cover;filter:blur(28px);transform:scale(1.05);pointer-events:none;"/>` : '';
   const imgHtml = src ? `
     <div style="position:absolute;left:${iCX - iR - 3}px;top:${iCY - iR - 3}px;width:${(iR + 3) * 2}px;height:${(iR + 3) * 2}px;border-radius:50%;border:2.5px solid rgba(255,255,255,.32);box-shadow:0 0 25px rgba(255,255,255,.22);box-sizing:border-box;pointer-events:none;z-index:3;"></div>
-    <div style="position:absolute;left:${iCX - iR}px;top:${iCY - iR}px;width:${iR * 2}px;height:${iR * 2}px;border-radius:50%;overflow:hidden;z-index:2;">
+    <div id="igImageBlock" style="position:absolute;left:${iCX - iR}px;top:${iCY - iR}px;width:${iR * 2}px;height:${iR * 2}px;border-radius:50%;overflow:hidden;z-index:2;">
       <img src="${esc(src)}" crossorigin="anonymous" style="width:100%;height:100%;object-fit:cover;display:block;"/>
     </div>` : '';
   return `<div style="position:relative;width:${W}px;height:${H}px;overflow:hidden;font-family:${F};background:#0e1422;">
@@ -422,7 +542,7 @@ function buildCristal(data, W, H) {
       ${data.description ? `<div style="font-family:${F};font-size:${Math.round(W * .019)}px;font-weight:400;color:rgba(255,255,255,.58);line-height:1.5;text-align:center;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-top:10px;">${esc(data.description)}</div>` : ''}
     </div>
     <div style="position:absolute;left:0;right:0;top:${cY + cH + 10}px;text-align:center;z-index:4;">
-      <span style="font-family:${F};color:rgba(255,255,255,.38);font-size:13px;font-weight:600;">pidefacil.com</span>
+      <span style="font-family:${F};color:rgba(255,255,255,.38);font-size:13px;font-weight:600;">pidefacil.shop</span>
     </div>
   </div>`;
 }
@@ -450,7 +570,7 @@ function buildMinima(data, W, H) {
       ${descTxt(data.description, W, '#6B7280', 2)}
     </div>
     <div style="position:absolute;bottom:0;left:0;right:0;height:62px;background:rgba(241,82,0,.04);border-top:1px solid rgba(241,82,0,.13);display:flex;align-items:center;justify-content:center;">
-      <span style="font-family:${F};color:#9CA3AF;font-size:14px;font-weight:700;">pidefacil.com</span>
+      <span style="font-family:${F};color:#9CA3AF;font-size:14px;font-weight:700;">pidefacil.shop</span>
     </div>
   </div>`;
 }
@@ -519,7 +639,7 @@ function buildBrasa(data, W, H) {
     </div>
     <div style="position:absolute;bottom:0;left:0;right:0;height:58px;display:flex;align-items:center;padding:0 ${Math.round(W*.05)}px;justify-content:space-between;">
       <div style="display:flex;gap:5px;">${[...Array(3)].map((_,i)=>`<div style="width:${6+i*2}px;height:6px;border-radius:3px;background:${i===0?'#F15200':'rgba(255,255,255,.22)'};"></div>`).join('')}</div>
-      <span style="font-family:${F};color:rgba(255,255,255,.45);font-size:13px;font-weight:700;">pidefacil.com</span>
+      <span style="font-family:${F};color:rgba(255,255,255,.45);font-size:13px;font-weight:700;">pidefacil.shop</span>
     </div>
   </div>`;
 }
@@ -559,7 +679,7 @@ function buildCemento(data, W, H) {
       ${descTxt(data.description, W, 'rgba(255,255,255,.58)', 2)}
     </div>
     <div style="position:absolute;bottom:0;left:0;right:0;height:62px;background:rgba(0,0,0,.3);border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;">
-      <span style="font-family:${F};color:rgba(255,255,255,.45);font-size:14px;font-weight:700;">pidefacil.com</span>
+      <span style="font-family:${F};color:rgba(255,255,255,.45);font-size:14px;font-weight:700;">pidefacil.shop</span>
     </div>
   </div>`;
 }
@@ -598,7 +718,7 @@ function buildNino(data, W, H) {
       ${descTxt(data.description, W, 'rgba(30,70,120,.65)', 2)}
     </div>
     <div style="position:absolute;bottom:0;left:0;right:0;height:62px;background:rgba(255,255,255,.55);display:flex;align-items:center;justify-content:center;">
-      <span style="font-family:${F};color:#4D96FF;font-size:14px;font-weight:800;">pidefacil.com</span>
+      <span style="font-family:${F};color:#4D96FF;font-size:14px;font-weight:800;">pidefacil.shop</span>
     </div>
   </div>`;
 }
@@ -634,7 +754,7 @@ function buildMadre(data, W, H) {
       ${descTxt(data.description, W, 'rgba(100,20,60,.58)', 2)}
     </div>
     <div style="position:absolute;bottom:0;left:0;right:0;height:62px;background:rgba(255,240,245,.65);display:flex;align-items:center;justify-content:center;">
-      <span style="font-family:${F};color:#D63384;font-size:14px;font-weight:800;">pidefacil.com</span>
+      <span style="font-family:${F};color:#D63384;font-size:14px;font-weight:800;">pidefacil.shop</span>
     </div>
   </div>`;
 }
@@ -720,7 +840,7 @@ function buildNavidad(data, W, H) {
       ${descTxt(data.description, W, 'rgba(200,240,190,.62)', 2)}
     </div>
     <div style="position:absolute;bottom:0;left:0;right:0;height:62px;background:rgba(10,30,10,.55);border-top:2px solid #CC0000;display:flex;align-items:center;justify-content:center;">
-      <span style="font-family:${F};color:#FFD700;font-size:14px;font-weight:800;">pidefacil.com</span>
+      <span style="font-family:${F};color:#FFD700;font-size:14px;font-weight:800;">pidefacil.shop</span>
     </div>
   </div>`;
 }
@@ -779,7 +899,7 @@ function buildHalloween(data, W, H) {
       ${descTxt(data.description, W, 'rgba(255,190,100,.58)', 2)}
     </div>
     <div style="position:absolute;bottom:0;left:0;right:0;height:62px;background:rgba(0,0,0,.45);border-top:2px solid rgba(255,107,0,.4);display:flex;align-items:center;justify-content:center;">
-      <span style="font-family:${F};color:rgba(255,107,0,.8);font-size:14px;font-weight:800;">pidefacil.com</span>
+      <span style="font-family:${F};color:rgba(255,107,0,.8);font-size:14px;font-weight:800;">pidefacil.shop</span>
     </div>
   </div>`;
 }
@@ -793,64 +913,316 @@ const BUILDERS = {
   carbon: buildCarbon, brasa: buildBrasa, cemento: buildCemento,
   nino: buildNino, madre: buildMadre, valentin: buildValentin,
   navidad: buildNavidad, halloween: buildHalloween,
+  custom: buildCustom,
 };
+
+// ─────────────────────────────────────────────
+// TEMPLATE: CUSTOM 🎨
+// ─────────────────────────────────────────────
+function buildCustom(data, W, H) {
+  const L = getLayout(W, H);
+  const { cx, cy, r } = circCenter(L);
+  const src = data.image || null;
+
+  // Background
+  let bg;
+  if (customOpts.bgType === 'solid') {
+    bg = customOpts.color1;
+  } else if (customOpts.bgType === 'radial') {
+    bg = `radial-gradient(circle at 68% 28%, ${customOpts.color1} 0%, ${customOpts.color2} 100%)`;
+  } else {
+    bg = `linear-gradient(${customOpts.gradDir}, ${customOpts.color1} 0%, ${customOpts.color2} 100%)`;
+  }
+
+  // Pattern
+  let patHtml = '';
+  if (customOpts.patternType !== 'none') {
+    const pc = customOpts.patternColor, po = customOpts.patternOpacity;
+    // Use inline SVG for dots/lines/crosshatch — html2canvas doesn't support
+    // radial-gradient or repeating-linear-gradient in background-image.
+    // A unique pid prevents collisions if preview + offscreen coexist in DOM.
+    const pid = 'cp' + Math.floor(Math.random() * 1e9);
+    const patMap = {
+      dots: `<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;left:0;top:0;pointer-events:none;" width="${W}" height="${H}">
+        <defs><pattern id="${pid}d" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
+          <circle cx="15" cy="15" r="1.5" fill="${pc}"/>
+        </pattern></defs>
+        <rect width="${W}" height="${H}" fill="url(#${pid}d)" opacity="${po}"/>
+      </svg>`,
+      lines: `<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;left:0;top:0;pointer-events:none;" width="${W}" height="${H}">
+        <defs><pattern id="${pid}l" x="0" y="0" width="15" height="15" patternUnits="userSpaceOnUse" patternTransform="rotate(-55,7.5,7.5)">
+          <line x1="7.5" y1="-5" x2="7.5" y2="20" stroke="${pc}" stroke-width="1"/>
+        </pattern></defs>
+        <rect width="${W}" height="${H}" fill="url(#${pid}l)" opacity="${po}"/>
+      </svg>`,
+      grid: `<div style="position:absolute;inset:0;background-image:linear-gradient(${pc} 1px,transparent 1px),linear-gradient(90deg,${pc} 1px,transparent 1px);background-size:44px 44px;opacity:${po};pointer-events:none;"></div>`,
+      crosshatch: `<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;left:0;top:0;pointer-events:none;" width="${W}" height="${H}">
+        <defs><pattern id="${pid}c" x="0" y="0" width="22" height="22" patternUnits="userSpaceOnUse">
+          <line x1="0" y1="0" x2="22" y2="22" stroke="${pc}" stroke-width="1"/>
+          <line x1="22" y1="0" x2="0" y2="22" stroke="${pc}" stroke-width="1"/>
+        </pattern></defs>
+        <rect width="${W}" height="${H}" fill="url(#${pid}c)" opacity="${po}"/>
+      </svg>`,
+    };
+    patHtml = patMap[customOpts.patternType] || '';
+  }
+
+  // Image
+  let imgHtml = '';
+  if (src) {
+    const glowHex = customOpts.accentColor + '88';
+    if (customOpts.imgShape === 'circle') {
+      imgHtml = imgCircle(src, cx, cy, r, 'rgba(255,255,255,.18)', `0 0 45px ${glowHex}`);
+    } else if (customOpts.imgShape === 'ring') {
+      imgHtml = imgCircle(src, cx, cy, r, `linear-gradient(135deg,${customOpts.accentColor},#fff,${customOpts.accentColor})`, `0 0 50px ${glowHex}`);
+    } else {
+      imgHtml = imgRect(src, L.iX, L.iY, L.iW, L.iH, 18, `0 0 40px ${glowHex}`);
+    }
+  }
+
+  const isLight = customOpts.textTheme === 'light';
+  const textColor   = isLight ? '#FFFFFF' : '#111827';
+  const textSec     = isLight ? 'rgba(255,255,255,.62)' : 'rgba(0,0,0,.52)';
+  const badgeBg     = isLight ? 'rgba(255,255,255,.14)' : 'rgba(0,0,0,.07)';
+  const badgeBdr    = isLight ? 'rgba(255,255,255,.28)' : 'rgba(0,0,0,.14)';
+  const ftBg        = isLight ? 'rgba(0,0,0,.28)' : 'rgba(255,255,255,.55)';
+  const ftText      = isLight ? 'rgba(255,255,255,.8)' : 'rgba(0,0,0,.55)';
+  const ac          = customOpts.accentColor;
+
+  return `<div style="position:relative;width:${W}px;height:${H}px;overflow:hidden;font-family:${F};background:${bg};">
+    ${patHtml}
+    ${imgHtml}
+    <div style="position:absolute;left:${L.tX}px;top:${L.tY}px;width:${L.tW}px;">
+      ${sellerBadge(data.sellerName || 'PideFacil', badgeBg, badgeBdr, textColor)}
+      ${nameTxt(data.name, W, textColor, L.portrait ? 3 : 2)}
+      <div style="margin-bottom:12px;">${priceBlock(data, W, { color:ac, oldColor:textSec, discBg:ac, discFg:isLight?'#fff':'#fff' })}</div>
+      ${descTxt(data.description, W, textSec, 2)}
+    </div>
+    ${footer(ftText, ftBg)}
+  </div>`;
+}
+
+// ─────────────────────────────────────────────
+// RESIZE (text block width + height)
+// ─────────────────────────────────────────────
+// Remove -webkit-line-clamp so text reflows freely when height is stretched
+function stripLineClamp(el) {
+  el.querySelectorAll('div').forEach(d => {
+    const s = d.getAttribute('style') || '';
+    if (s.includes('-webkit-line-clamp') && d.style.webkitLineClamp !== 'unset') {
+      d.style.webkitLineClamp = 'unset';
+      d.style.display = 'block';
+      d.style.overflow = 'visible';
+    }
+  });
+}
+function attachResize(tb) {
+  const origW = parseInt(tb.style.width) || tb.offsetWidth;
+  // Use natural rendered height (tb.style.height is usually not set in templates)
+  const origH = tb.offsetHeight || 200;
+
+  if (textW === null) textW = origW;
+  else tb.style.width = textW + 'px';
+
+  tb.style.boxSizing = 'border-box';
+  tb.style.overflow = 'visible'; // allow handles outside bounds
+
+  if (textH !== null) {
+    // Restore previously set height and let text reflow
+    tb.style.height = textH + 'px';
+    tb.style.overflow = 'hidden';
+    stripLineClamp(tb);
+  }
+
+  // ── RIGHT handle (width) ──────────────────────────────────────
+  const handleR = document.createElement('div');
+  handleR.id = 'igResizeHandleR';
+  handleR.style.cssText = [
+    'position:absolute', 'right:-10px', 'top:0', 'bottom:0', 'width:20px',
+    'cursor:ew-resize', 'display:flex', 'align-items:center',
+    'justify-content:center', 'z-index:200'
+  ].join(';');
+  const pipR = document.createElement('div');
+  pipR.style.cssText = [
+    'width:4px', 'height:36px', 'border-radius:3px',
+    'background:rgba(241,82,0,.85)', 'opacity:0',
+    'transition:opacity .15s', 'pointer-events:none',
+    'box-shadow:0 0 6px rgba(241,82,0,.6)'
+  ].join(';');
+  handleR.appendChild(pipR);
+  tb.appendChild(handleR);
+
+  // ── BOTTOM handle (height) ────────────────────────────────────
+  const handleB = document.createElement('div');
+  handleB.id = 'igResizeHandleB';
+  handleB.style.cssText = [
+    'position:absolute', 'left:0', 'right:0', 'bottom:-10px', 'height:20px',
+    'cursor:ns-resize', 'display:flex', 'align-items:center',
+    'justify-content:center', 'z-index:200'
+  ].join(';');
+  const pipB = document.createElement('div');
+  pipB.style.cssText = [
+    'height:4px', 'width:36px', 'border-radius:3px',
+    'background:rgba(241,82,0,.85)', 'opacity:0',
+    'transition:opacity .15s', 'pointer-events:none',
+    'box-shadow:0 0 6px rgba(241,82,0,.6)'
+  ].join(';');
+  handleB.appendChild(pipB);
+  tb.appendChild(handleB);
+
+  // ── Shared state ─────────────────────────────────────────────
+  let _resizingR = false, _resizingB = false;
+
+  // ── Right handle events ───────────────────────────────────────
+  handleR.addEventListener('mouseenter', () => { pipR.style.opacity = '1'; });
+  handleR.addEventListener('mouseleave', () => { if (!_resizingR) pipR.style.opacity = '0'; });
+  handleR.addEventListener('mousedown', e => {
+    e.preventDefault(); e.stopPropagation();
+    _resizingR = true; pipR.style.opacity = '1';
+    const startX = e.clientX;
+    const startW = parseInt(tb.style.width) || origW;
+    function onMove(e) {
+      const newW = Math.max(80, startW + (e.clientX - startX) / currentScale);
+      textW = newW; tb.style.width = newW + 'px';
+    }
+    function onUp() {
+      _resizingR = false; pipR.style.opacity = '0';
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+  handleR.addEventListener('dblclick', e => {
+    e.stopPropagation(); textW = origW; tb.style.width = origW + 'px';
+  });
+  handleR.addEventListener('touchstart', e => {
+    e.preventDefault(); e.stopPropagation();
+    const startX = e.touches[0].clientX;
+    const startW = parseInt(tb.style.width) || origW;
+    function onMoveT(e) {
+      e.preventDefault();
+      const newW = Math.max(80, startW + (e.touches[0].clientX - startX) / currentScale);
+      textW = newW; tb.style.width = newW + 'px';
+    }
+    function onUpT() {
+      document.removeEventListener('touchmove', onMoveT);
+      document.removeEventListener('touchend', onUpT);
+    }
+    document.addEventListener('touchmove', onMoveT, { passive: false });
+    document.addEventListener('touchend', onUpT);
+  }, { passive: false });
+
+  // ── Bottom handle events ──────────────────────────────────────
+  handleB.addEventListener('mouseenter', () => { pipB.style.opacity = '1'; });
+  handleB.addEventListener('mouseleave', () => { if (!_resizingB) pipB.style.opacity = '0'; });
+  handleB.addEventListener('mousedown', e => {
+    e.preventDefault(); e.stopPropagation();
+    _resizingB = true; pipB.style.opacity = '1';
+    const startY = e.clientY;
+    const startH = parseInt(tb.style.height) || origH;
+    function onMove(e) {
+      const newH = Math.max(40, startH + (e.clientY - startY) / currentScale);
+      textH = newH;
+      tb.style.height = newH + 'px';
+      tb.style.overflow = 'hidden';
+      stripLineClamp(tb); // let text wrap instead of clip
+    }
+    function onUp() {
+      _resizingB = false; pipB.style.opacity = '0';
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+  handleB.addEventListener('dblclick', e => {
+    e.stopPropagation();
+    textH = null; // reset → generateCard rebuilds with original line-clamps
+    generateCard();
+  });
+  handleB.addEventListener('touchstart', e => {
+    e.preventDefault(); e.stopPropagation();
+    const startY = e.touches[0].clientY;
+    const startH = parseInt(tb.style.height) || origH;
+    function onMoveT(e) {
+      e.preventDefault();
+      const newH = Math.max(40, startH + (e.touches[0].clientY - startY) / currentScale);
+      textH = newH;
+      tb.style.height = newH + 'px';
+      tb.style.overflow = 'hidden';
+      stripLineClamp(tb);
+    }
+    function onUpT() {
+      document.removeEventListener('touchmove', onMoveT);
+      document.removeEventListener('touchend', onUpT);
+    }
+    document.addEventListener('touchmove', onMoveT, { passive: false });
+    document.addEventListener('touchend', onUpT);
+  }, { passive: false });
+}
 
 // ─────────────────────────────────────────────
 // DRAG
 // ─────────────────────────────────────────────
-function attachDrag(tb) {
+function attachDrag(el, type) {
+  // type: 'text' or 'image'
+  const getDX = () => type === 'image' ? imageDX : textDX;
+  const getDY = () => type === 'image' ? imageDY : textDY;
+  const setD  = (x, y) => { if (type === 'image') { imageDX = x; imageDY = y; } else { textDX = x; textDY = y; } };
   let startX, startY, startDX, startDY;
 
   function onMoveM(e) {
-    textDX = startDX + (e.clientX - startX) / currentScale;
-    textDY = startDY + (e.clientY - startY) / currentScale;
-    tb.style.transform = `translate(${textDX}px,${textDY}px)`;
+    const nx = startDX + (e.clientX - startX) / currentScale;
+    const ny = startDY + (e.clientY - startY) / currentScale;
+    setD(nx, ny); el.style.transform = `translate(${nx}px,${ny}px)`;
   }
   function onMoveT(e) {
     e.preventDefault();
-    textDX = startDX + (e.touches[0].clientX - startX) / currentScale;
-    textDY = startDY + (e.touches[0].clientY - startY) / currentScale;
-    tb.style.transform = `translate(${textDX}px,${textDY}px)`;
+    const nx = startDX + (e.touches[0].clientX - startX) / currentScale;
+    const ny = startDY + (e.touches[0].clientY - startY) / currentScale;
+    setD(nx, ny); el.style.transform = `translate(${nx}px,${ny}px)`;
   }
   function onUp() {
-    tb.style.cursor = 'grab';
+    el.style.cursor = 'grab';
     document.removeEventListener('mousemove', onMoveM);
     document.removeEventListener('mouseup', onUp);
     document.removeEventListener('touchmove', onMoveT);
     document.removeEventListener('touchend', onUp);
   }
 
-  tb.addEventListener('mousedown', e => {
+  el.addEventListener('mousedown', e => {
     e.preventDefault();
     startX = e.clientX; startY = e.clientY;
-    startDX = textDX; startDY = textDY;
-    tb.style.cursor = 'grabbing';
-    tb.style.outline = '';
+    startDX = getDX(); startDY = getDY();
+    el.style.cursor = 'grabbing';
+    el.style.outline = '';
     document.addEventListener('mousemove', onMoveM);
     document.addEventListener('mouseup', onUp);
   });
 
-  tb.addEventListener('mouseenter', () => {
-    if (tb.style.cursor !== 'grabbing') {
-      tb.style.outline = '2px dashed rgba(241,82,0,.55)';
-      tb.style.outlineOffset = '10px';
-      tb.style.borderRadius = '4px';
+  const hintColor = type === 'image' ? 'rgba(0,180,255,.65)' : 'rgba(241,82,0,.55)';
+  el.addEventListener('mouseenter', () => {
+    if (el.style.cursor !== 'grabbing') {
+      el.style.outline = `2px dashed ${hintColor}`;
+      el.style.outlineOffset = '8px';
+      el.style.borderRadius = '4px';
     }
   });
-  tb.addEventListener('mouseleave', () => {
-    tb.style.outline = '';
-    tb.style.outlineOffset = '';
+  el.addEventListener('mouseleave', () => {
+    el.style.outline = '';
+    el.style.outlineOffset = '';
   });
 
-  tb.addEventListener('dblclick', () => {
-    textDX = textDY = 0;
-    tb.style.transform = 'translate(0px,0px)';
+  el.addEventListener('dblclick', () => {
+    setD(0, 0);
+    el.style.transform = 'translate(0px,0px)';
   });
 
-  tb.addEventListener('touchstart', e => {
+  el.addEventListener('touchstart', e => {
     e.preventDefault();
     startX = e.touches[0].clientX; startY = e.touches[0].clientY;
-    startDX = textDX; startDY = textDY;
+    startDX = getDX(); startDY = getDY();
     document.addEventListener('touchmove', onMoveT, { passive: false });
     document.addEventListener('touchend', onUp);
   }, { passive: false });
@@ -893,7 +1265,16 @@ function generateCard() {
     tb.style.cursor = 'grab';
     tb.style.userSelect = 'none';
     tb.style.transform = `translate(${textDX}px,${textDY}px)`;
-    attachDrag(tb);
+    attachDrag(tb, 'text');
+    attachResize(tb);
+  }
+
+  const ib = document.getElementById('igImageBlock');
+  if (ib) {
+    ib.style.cursor = 'grab';
+    ib.style.userSelect = 'none';
+    ib.style.transform = `translate(${imageDX}px,${imageDY}px)`;
+    attachDrag(ib, 'image');
   }
 
   setStatus('Listo ✓', 'ok');
@@ -917,8 +1298,18 @@ async function downloadCard() {
   );
   offscreen.innerHTML = offMarked;
   const offTB = offscreen.querySelector('#igTextBlock');
-  if (offTB && (textDX !== 0 || textDY !== 0)) {
-    offTB.style.transform = `translate(${textDX}px,${textDY}px)`;
+  if (offTB) {
+    if (textDX !== 0 || textDY !== 0) offTB.style.transform = `translate(${textDX}px,${textDY}px)`;
+    if (textW !== null) offTB.style.width = textW + 'px';
+    if (textH !== null) {
+      offTB.style.height = textH + 'px';
+      offTB.style.overflow = 'hidden';
+      stripLineClamp(offTB); // reflow text in exported image too
+    }
+  }
+  const offIB = offscreen.querySelector('#igImageBlock');
+  if (offIB && (imageDX !== 0 || imageDY !== 0)) {
+    offIB.style.transform = `translate(${imageDX}px,${imageDY}px)`;
   }
   document.body.appendChild(offscreen);
 
@@ -968,9 +1359,11 @@ function initUI() {
     btn.innerHTML = `<span class="ti">${t.icon}</span><span>${t.label}</span>`;
     btn.onclick = () => {
       currentTpl = t.id;
-      textDX = textDY = 0;
+      textDX = textDY = imageDX = imageDY = 0; textW = null; textH = null;
       document.querySelectorAll('.tpl-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
+      const cp = document.getElementById('customPanel');
+      if (cp) cp.style.display = t.id === 'custom' ? 'flex' : 'none';
       generateCard();
     };
     tplGrid.appendChild(btn);
@@ -984,7 +1377,7 @@ function initUI() {
     btn.textContent = s.label;
     btn.onclick = () => {
       currentSize = s;
-      textDX = textDY = 0;
+      textDX = textDY = imageDX = imageDY = 0; textW = null; textH = null;
       document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       generateCard();

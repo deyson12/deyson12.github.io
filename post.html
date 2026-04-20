@@ -1,0 +1,489 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Post Creator · PideFacil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07090F;--sidebar:#0D1017;--border:#1A1E2E;
+  --text:#EDEEF5;--muted:#4B5563;--muted2:#6B7280;
+  --primary:#F15200;--accent:#7C3AED;--green:#10B981;--gold:#FFB800;
+  --font:'Plus Jakarta Sans',sans-serif;--r:12px;
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--font);background:var(--bg);color:var(--text);display:flex;}
+
+.sidebar{width:320px;min-width:280px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;}
+.sb-head{padding:18px 22px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.sb-head h1{font-size:17px;font-weight:800;background:linear-gradient(135deg,#FF6B35 0%,#F15200 45%,#C026D3 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-.3px;}
+.sb-head p{font-size:11px;color:var(--muted2);margin-top:2px;}
+.sb-body{flex:1;overflow-y:auto;padding:18px 22px;display:flex;flex-direction:column;gap:16px;}
+.sb-body::-webkit-scrollbar{width:4px}.sb-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.ctrl-lbl{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted2);display:block;margin-bottom:7px;}
+.ctrl-divider{height:1px;background:var(--border);margin:0 -22px;}
+.ctrl-input{width:100%;background:#090C13;border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:var(--font);font-size:12px;padding:9px 12px;outline:none;transition:border-color .2s;}
+.ctrl-input:focus{border-color:#2A3150;}
+.ctrl-input::placeholder{color:var(--muted);}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.toggle-lbl{font-size:12px;color:var(--text);font-weight:600;}
+.toggle{position:relative;width:38px;height:22px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;inset:0;background:#1E2336;border-radius:22px;cursor:pointer;transition:.2s;}
+.toggle-slider:before{content:'';position:absolute;width:16px;height:16px;left:3px;bottom:3px;background:#4B5563;border-radius:50%;transition:.2s;}
+.toggle input:checked + .toggle-slider{background:rgba(241,82,0,.3);}
+.toggle input:checked + .toggle-slider:before{transform:translateX(16px);background:var(--primary);}
+.ctrl-range{width:100%;accent-color:var(--primary);cursor:pointer;}
+.color-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.color-swatch{width:34px;height:34px;border-radius:8px;border:1.5px solid var(--border);cursor:pointer;padding:2px;background:#090C13;flex-shrink:0;}
+.color-swatch::-webkit-color-swatch-wrapper{padding:2px;}
+.color-swatch::-webkit-color-swatch{border-radius:5px;border:none;}
+.color-label{font-size:11px;color:var(--muted2);}
+.stepper{display:flex;align-items:center;border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.stepper button{background:#090C13;border:none;color:var(--text);font-size:16px;width:34px;height:34px;cursor:pointer;transition:background .15s;}
+.stepper button:hover{background:#111828;}
+.stepper span{flex:1;text-align:center;font-size:13px;font-weight:700;background:#090C13;color:var(--text);padding:0 8px;line-height:34px;min-width:44px;border-left:1px solid var(--border);border-right:1px solid var(--border);}
+.upload-zone{border:2px dashed var(--border);border-radius:var(--r);padding:20px 12px;text-align:center;cursor:pointer;transition:border-color .2s;position:relative;}
+.upload-zone:hover{border-color:var(--primary);}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.upload-zone-icon{font-size:24px;display:block;margin-bottom:6px;}
+.upload-zone-text{font-size:11px;color:var(--muted2);}
+.upload-zone.has-img{border-color:rgba(241,82,0,.4);background:rgba(241,82,0,.04);}
+.upload-zone.has-img .upload-zone-text{color:var(--primary);}
+.shape-grid{display:flex;gap:7px;}
+.shape-btn{flex:1;padding:7px 4px;border-radius:8px;border:1.5px solid var(--border);background:transparent;color:var(--muted2);cursor:pointer;font-family:var(--font);font-size:11px;font-weight:600;text-align:center;transition:all .18s;}
+.shape-btn:hover{border-color:#2A3150;color:var(--text);}
+.shape-btn.active{border-color:var(--primary);background:rgba(241,82,0,.1);color:var(--primary);}
+.btn-dl{width:100%;padding:13px;border:1.5px solid var(--green);border-radius:var(--r);background:transparent;color:var(--green);font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;}
+.btn-dl:hover{background:rgba(16,185,129,.08);transform:translateY(-1px);}
+.status{font-size:11px;color:var(--muted2);text-align:center;min-height:15px;transition:color .2s;}
+.status.ok{color:var(--green);}.status.err{color:#F87171;}.status.loading{color:var(--gold);}
+.preview-main{flex:1;display:flex;align-items:center;justify-content:center;padding:28px;overflow:hidden;position:relative;}
+.preview-main::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(241,82,0,.04) 0%,transparent 70%);}
+.ig-outer{position:relative;overflow:hidden;border-radius:10px;box-shadow:0 0 0 1px rgba(255,255,255,.06),0 32px 80px rgba(0,0,0,.7);flex-shrink:0;}
+#postWrap{position:absolute;top:0;left:0;transform-origin:top left;}
+#postWrap img{pointer-events:none;-webkit-user-drag:none;user-select:none;}
+.hint-txt{font-size:10px;color:var(--muted2);text-align:center;padding:2px 0;}
+@media(max-width:860px){
+  body{flex-direction:column;overflow:auto;height:auto;}
+  .sidebar{width:100%;min-width:unset;max-height:60vh;border-right:none;border-bottom:1px solid var(--border);}
+  html,body{height:auto;overflow:auto;}
+}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sb-head">
+    <h1>✦ Post Creator</h1>
+    <p>pidefacil.com — Arrastra los elementos en el canvas</p>
+  </div>
+  <div class="sb-body">
+
+    <div>
+      <label class="ctrl-lbl">Imagen del producto</label>
+      <div class="upload-zone" id="uploadZone">
+        <input type="file" accept="image/*" id="imgInput" onchange="onImgUpload(event)">
+        <span class="upload-zone-icon">📸</span>
+        <span class="upload-zone-text" id="uploadText">Haz clic o arrastra una imagen</span>
+      </div>
+    </div>
+
+    <div>
+      <div class="toggle-row">
+        <span class="toggle-lbl">Quitar fondo blanco</span>
+        <label class="toggle">
+          <input type="checkbox" id="removeBg" onchange="onRemoveBgToggle()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+    <div id="bgRemoveControls" style="display:none;">
+      <label class="ctrl-lbl">Tolerancia <span id="bgTolVal" style="color:var(--primary);font-weight:800;">40</span></label>
+      <input type="range" class="ctrl-range" id="bgTolRange" min="1" max="120" value="40"
+             oninput="document.getElementById('bgTolVal').textContent=this.value;applyBgRemoval()">
+      <p style="font-size:10px;color:var(--muted2);margin-top:4px;">Sube la tolerancia si quedan bordes blancos. Bájala si se borran partes del producto.</p>
+    </div>
+
+    <div class="ctrl-divider"></div>
+      <div class="shape-grid">
+        <button class="shape-btn active" onclick="setShape('free',this)">Libre</button>
+        <button class="shape-btn"        onclick="setShape('circle',this)">Círculo</button>
+        <button class="shape-btn"        onclick="setShape('rect',this)">Recuadro</button>
+      </div>
+    </div>
+
+    <div>
+      <label class="ctrl-lbl">Tamaño del producto <span id="imgSizeVal" style="color:var(--primary);font-weight:800;">60%</span></label>
+      <input type="range" class="ctrl-range" id="imgSizeRange" min="10" max="110" value="60"
+             oninput="document.getElementById('imgSizeVal').textContent=this.value+'%';render()">
+    </div>
+
+    <div class="ctrl-divider"></div>
+
+    <div>
+      <label class="ctrl-lbl">Título principal</label>
+      <input type="text" class="ctrl-input" id="mainTitle" placeholder="Ej: Gran Oferta" value="Gran Oferta" oninput="render()">
+    </div>
+
+    <div>
+      <label class="ctrl-lbl">Tamaño título</label>
+      <div class="stepper">
+        <button onclick="changeFz('title',-2)">−</button>
+        <span id="titleFzVal">72</span>
+        <button onclick="changeFz('title',2)">+</button>
+      </div>
+    </div>
+
+    <div>
+      <label class="ctrl-lbl">Subtítulo / descripción</label>
+      <input type="text" class="ctrl-input" id="subTitle" placeholder="Ej: Solo por hoy" value="Solo por hoy" oninput="render()">
+    </div>
+
+    <div>
+      <label class="ctrl-lbl">Tamaño subtítulo</label>
+      <div class="stepper">
+        <button onclick="changeFz('sub',-2)">−</button>
+        <span id="subFzVal">36</span>
+        <button onclick="changeFz('sub',2)">+</button>
+      </div>
+    </div>
+
+    <div>
+      <label class="ctrl-lbl">Color de textos</label>
+      <div class="color-row">
+        <input type="color" class="color-swatch" id="titleColor" value="#FFFFFF" oninput="render()">
+        <span class="color-label">Título</span>
+        <input type="color" class="color-swatch" id="subColor" value="#FFD580" oninput="render()">
+        <span class="color-label">Subtítulo</span>
+      </div>
+    </div>
+
+    <div class="ctrl-divider"></div>
+
+    <div>
+      <div class="toggle-row">
+        <span class="toggle-lbl">Mostrar porcentaje</span>
+        <label class="toggle">
+          <input type="checkbox" id="showPct" checked onchange="togglePct()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div id="pctControls">
+      <label class="ctrl-lbl">Valor del porcentaje</label>
+      <input type="text" class="ctrl-input" id="pctValue" value="50% OFF" placeholder="Ej: 30% OFF" oninput="render()">
+      <div style="margin-top:10px;">
+        <div class="color-row">
+          <input type="color" class="color-swatch" id="pctBg" value="#F15200" oninput="render()">
+          <span class="color-label">Fondo badge</span>
+          <input type="color" class="color-swatch" id="pctFg" value="#FFFFFF" oninput="render()">
+          <span class="color-label">Texto badge</span>
+        </div>
+      </div>
+      <div>
+        <label class="ctrl-lbl" style="margin-top:10px;">Tamaño badge <span id="pctSzVal" style="color:var(--primary);font-weight:800;">26%</span></label>
+        <input type="range" class="ctrl-range" id="pctSzRange" min="10" max="45" value="26"
+               oninput="document.getElementById('pctSzVal').textContent=this.value+'%';render()">
+      </div>
+    </div>
+
+    <div class="ctrl-divider"></div>
+
+    <p class="hint-txt">💡 Doble clic en cualquier elemento para resetear su posición</p>
+
+    <button class="btn-dl" onclick="downloadCard()">⬇ Descargar imagen</button>
+    <div class="status" id="status"></div>
+
+  </div>
+</aside>
+
+<main class="preview-main" id="previewMain">
+  <div class="ig-outer" id="igOuter">
+    <div id="postWrap"></div>
+  </div>
+</main>
+
+<script>
+const F   = "'Plus Jakarta Sans',sans-serif";
+const W   = 1080;
+const H   = 1080;
+const BG  = './images/fondo.png';
+
+let scale        = 1;
+let productSrc   = null;  // processed (bg removed or original)
+let originalSrc  = null;  // always the raw upload
+let productShape = 'free';
+let titleFz      = 72;
+let subFz        = 36;
+
+// Per-element drag state keyed by id
+const DS = { prod: {dx:0,dy:0}, text: {dx:0,dy:0} };
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function setStatus(m,t){ const e=document.getElementById('status'); e.textContent=m; e.className='status '+(t||''); }
+function v(id){ return document.getElementById(id); }
+
+// ── Upload ────────────────────────────────────────────────
+function onImgUpload(e) {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    originalSrc = ev.target.result;
+    DS.prod.dx = 0; DS.prod.dy = 0;
+    v('uploadZone').classList.add('has-img');
+    v('uploadText').textContent = '✔ ' + file.name;
+    applyBgRemoval();
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Background removal ────────────────────────────────────
+function onRemoveBgToggle() {
+  v('bgRemoveControls').style.display = v('removeBg').checked ? '' : 'none';
+  applyBgRemoval();
+}
+
+async function applyBgRemoval() {
+  if (!originalSrc) return;
+  if (v('removeBg').checked) {
+    setStatus('Procesando imagen…', 'loading');
+    const tol = parseInt(v('bgTolRange').value) || 40;
+    productSrc = await removeWhiteBg(originalSrc, tol);
+    setStatus('', '');
+  } else {
+    productSrc = originalSrc;
+  }
+  render();
+}
+
+/**
+ * Removes white/near-white pixels from an image using Canvas 2D.
+ * tolerance: distance from (255,255,255) in RGB space (0-441).
+ * Pixels closer than tolerance become transparent; a soft feather
+ * zone equal to half the tolerance creates smooth edges.
+ */
+function removeWhiteBg(src, tolerance) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width  = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx  = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      const id   = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const d    = id.data;
+      const tol  = tolerance * 2.2; // scale 0-120 → 0-264 (effective RGB dist)
+      const half = tol / 2;
+      for (let i = 0; i < d.length; i += 4) {
+        const r = d[i], g = d[i+1], b = d[i+2];
+        // Euclidean distance from white (255,255,255)
+        const dist = Math.sqrt((255-r)**2 + (255-g)**2 + (255-b)**2);
+        if (dist < tol) {
+          // Hard remove when very close to white; feather at the edge
+          const alpha = dist < half ? 0 : (dist - half) / half;
+          d[i+3] = Math.round(d[i+3] * Math.min(1, alpha));
+        }
+      }
+      ctx.putImageData(id, 0, 0);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.src = src;
+  });
+}
+function setShape(s, btn) {
+  productShape = s;
+  document.querySelectorAll('.shape-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+// ── Font size stepper ─────────────────────────────────────
+function changeFz(which, d) {
+  if (which==='title'){ titleFz=Math.max(14,Math.min(220,titleFz+d)); v('titleFzVal').textContent=titleFz; }
+  else               { subFz  =Math.max(10,Math.min(140,subFz+d));   v('subFzVal').textContent=subFz; }
+  render();
+}
+
+// ── Toggle pct ────────────────────────────────────────────
+function togglePct() {
+  v('pctControls').style.display = v('showPct').checked ? '' : 'none';
+  render();
+}
+
+// ── Render ────────────────────────────────────────────────
+function render() {
+  const mainTitle  = v('mainTitle').value  || '';
+  const subTitle   = v('subTitle').value   || '';
+  const titleColor = v('titleColor').value;
+  const subColor   = v('subColor').value;
+  const showPct    = v('showPct').checked;
+  const pctValue   = v('pctValue').value   || '';
+  const pctBg      = v('pctBg').value;
+  const pctFg      = v('pctFg').value;
+  const imgPct     = parseInt(v('imgSizeRange').value) || 60;
+  const pctSz      = parseInt(v('pctSzRange').value)  || 26;
+
+  // ── Product image ──────────────────────────────────────
+  const productSize = Math.round(W * imgPct / 100);
+  const productX    = Math.round((W - productSize) / 2);
+  const productY    = Math.round((H - productSize) / 2);
+  let productHtml   = '';
+  if (productSrc) {
+    const clip = productShape==='circle' ? 'border-radius:50%;overflow:hidden;'
+               : productShape==='rect'   ? 'border-radius:28px;overflow:hidden;' : '';
+    productHtml = `<div id="postProduct"
+      style="position:absolute;left:${productX}px;top:${productY}px;width:${productSize}px;height:${productSize}px;${clip}cursor:grab;z-index:10;filter:drop-shadow(0 8px 48px rgba(0,0,0,.6)) drop-shadow(0 2px 14px rgba(0,0,0,.45));">
+      <img src="${productSrc}" style="width:100%;height:100%;object-fit:contain;display:block;"/>
+    </div>`;
+  }
+
+  // ── Badge ──────────────────────────────────────────────
+  let pctHtml = '';
+  if (showPct && pctValue.trim()) {
+    const bSz  = Math.round(W * pctSz / 100);
+    const bFz  = Math.round(bSz * .36);
+    const bSFz = Math.round(bSz * .18);
+    const parts = pctValue.trim().split(' ');
+    const numPart  = parts[0] || '';
+    const textPart = parts.slice(1).join(' ') || '';
+    const bX = Math.round(W * .04);
+    const bY = Math.round(H * .04);
+    pctHtml = `<div id="postBadge"
+      style="position:absolute;left:${bX}px;top:${bY}px;width:${bSz}px;height:${bSz}px;border-radius:50%;
+      background:${pctBg};cursor:grab;z-index:20;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      box-shadow:0 4px 28px rgba(0,0,0,.5),0 0 0 6px rgba(255,255,255,.13);">
+      <span style="font-family:${F};font-size:${bFz}px;font-weight:900;color:${pctFg};line-height:1;letter-spacing:-2px;">${esc(numPart)}</span>
+      ${textPart?`<span style="font-family:${F};font-size:${bSFz}px;font-weight:800;color:${pctFg};line-height:1.2;letter-spacing:1.5px;text-transform:uppercase;">${esc(textPart)}</span>`:''}
+    </div>`;
+  }
+
+  // ── Text block ────────────────────────────────────────
+  const ttl = mainTitle
+    ? `<div style="font-family:${F};font-size:${titleFz}px;font-weight:900;color:${titleColor};line-height:1.1;text-align:center;text-shadow:0 2px 18px rgba(0,0,0,.65),0 1px 4px rgba(0,0,0,.4);letter-spacing:-1px;word-break:break-word;">${esc(mainTitle)}</div>` : '';
+  const sub = subTitle
+    ? `<div style="font-family:${F};font-size:${subFz}px;font-weight:600;color:${subColor};line-height:1.3;text-align:center;margin-top:12px;text-shadow:0 2px 12px rgba(0,0,0,.5);word-break:break-word;">${esc(subTitle)}</div>` : '';
+
+  const tBW = Math.round(W * .84);
+  const tBX = Math.round((W - tBW) / 2);
+  const tBY = Math.round(H * .72);
+  const textHtml = (ttl||sub)
+    ? `<div id="postText" style="position:absolute;left:${tBX}px;top:${tBY}px;width:${tBW}px;cursor:grab;z-index:15;display:flex;flex-direction:column;align-items:center;padding:0 8px;">${ttl}${sub}</div>`
+    : '';
+
+  // ── Assemble card ─────────────────────────────────────
+  const html = `<div style="position:relative;width:${W}px;height:${H}px;overflow:hidden;font-family:${F};">
+    <img src="${BG}" crossorigin="anonymous" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"/>
+    ${productHtml}
+    ${pctHtml}
+    ${textHtml}
+  </div>`;
+
+  const wrap  = v('postWrap');
+  const outer = v('igOuter');
+  const main  = v('previewMain');
+  wrap.innerHTML = html;
+
+  scale = Math.min((main.clientWidth-56)/W, (main.clientHeight-56)/H, 1);
+  outer.style.width  = Math.round(W*scale)+'px';
+  outer.style.height = Math.round(H*scale)+'px';
+  wrap.style.width   = W+'px';
+  wrap.style.height  = H+'px';
+  wrap.style.transform      = `scale(${scale})`;
+  wrap.style.transformOrigin = 'top left';
+
+  // Attach interact
+  const prod  = v('postProduct');
+  const badge = v('postBadge');
+  const txt   = v('postText');
+  if (prod)  { prod.style.transform  = `translate(${DS.prod.dx}px,${DS.prod.dy}px)`;  makeDraggable(prod,'prod','rgba(241,82,0,.6)'); }
+  if (badge) { badge.style.transform = `translate(${DS.badge?.dx||0}px,${DS.badge?.dy||0}px)`; if(!DS.badge) DS.badge={dx:0,dy:0}; makeDraggable(badge,'badge','rgba(255,215,0,.7)'); }
+  if (txt)   { txt.style.transform   = `translate(${DS.text.dx}px,${DS.text.dy}px)`;   makeDraggable(txt,'text','rgba(124,58,237,.6)'); }
+}
+
+// ── Draggable ─────────────────────────────────────────────
+function makeDraggable(el, key, hintColor) {
+  el.addEventListener('mouseenter', () => {
+    if (el.style.cursor !== 'grabbing') {
+      el.style.outline = `2px dashed ${hintColor}`;
+      el.style.outlineOffset = '6px';
+    }
+  });
+  el.addEventListener('mouseleave', () => { el.style.outline=''; el.style.outlineOffset=''; });
+  el.addEventListener('dblclick', e => {
+    e.stopPropagation();
+    DS[key].dx=0; DS[key].dy=0;
+    el.style.transform='translate(0px,0px)';
+  });
+  el.onmousedown = e => {
+    e.preventDefault();
+    el.style.cursor='grabbing'; el.style.outline='';
+    const sx=e.clientX, sy=e.clientY, sdx=DS[key].dx, sdy=DS[key].dy;
+    function onMove(e){
+      const nx=sdx+(e.clientX-sx)/scale, ny=sdy+(e.clientY-sy)/scale;
+      DS[key].dx=nx; DS[key].dy=ny;
+      el.style.transform=`translate(${nx}px,${ny}px)`;
+    }
+    function onUp(){ el.style.cursor='grab'; document.removeEventListener('mousemove',onMove); document.removeEventListener('mouseup',onUp); }
+    document.addEventListener('mousemove',onMove);
+    document.addEventListener('mouseup',onUp);
+  };
+  el.ontouchstart = e => {
+    e.preventDefault();
+    const sx=e.touches[0].clientX, sy=e.touches[0].clientY, sdx=DS[key].dx, sdy=DS[key].dy;
+    function onMove(e){ e.preventDefault(); const nx=sdx+(e.touches[0].clientX-sx)/scale, ny=sdy+(e.touches[0].clientY-sy)/scale; DS[key].dx=nx; DS[key].dy=ny; el.style.transform=`translate(${nx}px,${ny}px)`; }
+    function onUp(){ document.removeEventListener('touchmove',onMove); document.removeEventListener('touchend',onUp); }
+    document.addEventListener('touchmove',onMove,{passive:false});
+    document.addEventListener('touchend',onUp);
+  };
+}
+
+// ── Download ──────────────────────────────────────────────
+async function downloadCard() {
+  setStatus('Preparando descarga…','loading');
+  const off = document.createElement('div');
+  off.style.cssText = `position:fixed;left:-${W+50}px;top:0;width:${W}px;height:${H}px;overflow:hidden;pointer-events:none;`;
+  off.innerHTML = v('postWrap').innerHTML;
+
+  // Apply current offsets, remove cursor/outline
+  [['postProduct','prod'],['postBadge','badge'],['postText','text']].forEach(([id,key])=>{
+    const el = off.querySelector('#'+id);
+    if (!el) return;
+    const d = DS[key]||{dx:0,dy:0};
+    el.style.transform = `translate(${d.dx}px,${d.dy}px)`;
+    el.style.outline = ''; el.style.cursor = 'default';
+  });
+
+  document.body.appendChild(off);
+  await document.fonts.ready;
+  await Promise.all(Array.from(off.querySelectorAll('img')).map(img=>
+    img.complete ? Promise.resolve() : new Promise(r=>{img.onload=r;img.onerror=r;})
+  ));
+  await new Promise(r=>setTimeout(r,120));
+  try {
+    const canvas = await html2canvas(off.firstElementChild||off,{
+      useCORS:true, allowTaint:true, scale:1,
+      width:W, height:H, scrollX:-(W+50), scrollY:0,
+      windowWidth:W, windowHeight:H,
+    });
+    const a = document.createElement('a');
+    a.download = `pidefacil-post-${Date.now()}.png`;
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+    setStatus('Descargado ✓','ok');
+  } catch(e){ console.error(e); setStatus('Error: '+e.message,'err'); }
+  finally { document.body.removeChild(off); }
+}
+
+window.addEventListener('load', render);
+window.addEventListener('resize', render);
+</script>
+</body>
+</html>
