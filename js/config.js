@@ -3,7 +3,7 @@
 // Edita SOLO este archivo para cambiar teléfono, Wompi, etc.
 // ============================================================
 
-const WA_PHONE   = '573136090247';
+const WA_PHONE   = '573213421697';
 const STORE_NAME = 'PideFacil';
 const ORDERS_KEY = 'cy_orders_history';
 
