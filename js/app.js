@@ -552,13 +552,13 @@ function buildCard(p, extra = '') {
   const cartItem = cart.find(c => c.id === p.id), inCart = !!cartItem, inWish = wishlist.includes(p.id);
   const disc = calcDiscount(p);
   const badgeList = [];
-  if (disc > 0) badgeList.push(`<span class="badge badge-offer">🔥 ${disc}% OFF</span>`);
+  if (disc > 0) badgeList.push(`<span class="badge badge-offer">${disc}% OFF</span>`);
   p.badges.forEach(b => {
     if (b === 'top') badgeList.push('<span class="badge badge-top">🏆 TOP</span>');
-    else if (b === 'new') badgeList.push('<span class="badge badge-new">✨ Nuevo</span>');
+    else if (b === 'new') badgeList.push('<span class="badge badge-new">Nuevo</span>');
   });
   if (!badgeList.some(b => b.includes('badge-new')) && /\bnew\b/i.test(p.tags || ''))
-    badgeList.push('<span class="badge badge-new">✨ Nuevo</span>');
+    badgeList.push('<span class="badge badge-new">Nuevo</span>');
   return `<div class="product-card ${extra}" onclick="openProduct('${p.id}')">
     <div class="card-img-wrap">
       <img class="card-img" src="${p.image}" alt="${p.name}" loading="lazy" decoding="async" onload="this.classList.add('img-loaded')" onerror="this.classList.add('img-loaded')">
@@ -625,7 +625,7 @@ function buildPromotedCard(p) {
   return `<div class="product-card promoted-card new-in" onclick="openPromotedProduct('${p.id}')">
     <div class="card-img-wrap">
       <img class="card-img" src="${p.image}" alt="${p.name}" loading="lazy" decoding="async" onload="this.classList.add('img-loaded')" onerror="this.classList.add('img-loaded')">
-      ${disc > 0 ? `<div class="badge-wrap"><span class="badge badge-offer">🔥 ${disc}% OFF</span></div>` : ''}
+      ${disc > 0 ? `<div class="badge-wrap"><span class="badge badge-offer">${disc}% OFF</span></div>` : ''}
       <div class="promo-label">Patrocinado</div>
     </div>
     <div class="card-body">
@@ -824,8 +824,8 @@ async function initCategories() {
     document.head.appendChild(s);
   }
 
-  const todoBtnNav = `<button class="cat-btn active" data-cat="all" onclick="filterCategory('all',this)">🛒 Todo</button>`;
-  const todoBtnHam = `<button class="ham-cat-btn active" data-cat="all" onclick="hamFilterCategory('all',this)">🛒 Todo</button>`;
+  const todoBtnNav = `<button class="cat-btn active" data-cat="all" onclick="filterCategory('all',this)">Todo</button>`;
+  const todoBtnHam = `<button class="ham-cat-btn active" data-cat="all" onclick="hamFilterCategory('all',this)">Todo</button>`;
 
   const navInner    = document.getElementById('categoriesInner');
   const hamContainer = document.getElementById('hamCategoriesContainer');
@@ -836,9 +836,9 @@ async function initCategories() {
     const cats = (await res.json()).sort((a, b) => a.order - b.order);
 
     const makeNavBtn = c =>
-      `<button class="cat-btn" data-cat="${c.code}" onclick="filterCategory('${c.id}',this)"><iconify-icon icon="${c.icon}" style="font-size:1em;vertical-align:-.15em"></iconify-icon> ${c.name}</button>`;
+      `<button class="cat-btn" data-cat="${c.code}" onclick="filterCategory('${c.id}',this)">${c.name}</button>`;
     const makeHamBtn = c =>
-      `<button class="ham-cat-btn" data-cat="${c.code}" onclick="hamFilterCategory('${c.id}',this)"><iconify-icon icon="${c.icon}" style="font-size:1.1em;vertical-align:-.15em"></iconify-icon> ${c.name}</button>`;
+      `<button class="ham-cat-btn" data-cat="${c.code}" onclick="hamFilterCategory('${c.id}',this)">${c.name}</button>`;
 
     if (navInner)    navInner.innerHTML    = todoBtnNav + cats.map(makeNavBtn).join('');
     if (hamContainer) hamContainer.innerHTML = todoBtnHam + cats.map(makeHamBtn).join('');
@@ -885,7 +885,7 @@ function renderSearchDropdown(q) {
   if (!results.length) {
     lastSearchQuery = q;
     dd.innerHTML = `<div class="search-drop-empty"><span class="search-drop-empty-icon">🔍</span><div class="search-drop-empty-text"><span>No encontramos resultados para <strong>"${q}"</strong></span><button class="search-drop-request-btn" onmousedown="openRequestModal()">¿Lo conseguimos para ti? Solicítalo aquí →</button></div></div>`;
-    dd.classList.add('open'); return;
+    dd.classList.add('open'); document.getElementById('searchBackdrop')?.classList.add('open'); return;
   }
   dd.innerHTML = results.map(p =>
     `<div class="search-drop-item" onmousedown="openProduct('${p.id}');document.getElementById('searchInput').value='';closeSearchDropdown()">
@@ -894,8 +894,9 @@ function renderSearchDropdown(q) {
     </div>`
   ).join('');
   dd.classList.add('open');
+  document.getElementById('searchBackdrop')?.classList.add('open');
 }
-function closeSearchDropdown() { document.getElementById('searchDropdown')?.classList.remove('open'); }
+function closeSearchDropdown() { document.getElementById('searchDropdown')?.classList.remove('open'); document.getElementById('searchBackdrop')?.classList.remove('open'); document.getElementById('searchBackdrop')?.classList.remove('open'); }
 
 // ===== CART =====
 function saveCart() {
@@ -1468,7 +1469,7 @@ function renderWishPanel() {
         </div>
         <div class="wish-item-actions">
           <button class="wish-btn-cart ${inCart ? 'added' : ''}" onclick="addToCart('${p.id}');renderWishPanel()">
-            ${inCart ? '✓ En carrito' : '🛒 Agregar'}
+            ${inCart ? '✓ En carrito' : 'Agregar'}
           </button>
           <button class="wish-btn-remove" title="Quitar de favoritos" onclick="toggleWish(event,'${p.id}');">💔</button>
         </div>
@@ -1529,7 +1530,7 @@ function openProduct(id) {
         ${buildModalDesc(p.description)}
         <p class="modal-ref">REF: ${p.id.substring(0, 8).toUpperCase()}</p>
         <div class="modal-actions">
-          <button class="btn btn-cart" style="width:100%;padding:12px;font-size:14px" onclick="addToCart('${p.id}');closeModal()">🛒 Agregar al carrito</button>
+          <button class="btn btn-cart" style="width:100%;padding:12px;font-size:14px" onclick="addToCart('${p.id}');closeModal()">Agregar al carrito</button>
           <button class="btn btn-wish ${inWish ? 'active' : ''}" id="modalWishBtn" style="width:100%;padding:12px;font-size:14px" onclick="toggleWish(event,'${p.id}')">
             <svg viewBox="0 0 24 24" stroke="${inWish ? '#fff' : 'var(--primary)'}" stroke-width="2" fill="${inWish ? '#fff' : 'none'}"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
             <span id="modalWishText">${inWish ? 'En favoritos' : 'Guardar en favoritos'}</span>

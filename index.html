@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/app.css">
+<script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
 </head>
 <body style="overflow:hidden">
 
@@ -348,7 +349,7 @@
 <!-- RECENTLY VIEWED -->
 <section class="section recent-section" id="recentSection" style="display:none">
   <div class="section-header">
-    <h2 class="section-title"><span class="section-title-dot"></span>&#128065;&#65039; Visto recientemente</h2>
+    <h2 class="section-title"><span class="section-title-dot"></span>Visto recientemente</h2>
   </div>
   <div class="carousel-wrap">
     <button class="carousel-arrow prev" onclick="scrollCarousel('recentContainer',-1)">
@@ -362,21 +363,26 @@
 </section>
 
 <!-- OFFERS ONLY (no featured section) -->
-<section class="section" id="offersSection">
-  <div class="section-header">
-    <h2 class="section-title"><span class="section-title-dot"></span>🔥 Ofertas del día</h2>
-    <a class="section-link" href="#" onclick="event.preventDefault();scrollCarousel('offersContainer',1)">Ver más →</a>
+<div class="deals-zone">
+  <div class="deals-zone-head">
+    <div class="deals-zone-title">
+      <iconify-icon icon="noto:fire" width="20" height="20" style="flex-shrink:0"></iconify-icon>
+      Productos con descuento
+    </div>
+    <span class="deals-zone-badge">Precio especial</span>
   </div>
-  <div class="carousel-wrap">
-    <button class="carousel-arrow prev" onclick="scrollCarousel('offersContainer',-1)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-    </button>
-    <div class="carousel-scroll" id="offersContainer"></div>
-    <button class="carousel-arrow next" onclick="scrollCarousel('offersContainer',1)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-    </button>
-  </div>
-</section>
+  <section class="section" id="offersSection" style="padding-top:0">
+    <div class="carousel-wrap">
+      <button class="carousel-arrow prev" onclick="scrollCarousel('offersContainer',-1)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="carousel-scroll" id="offersContainer"></div>
+      <button class="carousel-arrow next" onclick="scrollCarousel('offersContainer',1)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+  </section>
+</div>
 
 <div class="sbnr sbnr12">
   <div class="sbnr-inner">
@@ -409,7 +415,7 @@
 <!-- MAIN GRID -->
 <section class="section" style="padding-bottom:100px">
   <div class="section-header" id="gridSectionHeader">
-    <h2 class="section-title"><span class="section-title-dot"></span>🛒 Todos los productos</h2>
+    <h2 class="section-title"><span class="section-title-dot"></span>Todos los productos</h2>
     <span id="productCount" style="font-size:12px;color:var(--text-muted)"></span>
   </div>
   <div class="products-grid" id="productsGrid"></div>
@@ -677,6 +683,7 @@
     </div>
   </div>
 </div>
+<div class="search-backdrop" id="searchBackdrop" onclick="closeSearchDropdown()"></div>
 <div class="toast-container" id="toastContainer"></div>
 
 <!-- POPUP: BANNER AD -->
