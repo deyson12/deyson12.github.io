@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   applyFilters();
   // Hide loader
   const _loader = document.getElementById('pageLoader');
-  if (_loader) { _loader.classList.add('hidden'); }
+  if (_loader) { _loader.classList.add('hidden'); document.body.style.overflow = ''; }
   updateCartUI();
   updateWishUI();
   initSearch();
@@ -646,6 +646,7 @@ function buildPromotedCard(p) {
 }
 
 function openPromotedProduct(id) {
+  closeBannerPopup();
   const p = PROMOTED.find(x => x.id === id);
   if (!p) return;
   const disc = (p.oldPrice && p.oldPrice > p.price)
@@ -1507,6 +1508,7 @@ function toggleWish(e, id) {
 
 // ===== PRODUCT MODAL =====
 function openProduct(id) {
+  closeBannerPopup();
   trackRecent(id);
   const p      = PRODUCTS.find(x => x.id === id);
   const inWish = wishlist.includes(id);

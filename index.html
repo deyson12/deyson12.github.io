@@ -11,12 +11,17 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/app.css">
 </head>
-<body>
+<body style="overflow:hidden">
 
 
 <!-- HEADER -->
 <header class="header">
   <div class="header-top">
+    <!-- Hamburger (mobile only) -->
+    <button class="ham-btn" id="hamBtn" onclick="openHamDrawer()" title="Menú">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      <span class="ham-badge" id="hamBadge">0</span>
+    </button>
     <a class="logo" href="#" onclick="return false">
       <img class="logo-img" src="./images/favicon.ico" alt="PideFacil logo">
       <span class="logo-text"><span class="logo-short">P<span>F</span></span><span class="logo-full">Pide<span>Facil</span></span></span>
@@ -63,12 +68,6 @@
       <button class="btn-icon" onclick="openCart()" title="Carrito">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
         <span class="cart-badge" id="cartBadge">0</span>
-      </button>
-
-      <!-- Hamburger (mobile only) -->
-      <button class="ham-btn" id="hamBtn" onclick="openHamDrawer()" title="Menú">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-        <span class="ham-badge" id="hamBadge">0</span>
       </button>
     </div>
   </div>
@@ -732,7 +731,7 @@
 </div>
 
 <!-- PAGE LOADER -->
-<div class="page-loader" id="pageLoader">
+<div class="page-loader" id="pageLoader" style="overflow:hidden">
   <div class="page-loader-inner">
     <img class="page-loader-logo" src="./images/favicon.ico" alt="PideFacil">
     <div class="page-loader-brand">Pide<span>Facil</span></div>
