@@ -3,6 +3,59 @@
 // Requiere: js/config.js, js/utils.js
 // ============================================================
 
+// ===== FETCH INTERCEPTOR — 429 Too Many Requests =====
+(function () {
+  const _origFetch = window.fetch;
+  window.fetch = async function (...args) {
+    const res = await _origFetch.apply(this, args);
+    if (res.status === 429) {
+      try {
+        const clone = res.clone();
+        const body  = await clone.json();
+        show429Alert(body.retryAfterSeconds ?? null);
+      } catch (_) {
+        show429Alert(null);
+      }
+    }
+    return res;
+  };
+})();
+
+function show429Alert(seconds) {
+  if (document.getElementById('alert429')) return;
+  const el = document.createElement('div');
+  el.id = 'alert429';
+  el.innerHTML = `
+    <div id="alert429Box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="36" height="36" style="color:#f15200;flex-shrink:0"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+      <strong style="font-size:17px;font-family:var(--font-head)">Demasiadas solicitudes</strong>
+      <p id="alert429Msg" style="font-size:14px;color:var(--text-secondary);text-align:center;margin:0"></p>
+    </div>`;
+  document.body.appendChild(el);
+
+  const msgEl = document.getElementById('alert429Msg');
+
+  if (!seconds) {
+    msgEl.textContent = 'Por favor esperá unos segundos e intentá nuevamente.';
+    setTimeout(() => location.reload(), 8000);
+    return;
+  }
+
+  let remaining = seconds;
+  const update = () => {
+    msgEl.innerHTML = remaining > 0
+      ? `Por favor intentá de nuevo en <strong>${remaining} segundo${remaining === 1 ? '' : 's'}</strong>.`
+      : 'Recargando...';
+    if (remaining <= 0) setTimeout(() => location.reload(), 600);
+  };
+  update();
+  const iv = setInterval(() => {
+    remaining--;
+    update();
+    if (remaining <= 0) clearInterval(iv);
+  }, 1000);
+}
+
 const SELLER = 'PideFacil';
 
 let PRODUCTS = [];
@@ -625,6 +678,7 @@ function openPromotedProduct(id) {
     </div>`;
   document.getElementById('modalOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
+  initModalZoom();
 }
 
 function getVisiblePromoted() {
@@ -1488,7 +1542,41 @@ function openProduct(id) {
     ${similar.length ? `<div class="similar-title"><span>Productos similares</span><span class="similar-more" onclick="scrollSimilar(1)">Ver más <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></div><div class="similar-nav"><button class="similar-nav-btn similar-nav-prev" onclick="scrollSimilar(-1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg></button><div class="similar-scroll" id="similarScroll">${similar.map(s => buildMiniCard(s)).join('')}</div><button class="similar-nav-btn similar-nav-next" onclick="scrollSimilar(1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></button></div>` : ''}`;
   document.getElementById('modalOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
+  initModalZoom();
 }
+// ===== IMAGE HOVER ZOOM (desktop only) =====
+function initModalZoom() {
+  const hoverOK = window.matchMedia('(hover:hover)').matches;
+  console.log('[zoom] initModalZoom called | hover:hover =', hoverOK);
+  if (!hoverOK) return;
+  setTimeout(() => {
+    const gallery = document.querySelector('.modal-gallery');
+    const img     = document.querySelector('.modal-main-img');
+    console.log('[zoom] gallery =', gallery, '| img =', img);
+    if (!gallery || !img) { console.warn('[zoom] elementos no encontrados, abortando'); return; }
+    const SCALE = 2.5;
+    let moveCount = 0;
+    gallery.addEventListener('mouseenter', () => {
+      console.log('[zoom] mouseenter gallery');
+      gallery.classList.add('zooming');
+    });
+    gallery.addEventListener('mousemove', e => {
+      const r  = img.getBoundingClientRect();
+      const xp = Math.min(100, Math.max(0, (e.clientX - r.left) / r.width  * 100)).toFixed(2);
+      const yp = Math.min(100, Math.max(0, (e.clientY - r.top)  / r.height * 100)).toFixed(2);
+      if (++moveCount % 30 === 1) console.log('[zoom] mousemove origin =', xp + '%', yp + '%');
+      img.style.transformOrigin = `${xp}% ${yp}%`;
+      img.style.transform = `scale(${SCALE})`;
+    });
+    gallery.addEventListener('mouseleave', () => {
+      console.log('[zoom] mouseleave gallery');
+      gallery.classList.remove('zooming');
+      img.style.transform = 'scale(1)';
+      img.style.transformOrigin = '50% 50%';
+    });
+  }, 50);
+}
+
 function buildModalDesc(text) {
   if (!text || text.length <= 180) return `<p class="modal-desc">${text || ''}</p>`;
   return `<p class="modal-desc modal-desc-collapsed" id="modalDescEl">${text}</p><button class="btn-modal-desc-more" id="modalDescToggle" onclick="toggleModalDesc()">Ver más ▾</button>`;
