@@ -176,6 +176,38 @@
   /* ── toast ── */
   .adm-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #111; color: #fff; font-family: var(--font); font-size: 13px; font-weight: 500; padding: 10px 20px; border-radius: var(--radius-full); z-index: 9999; opacity: 0; pointer-events: none; transition: opacity .25s; white-space: nowrap; }
   .adm-toast.show { opacity: 1; }
+
+  /* ── SECTION NAV ── */
+  .section-nav { display: flex; gap: 4px; background: rgba(0,0,0,.15); border-radius: var(--radius-full); padding: 3px; }
+  .section-nav-btn { padding: 6px 18px; border: none; border-radius: var(--radius-full); font-family: var(--font); font-size: 13px; font-weight: 700; color: rgba(255,255,255,.75); background: transparent; cursor: pointer; transition: all .18s; white-space: nowrap; }
+  .section-nav-btn.active { background: #fff; color: var(--primary); }
+
+  /* ── ANALYTICS SECTION ── */
+  .an-stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+  @media(max-width:600px) { .an-stats-grid { grid-template-columns: repeat(2, 1fr); } }
+  .an-stat { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow); }
+  .an-stat-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); margin-bottom: 6px; }
+  .an-stat-value { font-size: 28px; font-weight: 800; color: var(--text-primary); line-height: 1; }
+  .an-charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  @media(max-width:700px) { .an-charts-grid { grid-template-columns: 1fr; } }
+  .an-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
+  .an-card-title { font-size: 13px; font-weight: 800; color: var(--text-primary); margin-bottom: 14px; }
+  .an-card-full { grid-column: span 2; }
+  @media(max-width:700px) { .an-card-full { grid-column: span 1; } }
+  .an-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .an-bar-label { font-size: 12px; color: var(--text-secondary); min-width: 0; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .an-bar-track { flex: 2; background: var(--bg); border-radius: var(--radius-full); height: 8px; overflow: hidden; }
+  .an-bar-fill { height: 8px; border-radius: var(--radius-full); background: var(--primary); transition: width .5s; }
+  .an-bar-count { font-size: 12px; font-weight: 700; color: var(--text-primary); min-width: 28px; text-align: right; }
+  .an-funnel-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .an-funnel-label { font-size: 12px; font-weight: 700; color: var(--text-secondary); width: 120px; flex-shrink: 0; }
+  .an-funnel-track { flex: 1; background: var(--bg); border-radius: var(--radius-full); height: 22px; overflow: hidden; position: relative; }
+  .an-funnel-fill { height: 22px; border-radius: var(--radius-full); display: flex; align-items: center; padding-left: 10px; font-size: 11px; font-weight: 700; color: #fff; white-space: nowrap; transition: width .5s; }
+  .an-day-chart { display: flex; align-items: flex-end; gap: 3px; height: 80px; }
+  .an-day-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .an-day-bar { width: 100%; background: var(--primary); border-radius: 3px 3px 0 0; min-height: 2px; transition: height .4s; }
+  .an-day-label { font-size: 9px; color: var(--text-muted); writing-mode: vertical-rl; transform: rotate(180deg); margin-top: 2px; }
+  .an-empty { font-size: 13px; color: var(--text-muted); text-align: center; padding: 20px 0; }
 </style>
 </head>
 <body>
@@ -187,9 +219,13 @@
     <span>PideFacil</span>
   </a>
   <div class="topbar-sep"></div>
-  <span class="topbar-title">Panel de pedidos</span>
+  <span class="topbar-title">Panel de administración</span>
   <div class="topbar-right">
-    <button class="btn-refresh" id="btnRefresh" onclick="loadOrders()" title="Actualizar">
+    <div class="section-nav">
+      <button class="section-nav-btn active" id="navPedidos" onclick="showSection('pedidos')">Pedidos</button>
+      <button class="section-nav-btn" id="navAnalytics" onclick="showSection('analytics')">Analytics</button>
+    </div>
+    <button class="btn-refresh" id="btnRefresh" onclick="onRefresh()" title="Actualizar">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
       Actualizar
     </button>
@@ -248,6 +284,44 @@
   </div>
 </div>
 
+<!-- ANALYTICS SECTION -->
+<div class="content" id="analyticsSection" style="display:none">
+  <!-- Stat cards -->
+  <div class="an-stats-grid">
+    <div class="an-stat"><div class="an-stat-label">Visitantes hoy</div><div class="an-stat-value" id="anVisitorsToday">—</div></div>
+    <div class="an-stat"><div class="an-stat-label">Visitantes este mes</div><div class="an-stat-value" id="anVisitorsMonth">—</div></div>
+    <div class="an-stat"><div class="an-stat-label">Sesiones hoy</div><div class="an-stat-value" id="anSessionsToday">—</div></div>
+  </div>
+  <!-- Charts row -->
+  <div class="an-charts-grid">
+    <!-- Top products -->
+    <div class="an-card">
+      <div class="an-card-title">📦 Productos más vistos (30 días)</div>
+      <div id="anTopProducts"><div class="an-empty">Cargando…</div></div>
+    </div>
+    <!-- Top no-result searches -->
+    <div class="an-card">
+      <div class="an-card-title">🔍 Búsquedas sin resultados (30 días)</div>
+      <div id="anNoResults"><div class="an-empty">Cargando…</div></div>
+    </div>
+    <!-- Funnel -->
+    <div class="an-card">
+      <div class="an-card-title">🔄 Embudo de conversión</div>
+      <div id="anFunnel"><div class="an-empty">Cargando…</div></div>
+    </div>
+    <!-- Top categories -->
+    <div class="an-card">
+      <div class="an-card-title">🏷️ Categorías más filtradas (30 días)</div>
+      <div id="anTopCategories"><div class="an-empty">Cargando…</div></div>
+    </div>
+    <!-- Events by day -->
+    <div class="an-card an-card-full">
+      <div class="an-card-title">📈 Eventos por día (últimos 30 días)</div>
+      <div id="anByDay"><div class="an-empty">Cargando…</div></div>
+    </div>
+  </div>
+</div>
+
 <!-- DETAIL MODAL -->
 <div class="modal-overlay" id="detailModal" onclick="handleModalClick(event)">
   <div class="modal-box">
@@ -266,6 +340,22 @@
 <script src="js/config.js"></script>
 <script>
 const AUTH_KEY = 'adm_token';
+let _activeSection = 'pedidos';
+
+// ── SECTION SWITCHING ─────────────────────────────────────
+function showSection(section) {
+  _activeSection = section;
+  document.getElementById('dashSection').style.display      = section === 'pedidos'   ? 'block' : 'none';
+  document.getElementById('analyticsSection').style.display = section === 'analytics' ? 'block' : 'none';
+  document.getElementById('navPedidos').classList.toggle('active',   section === 'pedidos');
+  document.getElementById('navAnalytics').classList.toggle('active', section === 'analytics');
+  if (section === 'analytics') loadAnalytics();
+}
+
+function onRefresh() {
+  if (_activeSection === 'analytics') loadAnalytics();
+  else loadOrders();
+}
 const _FIXED_SELLER_ID = 'd59ea1a4-5841-4740-950a-fb501a46ebae';
 let allOrders = [];
 let currentStatus = 'ALL';
@@ -583,6 +673,95 @@ async function cancelOrder(orderId, sellerId) {
   } catch(e) {
     showToast('Error al cancelar: ' + e.message);
   }
+}
+
+// ── ANALYTICS ─────────────────────────────────────────────
+async function loadAnalytics() {
+  const btn = document.getElementById('btnRefresh');
+  btn.classList.add('spinning');
+  try {
+    const res = await fetch(`${API_BASE}/api/analytics/stats`, {
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+    if (res.status === 401 || res.status === 403) { sessionStorage.removeItem(AUTH_KEY); location.reload(); return; }
+    if (!res.ok) throw new Error(res.statusText);
+    const s = await res.json();
+    renderAnalytics(s);
+  } catch (e) {
+    showToast('Error al cargar analytics: ' + e.message);
+  } finally {
+    btn.classList.remove('spinning');
+  }
+}
+
+function renderAnalytics(s) {
+  document.getElementById('anVisitorsToday').textContent  = s.uniqueVisitorsToday   ?? '—';
+  document.getElementById('anVisitorsMonth').textContent  = s.uniqueVisitorsThisMonth ?? '—';
+  document.getElementById('anSessionsToday').textContent  = s.sessionsToday          ?? '—';
+
+  // Top viewed products
+  const prods = s.topViewedProducts ?? [];
+  const maxPV = prods[0]?.views ?? 1;
+  document.getElementById('anTopProducts').innerHTML = prods.length
+    ? prods.map(p => `
+        <div class="an-bar-row">
+          <div class="an-bar-label" title="${p.name ?? p.productId}">${p.name ?? p.productId ?? '—'}</div>
+          <div class="an-bar-track"><div class="an-bar-fill" style="width:${Math.round((p.views/maxPV)*100)}%"></div></div>
+          <div class="an-bar-count">${p.views}</div>
+        </div>`).join('')
+    : '<div class="an-empty">Sin datos aún</div>';
+
+  // Top no-result searches
+  const searches = s.topNoResultSearches ?? [];
+  const maxS = searches[0]?.total ?? 1;
+  document.getElementById('anNoResults').innerHTML = searches.length
+    ? searches.map(r => `
+        <div class="an-bar-row">
+          <div class="an-bar-label" title="${r.query}">${r.query}</div>
+          <div class="an-bar-track"><div class="an-bar-fill" style="width:${Math.round((r.total/maxS)*100)}%;background:#f59e0b"></div></div>
+          <div class="an-bar-count">${r.total}</div>
+        </div>`).join('')
+    : '<div class="an-empty">Sin datos aún</div>';
+
+  // Funnel
+  const funnel = s.conversionFunnel ?? [];
+  const funnelColors = { PAGE_VIEW: '#6366f1', CART_ADD: '#f59e0b', CHECKOUT_START: '#3b82f6', ORDER_PLACED: '#16a34a' };
+  const funnelLabels = { PAGE_VIEW: 'Visitas', CART_ADD: 'Al carrito', CHECKOUT_START: 'Checkout', ORDER_PLACED: 'Pedido' };
+  const maxF = funnel[0]?.sessions ?? 1;
+  document.getElementById('anFunnel').innerHTML = funnel.length
+    ? funnel.map(f => `
+        <div class="an-funnel-row">
+          <div class="an-funnel-label">${funnelLabels[f.step] ?? f.step}</div>
+          <div class="an-funnel-track">
+            <div class="an-funnel-fill" style="width:${Math.max(6, Math.round((f.sessions/maxF)*100))}%;background:${funnelColors[f.step] ?? '#6366f1'}">
+              ${f.sessions}
+            </div>
+          </div>
+        </div>`).join('')
+    : '<div class="an-empty">Sin datos aún</div>';
+
+  // Top categories
+  const cats = s.topCategories ?? [];
+  const maxC = cats[0]?.total ?? 1;
+  document.getElementById('anTopCategories').innerHTML = cats.length
+    ? cats.map(c => `
+        <div class="an-bar-row">
+          <div class="an-bar-label">${c.category ?? '—'}</div>
+          <div class="an-bar-track"><div class="an-bar-fill" style="width:${Math.round((c.total/maxC)*100)}%;background:#8b5cf6"></div></div>
+          <div class="an-bar-count">${c.total}</div>
+        </div>`).join('')
+    : '<div class="an-empty">Sin datos aún</div>';
+
+  // Events by day
+  const days = s.eventsByDay ?? [];
+  const maxD = Math.max(...days.map(d => Number(d.total)), 1);
+  document.getElementById('anByDay').innerHTML = days.length
+    ? `<div class="an-day-chart">${days.map(d => `
+        <div class="an-day-col" title="${d.day}: ${d.total} eventos">
+          <div class="an-day-bar" style="height:${Math.max(2, Math.round((d.total/maxD)*76))}px"></div>
+          <div class="an-day-label">${String(d.day).substring(5)}</div>
+        </div>`).join('')}</div>`
+    : '<div class="an-empty">Sin datos aún</div>';
 }
 
 // ── TOAST ──────────────────────────────────────────────────

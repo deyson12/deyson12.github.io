@@ -91,6 +91,24 @@ let _currentOrderTotal = 0;
 const RECENT_KEY = 'cy_recent';
 const RECENT_MAX = 7;
 
+// ===== ANALYTICS TRACKING =====
+function _getVisitorId() {
+  let vid = localStorage.getItem('pf_vid');
+  if (!vid) { vid = crypto.randomUUID(); localStorage.setItem('pf_vid', vid); }
+  return vid;
+}
+function _getSessionId() {
+  let sid = sessionStorage.getItem('pf_sid');
+  if (!sid) { sid = crypto.randomUUID(); sessionStorage.setItem('pf_sid', sid); }
+  return sid;
+}
+function trackEvent(eventType, context) {
+  fetch(`${API_BASE}/api/analytics`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ visitorId: _getVisitorId(), sessionId: _getSessionId(), eventType, context: context || {} })
+  }).catch(() => {});
+}
 
 // ===== MAP STATE =====
 let _leafletLoaded  = false;
@@ -157,6 +175,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   initCategories();
   renderRecentlyViewed();
   if (POPUP_AD) showPromoPopup();
+  // Track page view (once per session)
+  if (!sessionStorage.getItem('pf_pv')) {
+    sessionStorage.setItem('pf_pv', '1');
+    trackEvent('PAGE_VIEW', { referrer: document.referrer || 'directo', url: location.href });
+  }
   // Scroll-to-top button visibility
   const _scrollBtn = document.getElementById('btnScrollTop');
   if (_scrollBtn) {
@@ -803,6 +826,7 @@ function filterCategory(cat, btn) {
   document.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
   applyFilters();
   document.getElementById('gridSectionHeader').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (cat !== 'all') trackEvent('CATEGORY_FILTER', { category: cat });
 }
 function hamFilterCategory(cat, btn) {
   currentCategory = cat;
@@ -894,6 +918,7 @@ function renderSearchDropdown(q) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: 'PRODUCTO_SIN_REGISTRO', context: q })
       }).catch(() => {});
+      trackEvent('SEARCH_NO_RESULTS', { query: q });
     }
     return;
   }
@@ -924,6 +949,7 @@ function addToCart(id) {
   saveCart(); updateCartUI(); updateAllBtns(); bumpBadge();
   showToast(ex ? `+1 ${p.name.split(' ')[0]}` : `Agregado: ${p.name.split(' ').slice(0, 3).join(' ')}`, ex ? '🛒' : '✅');
   trackRecent(id);
+  trackEvent('CART_ADD', { productId: p?.id, name: p?.name, price: p?.price, qty: ex ? ex.qty : 1 });
 }
 
 function updateAllBtns() {
@@ -938,9 +964,11 @@ function updateAllBtns() {
 }
 
 function removeFromCart(id) {
+  const p = cart.find(c => c.id === id);
   cart = cart.filter(c => c.id !== id);
   checkedItems.delete(id);
   saveCart(); updateCartUI(); renderCartPanel(); updateAllBtns();
+  trackEvent('CART_REMOVE', { productId: id, name: p?.name });
 }
 function clearCart() {
   if (!cart.length) return;
@@ -1038,6 +1066,7 @@ function renderCartPanel() {
 
 // ===== ORDER POPUP =====
 function openOrderPopup() {
+  trackEvent('CHECKOUT_START', { itemCount: cart.length, total: cart.reduce((s,i) => s + i.price * i.qty, 0) });
   // repeatOrderItems mode: use a fixed item list, ignore the regular cart
   if (repeatOrderItems) {
     const items = repeatOrderItems;
@@ -1522,6 +1551,7 @@ function openProduct(id) {
   closeBannerPopup();
   trackRecent(id);
   const p      = PRODUCTS.find(x => x.id === id);
+  trackEvent('PRODUCT_VIEW', { productId: p?.id, name: p?.name, category: p?.categoryId, price: p?.price });
   const inWish = wishlist.includes(id);
   const similar = PRODUCTS.filter(x => x.category === p.category && x.id !== id).slice(0, 20);
   document.getElementById('modalBody').innerHTML = `
