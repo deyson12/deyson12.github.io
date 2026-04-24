@@ -866,7 +866,7 @@ function initSearch() {
     clearTimeout(sTo);
     const q = this.value.trim();
     if (!q || q.length < 3) { closeSearchDropdown(); return; }
-    sTo = setTimeout(() => renderSearchDropdown(q), 350);
+    sTo = setTimeout(() => renderSearchDropdown(q), 1500);
   });
   inp.addEventListener('keydown', function (e) {
     if (e.key === 'Enter') { closeSearchDropdown(); clearTimeout(sTo); currentSearch = this.value.toLowerCase().trim(); applyFilters(); }
@@ -878,6 +878,7 @@ function initSearch() {
 function handleSearch() { closeSearchDropdown(); currentSearch = document.getElementById('searchInput').value.toLowerCase().trim(); applyFilters(); }
 
 let lastSearchQuery = '';
+let lastLoggedQuery = '';
 function renderSearchDropdown(q) {
   const dd = document.getElementById('searchDropdown');
   const ql = q.toLowerCase();
@@ -885,7 +886,16 @@ function renderSearchDropdown(q) {
   if (!results.length) {
     lastSearchQuery = q;
     dd.innerHTML = `<div class="search-drop-empty"><span class="search-drop-empty-icon">🔍</span><div class="search-drop-empty-text"><span>No encontramos resultados para <strong>"${q}"</strong></span><button class="search-drop-request-btn" onmousedown="openRequestModal()">¿Lo conseguimos para ti? Solicítalo aquí →</button></div></div>`;
-    dd.classList.add('open'); document.getElementById('searchBackdrop')?.classList.add('open'); return;
+    dd.classList.add('open'); document.getElementById('searchBackdrop')?.classList.add('open');
+    if (q !== lastLoggedQuery) {
+      lastLoggedQuery = q;
+      fetch(`${API_BASE}/api/logs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: 'PRODUCTO_SIN_REGISTRO', context: q })
+      }).catch(() => {});
+    }
+    return;
   }
   dd.innerHTML = results.map(p =>
     `<div class="search-drop-item" onmousedown="openProduct('${p.id}');document.getElementById('searchInput').value='';closeSearchDropdown()">

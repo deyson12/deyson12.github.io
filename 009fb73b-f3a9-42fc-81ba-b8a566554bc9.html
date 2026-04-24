@@ -148,6 +148,14 @@
   .btn-wa:hover { background: #1ebe5d; }
   .btn-wa svg { flex-shrink: 0; }
 
+  /* Map section */
+  .map-section { display: flex; flex-direction: column; gap: 10px; }
+  .map-frame { width: 100%; height: 200px; border: 0; border-radius: var(--radius-sm); display: block; }
+  .map-coords { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .map-coord-text { font-size: 12px; font-weight: 600; color: var(--text-secondary); font-family: monospace; }
+  .btn-map-open { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; background: #1a73e8; border: none; border-radius: var(--radius-full); font-family: var(--font); font-size: 12px; font-weight: 700; color: #fff; text-decoration: none; white-space: nowrap; transition: background .2s; flex-shrink: 0; }
+  .btn-map-open:hover { background: #1558b0; }
+
   /* Drop button */
   .btn-drop { display: inline-flex; align-items: center; padding: 4px 10px; background: #f0f9ff; border: 1.5px solid #bae6fd; border-radius: var(--radius-full); font-family: var(--font); font-size: 11px; font-weight: 700; color: #0369a1; text-decoration: none; white-space: nowrap; transition: all .18s; flex-shrink: 0; }
   .btn-drop:hover { background: #0369a1; color: #fff; border-color: #0369a1; }
@@ -223,6 +231,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       <input type="text" id="searchInput" placeholder="Buscar por cliente, dirección, ID…" oninput="applyFilters()">
     </div>
+    <input type="date" id="monthPicker" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:var(--radius-full);font-family:var(--font);font-size:13px;outline:none;background:var(--bg-card);cursor:pointer;" onchange="onMonthChange(this.value)">
     <div class="filter-group" id="filterGroup">
       <button class="filter-btn active" data-status="ALL" onclick="setStatus('ALL',this)">Todos</button>
       <button class="filter-btn" data-status="PENDIENTE" onclick="setStatus('PENDIENTE',this)">Pendientes</button>
@@ -257,8 +266,10 @@
 <script src="js/config.js"></script>
 <script>
 const AUTH_KEY = 'adm_token';
+const _FIXED_SELLER_ID = 'd59ea1a4-5841-4740-950a-fb501a46ebae';
 let allOrders = [];
 let currentStatus = 'ALL';
+let currentMonth = (() => { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; })();
 
 // ── AUTH ──────────────────────────────────────────────────
 function getToken() { return sessionStorage.getItem(AUTH_KEY); }
@@ -292,6 +303,8 @@ document.getElementById('inputPassword').addEventListener('keydown', e => { if (
 function showDashboard() {
   document.getElementById('loginSection').style.display = 'none';
   document.getElementById('dashSection').style.display  = 'block';
+  const picker = document.getElementById('monthPicker');
+  if (picker) picker.value = currentMonth;
   loadOrders();
 }
 
@@ -299,12 +312,17 @@ function showDashboard() {
 if (getToken()) showDashboard();
 
 // ── LOAD ORDERS ────────────────────────────────────────────
+function onMonthChange(val) {
+  currentMonth = val;
+  loadOrders();
+}
+
 async function loadOrders() {
   const btn = document.getElementById('btnRefresh');
   btn.classList.add('spinning');
 
   try {
-    const res = await fetch(`${API_BASE}/api/orders`, {
+    const res = await fetch(`${API_BASE}/api/orders/seller/${_FIXED_SELLER_ID}/month/${currentMonth}`, {
       headers: { 'Authorization': `Bearer ${getToken()}` }
     });
     if (res.status === 401 || res.status === 403) { sessionStorage.removeItem(AUTH_KEY); location.reload(); return; }
@@ -403,7 +421,7 @@ function renderTable(list) {
     const buyer = o.buyer?.name ?? o.buyer?.businessName ?? '—';
     const seller = o.seller?.name ?? o.seller?.businessName ?? '—';
     const total = o.products
-      ? o.products.reduce((s, p) => s + (p.product?.price ?? 0) * (p.quantity ?? 1), 0)
+      ? o.products.reduce((s, p) => s + (p.unitPrice != null ? Number(p.unitPrice) : (p.product?.price ?? 0)) * (p.quantity ?? 1), 0)
       : null;
     const prods = (o.products ?? []).slice(0, 2).map(p =>
       `<div class="prod-item"><strong>${p.quantity}×</strong> ${p.product?.name ?? '—'}</div>`
@@ -437,12 +455,23 @@ function renderError() {
   document.getElementById('tableCount').textContent = '';
 }
 
+// ── COORDS ────────────────────────────────────────────────
+function fmtDMS(deg, isLat) {
+  const abs = Math.abs(deg);
+  const d = Math.floor(abs);
+  const mFull = (abs - d) * 60;
+  const m = Math.floor(mFull);
+  const s = ((mFull - m) * 60).toFixed(1);
+  const dir = isLat ? (deg >= 0 ? 'N' : 'S') : (deg >= 0 ? 'E' : 'O');
+  return `${d}° ${m}' ${s}" ${dir}`;
+}
+
 // ── DETAIL MODAL ───────────────────────────────────────────
 function openDetail(order) {
   const buyer  = order.buyer?.name ?? order.buyer?.businessName ?? '—';
   const seller = order.seller?.name ?? order.seller?.businessName ?? '—';
   const total  = order.products
-    ? order.products.reduce((s, p) => s + (p.product?.price ?? 0) * (p.quantity ?? 1), 0)
+    ? order.products.reduce((s, p) => s + (p.unitPrice != null ? Number(p.unitPrice) : (p.product?.price ?? 0)) * (p.quantity ?? 1), 0)
     : null;
 
   const prods = (order.products ?? []).map(p => `
@@ -450,10 +479,11 @@ function openDetail(order) {
       ${p.product?.image ? `<img class="detail-product-img" src="${p.product.image}" alt="${p.product.name}" loading="lazy">` : '<div class="detail-product-img"></div>'}
       <div class="detail-product-info">
         <div class="detail-product-name">${p.product?.name ?? '—'}</div>
-        <div class="detail-product-qty">${p.quantity} unidad${p.quantity !== 1 ? 'es' : ''}</div>
+        <div class="detail-product-qty">${p.quantity} unidad${p.quantity !== 1 ? 'es' : ''} &nbsp;·&nbsp; <span style="font-family:monospace">REF: ${(p.product?.id ?? '').substring(0,8).toUpperCase()}</span></div>
       </div>
       <div class="detail-product-price-wrap">
-        <div class="detail-product-price">${fmtPrice(p.product?.price)}</div>
+        <div class="detail-product-price">${fmtPrice(p.unitPrice != null ? p.unitPrice : p.product?.price)}</div>
+        ${p.unitPrice != null && p.product?.price != null && Number(p.unitPrice) !== Number(p.product.price) ? `<div class="detail-product-drop-price" style="color:#f59e0b">Actual: ${fmtPrice(p.product.price)}</div>` : ''}
         ${p.product?.dropshippingPrice != null ? `<div class="detail-product-drop-price">DS: ${fmtPrice(p.product.dropshippingPrice)}</div>` : ''}
       </div>
       ${p.product?.dropshippingUrl ? `<a class="btn-drop" href="${p.product.dropshippingUrl}" target="_blank" rel="noopener noreferrer">Drop</a>` : ''}
@@ -476,6 +506,25 @@ function openDetail(order) {
         <div class="detail-field"><span class="detail-label">Total estimado</span><span class="detail-value" style="color:var(--primary);font-weight:800">${total != null ? fmtPrice(total) : '—'}</span></div>
       </div>
     </div>
+    ${Array.isArray(order.location) && order.location.length === 2 ? (() => {
+      const lat = order.location[0], lng = order.location[1];
+      const q = `${lat},${lng}`;
+      return `<div>
+        <div class="detail-section-title">Ubicación</div>
+        <div class="map-section">
+          <iframe class="map-frame"
+            src="https://maps.google.com/maps?q=${q}&hl=es&z=15&output=embed"
+            allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          <div class="map-coords">
+            <span class="map-coord-text">${fmtDMS(lat, true)} &nbsp; ${fmtDMS(lng, false)}</span>
+            <a class="btn-map-open" href="https://www.google.com/maps?q=${q}" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+              Abrir en Maps
+            </a>
+          </div>
+        </div>
+      </div>`;
+    })() : ''}
     <div>
       <div class="detail-section-title">Productos (${order.products?.length ?? 0})</div>
       <div class="detail-products">${prods}</div>
