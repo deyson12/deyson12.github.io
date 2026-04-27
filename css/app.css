@@ -186,6 +186,7 @@ h1,h2,h3,h4,h5{font-family:var(--font-head);font-weight:700;line-height:1.2}
   .header-top .logo .logo-text .logo-short{display:none;}
   .header-actions{flex-shrink:0;}
   .search-wrap{order:10;width:100%;flex:none;padding-bottom:10px;}
+  .search-btn{top:0;bottom:10px;transform:none;margin:auto 0;}
   .header-wish-desktop,.header-theme-desktop,.header-orders-desktop,.header-more-desktop{display:none!important;}
 }
 .ham-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:150;opacity:0;pointer-events:none;transition:opacity .3s;backdrop-filter:blur(4px);}

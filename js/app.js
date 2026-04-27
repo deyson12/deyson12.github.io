@@ -186,6 +186,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.addEventListener('scroll', () => {
       _scrollBtn.classList.toggle('visible', window.scrollY > 320);
     }, { passive: true });
+    _scrollBtn.addEventListener('touchend', e => {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, { passive: false });
   }
 });
 
@@ -800,8 +804,8 @@ function applyFilters() {
   let l = [...PRODUCTS];
   if (currentCategory !== 'all') l = l.filter(p => p.category === currentCategory);
   if (currentSearch) l = l.filter(p =>
-    p.name.toLowerCase().includes(currentSearch) ||
-    p.tags.toLowerCase().includes(currentSearch) ||
+    norm(p.name).includes(norm(currentSearch)) ||
+    norm(p.tags).includes(norm(currentSearch)) ||
     p.id.substring(0, 8).toLowerCase().includes(currentSearch)
   );
   if (currentPriceFilter !== 'all') {
@@ -903,10 +907,11 @@ function handleSearch() { closeSearchDropdown(); currentSearch = document.getEle
 
 let lastSearchQuery = '';
 let lastLoggedQuery = '';
+function norm(s) { return (s ?? '').toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, ''); }
 function renderSearchDropdown(q) {
   const dd = document.getElementById('searchDropdown');
-  const ql = q.toLowerCase();
-  const results = PRODUCTS.filter(p => p.name.toLowerCase().includes(ql) || p.category.toLowerCase().includes(ql) || p.id.substring(0, 8).toLowerCase().includes(ql)).slice(0, 5);
+  const ql = norm(q);
+  const results = PRODUCTS.filter(p => norm(p.name).includes(ql) || norm(p.category).includes(ql) || p.id.substring(0, 8).toLowerCase().includes(ql)).slice(0, 5);
   if (!results.length) {
     lastSearchQuery = q;
     dd.innerHTML = `<div class="search-drop-empty"><span class="search-drop-empty-icon">🔍</span><div class="search-drop-empty-text"><span>No encontramos resultados para <strong>"${q}"</strong></span><button class="search-drop-request-btn" onmousedown="openRequestModal()">¿Lo conseguimos para ti? Solicítalo aquí →</button></div></div>`;
