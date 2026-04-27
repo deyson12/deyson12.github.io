@@ -4,13 +4,122 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PideFacil — Tu mercado online</title>
+<meta name="description" content="PideFacil: tienda online con productos variados, precios honestos y entrega a domicilio. Compra fácil y seguro por WhatsApp.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://pidefacil.co/">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pidefacil.co/">
+<meta property="og:title" content="PideFacil — Tu mercado online">
+<meta property="og:description" content="Productos variados, precios honestos y entrega a domicilio. Compra fácil y seguro por WhatsApp.">
+<meta property="og:image" content="https://pidefacil.co/images/favicon.ico">
+<meta property="og:locale" content="es_CO">
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="PideFacil — Tu mercado online">
+<meta name="twitter:description" content="Productos variados, precios honestos y entrega a domicilio.">
 <link rel="icon" type="image/x-icon" href="./images/favicon.ico">
 <link rel="shortcut icon" href="./images/favicon.ico">
+</head>
+<body>
+<a class="skip-link sr-only" href="#main-content">Saltar al contenido principal</a>
+
+<!-- Preload critical resources -->
+<link rel="preload" href="css/app.css" as="style">
+<link rel="preload" href="js/config.js" as="script">
+<link rel="preload" href="js/app.js" as="script">
+
+<!-- Google Fonts — non-blocking -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css">
-<script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap"></noscript>
+
+<!-- app.css — non-blocking with preload -->
+<link rel="stylesheet" href="css/app.css" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="css/app.css"></noscript>
+
+<!-- Critical CSS (above-the-fold) — inline -->
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--primary:#F15200;--primary-dark:#CC4500;--primary-light:#FFF1EA;--bg:#F7F8FA;--bg-card:#FFFFFF;--bg-header:#FFFFFF;--text-primary:#111827;--text-secondary:#4B5563;--text-muted:#767676;--border:#E5E7EB;--border-light:#F3F4F6;--shadow-sm:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-xl:24px;--radius-full:9999px;--font-head:'Plus Jakarta Sans',sans-serif;--font-body:'DM Sans',sans-serif;--transition:all .2s cubic-bezier(.4,0,.2,1);}
+[data-theme="dark"]{--bg:#0F1117;--bg-card:#1A1D27;--bg-header:#13151F;--text-primary:#F9FAFB;--text-secondary:#9CA3AF;--text-muted:#9399A5;--border:#2D3142;--border-light:#252838;}
+html{scroll-behavior:smooth;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);color:var(--text-primary);min-height:100vh;overflow-x:hidden;}
+/* Page loader */
+.page-loader{position:fixed;inset:0;z-index:9999;background:var(--bg-main,#fff);display:flex;align-items:center;justify-content:center;transition:opacity .5s ease,visibility .5s ease}
+.page-loader.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.page-loader-inner{display:flex;flex-direction:column;align-items:center;gap:12px}
+.page-loader-logo{width:64px;height:64px;object-fit:contain;animation:loader-pulse 1.2s ease-in-out infinite}
+.page-loader-brand{font-family:var(--font-head);font-weight:800;font-size:26px;color:var(--text-primary);letter-spacing:-.5px}
+.page-loader-brand span{color:#F15200}
+.page-loader-dots{display:flex;gap:6px;margin-top:4px}
+.page-loader-dots span{width:7px;height:7px;border-radius:50%;background:#F15200;animation:loader-bounce 1.2s ease-in-out infinite}
+.page-loader-dots span:nth-child(2){animation-delay:.2s}
+.page-loader-dots span:nth-child(3){animation-delay:.4s}
+@keyframes loader-pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.92);opacity:.7}}
+@keyframes loader-bounce{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-8px);opacity:1}}
+/* Header */
+.header{position:sticky;top:0;z-index:100;background:#F15200;box-shadow:0 1px 3px rgba(0,0,0,.08);}
+.header-top{max-width:1400px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:12px;}
+.logo{display:flex;align-items:center;text-decoration:none;flex-shrink:0;gap:6px;background:#fff;border-radius:10px;padding:5px 10px 5px 6px;}
+.logo-img{width:28px;height:28px;object-fit:contain;flex-shrink:0;}
+.logo-text{font-family:var(--font-head);font-weight:800;font-size:20px;letter-spacing:-0.5px;}
+.logo-text .logo-full,.logo-text .logo-short{color:#111}
+.logo-text .logo-full>span,.logo-text .logo-short>span{color:#F15200}
+.logo-text .logo-full{display:none}
+.logo-text .logo-short{display:inline}
+@media(min-width:480px){.logo-text .logo-full{display:inline}.logo-text .logo-short{display:none}}
+@media(max-width:767px){.logo-text{display:none}}
+.search-wrap{flex:1;position:relative;}
+.search-input{width:100%;padding:10px 44px 10px 16px;background:#fff;border:2px solid #fff;border-radius:var(--radius-md);font-family:var(--font-body);font-size:14px;color:var(--text-primary);outline:none;}
+.search-input::placeholder{color:var(--text-muted)}
+.search-btn{position:absolute;right:4px;top:50%;transform:translateY(-50%);background:#fff;border:none;cursor:pointer;width:34px;height:34px;border-radius:var(--radius-full);display:flex;align-items:center;justify-content:center;color:#F15200;}
+.search-btn svg{width:16px;height:16px}
+.header-actions{display:flex;align-items:center;gap:6px;}
+.btn-icon{position:relative;background:none;border:none;cursor:pointer;width:40px;height:40px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:#fff;}
+.btn-icon svg{width:22px;height:22px}
+.cart-badge{position:absolute;top:2px;right:2px;background:#fff;color:#F15200;font-family:var(--font-head);font-size:10px;font-weight:700;min-width:18px;height:18px;border-radius:var(--radius-full);display:flex;align-items:center;justify-content:center;padding:0 4px;}
+.ham-btn{display:none;background:none;border:none;cursor:pointer;width:40px;height:40px;border-radius:var(--radius-md);align-items:center;justify-content:center;color:#fff;flex-shrink:0;position:relative;}
+.ham-btn svg{width:22px;height:22px;}
+@media(max-width:767px){
+  .ham-btn{display:flex;}
+  .header-top{flex-wrap:wrap;padding:10px 12px 0;gap:6px;justify-content:space-between;}
+  .header-top .logo{display:flex;padding:4px;background:none;border-radius:0;flex:1;justify-content:center;}
+  .header-top .logo .logo-img{filter:brightness(0) invert(1);}
+  .header-top .logo .logo-text{display:block;color:#fff;}
+  .header-top .logo .logo-text .logo-full,.header-top .logo .logo-text .logo-short{color:#fff;}
+  .header-top .logo .logo-text .logo-full>span,.header-top .logo .logo-text .logo-short>span{color:#fff;}
+  .header-top .logo .logo-text .logo-full{display:inline;}
+  .header-top .logo .logo-text .logo-short{display:none;}
+  .header-actions{flex-shrink:0;}
+  .search-wrap{order:10;width:100%;flex:none;padding-bottom:10px;}
+  .search-btn{top:0;bottom:10px;transform:none;margin:auto 0;}
+}
+/* Banner dimensions — reserve space to prevent CLS */
+.hero{max-width:1400px;margin:16px auto 0;padding:0 16px;}
+.banner-slider{border-radius:var(--radius-xl);overflow:hidden;position:relative;height:190px;background:var(--border);}
+@media(min-width:600px){.banner-slider{height:240px}}
+@media(min-width:768px){.banner-slider{height:300px}}
+/* Skeleton — shown while products load */
+@keyframes shimmer{0%{background-position:-600px 0}100%{background-position:600px 0}}
+.skel-card{background:var(--bg-card);border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--border);}
+.skel-img,.skel-line,.skel-btn{background:linear-gradient(90deg,var(--border) 25%,var(--bg-card) 50%,var(--border) 75%);background-size:800px 100%;animation:shimmer 1.4s ease-in-out infinite;}
+.skel-img{aspect-ratio:1;width:100%;}
+.skel-body{padding:11px;display:flex;flex-direction:column;gap:8px;}
+.skel-line{height:11px;border-radius:4px;}
+.skel-line.w40{width:40%}.skel-line.w60{width:60%}.skel-line.w80{width:80%}
+.skel-btn{height:30px;border-radius:var(--radius-md);}
+/* Products grid — reserve space */
+.products-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;min-height:400px;}
+@media(min-width:480px){.products-grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:640px){.products-grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:900px){.products-grid{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:1200px){.products-grid{grid-template-columns:repeat(5,1fr)}}
+</style>
+
 <!-- Google Analytics 4 -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-WMW8G6VXG8"></script>
 <script>
@@ -27,17 +136,17 @@
 <header class="header">
   <div class="header-top">
     <!-- Hamburger (mobile only) -->
-    <button class="ham-btn" id="hamBtn" onclick="openHamDrawer()" title="Menú">
+    <button class="ham-btn" id="hamBtn" onclick="openHamDrawer()" aria-label="Abrir menú" aria-controls="hamDrawer" aria-expanded="false">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       <span class="ham-badge" id="hamBadge">0</span>
     </button>
     <a class="logo" href="#" onclick="return false">
-      <img class="logo-img" src="./images/favicon.ico" alt="PideFacil logo">
+      <img class="logo-img" src="./images/favicon.ico" alt="PideFacil logo" width="28" height="28">
       <span class="logo-text"><span class="logo-short">P<span>F</span></span><span class="logo-full">Pide<span>Facil</span></span></span>
     </a>
     <div class="search-wrap">
-      <input class="search-input" id="searchInput" type="text" placeholder="Buscar en PideFacil..." autocomplete="off">
-      <button class="search-btn" onclick="handleSearch()">
+      <input class="search-input" id="searchInput" type="text" placeholder="Buscar en PideFacil..." autocomplete="off" aria-label="Buscar productos">
+      <button class="search-btn" onclick="handleSearch()" aria-label="Buscar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       </button>
       <div class="search-dropdown" id="searchDropdown"></div>
@@ -45,27 +154,27 @@
     <div class="header-actions">
 
       <!-- Wish (always visible) -->
-      <button class="btn-icon btn-icon-wish header-wish-desktop" id="wishBtn" onclick="openWish()" title="Favoritos">
+      <button class="btn-icon btn-icon-wish header-wish-desktop" id="wishBtn" onclick="openWish()" aria-label="Mis favoritos">
         <svg id="wishHeartIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
         <span class="wish-badge" id="wishBadge">0</span>
       </button>
 
       <!-- More dropdown -->
       <div class="more-menu" id="moreMenu">
-        <button class="btn-icon more-menu-trigger header-more-desktop" id="moreMenuBtn" onclick="toggleMoreMenu()" title="Más opciones">
+        <button class="btn-icon more-menu-trigger header-more-desktop" id="moreMenuBtn" onclick="toggleMoreMenu()" aria-label="Más opciones" aria-expanded="false" aria-controls="moreMenuDropdown">
           <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
         </button>
-        <div class="more-menu-dropdown" id="moreMenuDropdown">
-          <button class="more-menu-item" onclick="closeMoreMenu();openOrdersHistory()">
+        <div class="more-menu-dropdown" id="moreMenuDropdown" role="menu">
+          <button class="more-menu-item" role="menuitem" onclick="closeMoreMenu();openOrdersHistory()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
             Mis pedidos
           </button>
-          <button class="more-menu-item more-menu-item-wa" onclick="closeMoreMenu();window.open('https://wa.me/'+WA_PHONE+'?text='+encodeURIComponent('Hola! Necesito ayuda con algo en PideFacil \uD83D\uDE4F'),'_blank')">
+          <button class="more-menu-item more-menu-item-wa" role="menuitem" onclick="closeMoreMenu();window.open('https://wa.me/'+WA_PHONE+'?text='+encodeURIComponent('Hola! Necesito ayuda con algo en PideFacil \uD83D\uDE4F'),'_blank')">
             <svg viewBox="0 0 24 24" width="20" height="20"><path fill="#25D366" d="M12 0C5.373 0 0 5.373 0 12c0 2.025.507 3.967 1.399 5.671L.1 23.9l6.499-1.699A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/><path fill="#fff" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/></svg>
             Ayuda por WhatsApp
           </button>
           <div class="more-menu-divider"></div>
-          <button class="more-menu-item" onclick="closeMoreMenu();toggleTheme()" id="moreThemeBtn">
+          <button class="more-menu-item" role="menuitem" onclick="closeMoreMenu();toggleTheme()" id="moreThemeBtn">
             <svg id="moreIconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
             <svg id="moreIconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
             Cambiar tema
@@ -74,13 +183,13 @@
       </div>
 
       <!-- Cart (always visible) -->
-      <button class="btn-icon" onclick="openCart()" title="Carrito">
+      <button class="btn-icon" onclick="openCart()" aria-label="Abrir carrito">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
         <span class="cart-badge" id="cartBadge">0</span>
       </button>
     </div>
   </div>
-  <nav class="categories-nav">
+  <nav class="categories-nav" aria-label="Categorías de productos">
     <div class="categories-inner" id="categoriesInner">
       <!-- populated by initCategories() -->
     </div>
@@ -89,10 +198,10 @@
 
 <!-- HAMBURGER DRAWER (mobile) -->
 <div class="ham-overlay" id="hamOverlay" onclick="closeHamDrawer()"></div>
-<div class="ham-drawer" id="hamDrawer">
+<div class="ham-drawer" id="hamDrawer" role="dialog" aria-modal="true" aria-label="Menú de navegación">
   <div class="ham-drawer-head">
     <span class="ham-drawer-logo">Pide<span>Facil</span></span>
-    <button class="ham-drawer-close" onclick="closeHamDrawer()">
+    <button class="ham-drawer-close" onclick="closeHamDrawer()" aria-label="Cerrar menú">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
     </button>
   </div>
@@ -125,6 +234,7 @@
 </div>
 
 <!-- BANNER -->
+<main id="main-content">
 <!--div class="hero">
   <div class="banner-slider" id="bannerSlider">
     <div class="banner-slide active" style="background:linear-gradient(135deg,#FF4D00,#FF8C00)">
@@ -185,7 +295,7 @@
   </div>
 </div-->
 
-<div class="bnr3" id="bnr3El">
+<!--div class="bnr3" id="bnr3El">
   <div class="bnr3-inner">
     <div class="bnr3-glow"></div>
     <div class="bnr3-label">PideFacil · Tu tienda facil online</div>
@@ -196,7 +306,7 @@
       <button class="bnr3-btn-ghost" onclick="openBannerPopup('offer','Ofertas del día')">Ver ofertas 🔥</button>
     </div>
   </div>
-</div>
+</div-->
 
 
 <!--div class="bnr4">
@@ -226,9 +336,59 @@
   </div>
 </div-->
 
-<!-- ===== BANNERS ESTACIONALES (descomentar el de la ocasión activa) ===== -->
+<!-- RECENTLY VIEWED -->
+<section class="section recent-section" id="recentSection" style="display:none">
+  <div class="section-header">
+    <h2 class="section-title"><span class="section-title-dot"></span>Visto recientemente</h2>
+  </div>
+  <div class="carousel-wrap">
+    <button class="carousel-arrow prev" onclick="scrollCarousel('recentContainer',-1)" aria-label="Anterior: Visto recientemente">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="carousel-scroll" id="recentContainer"></div>
+    <button class="carousel-arrow next" onclick="scrollCarousel('recentContainer',1)" aria-label="Siguiente: Visto recientemente">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </div>
+</section>
 
-<!--div class="sbnr sbnr5">
+<!-- OFFERS ONLY (no featured section) -->
+<div class="deals-zone">
+  <div class="deals-zone-head">
+    <div class="deals-zone-title">
+      <iconify-icon icon="noto:fire" width="20" height="20" style="flex-shrink:0"></iconify-icon>
+      Ofertas
+    </div>
+    <span class="deals-zone-badge">Precio especial</span>
+  </div>
+  <section class="section" id="offersSection" style="padding-top:0">
+    <div class="carousel-wrap">
+      <button class="carousel-arrow prev" onclick="scrollCarousel('offersContainer',-1)" aria-label="Anterior: Ofertas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="carousel-scroll" id="offersContainer"></div>
+      <button class="carousel-arrow next" onclick="scrollCarousel('offersContainer',1)" aria-label="Siguiente: Ofertas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+  </section>
+</div>
+
+<!--div class="sbnr sbnr12">
+  <div class="sbnr-inner">
+    <div class="sbnr-deco">🎈</div>
+    <div class="sbnr-deco2">🧸</div>
+    <div class="sbnr-label">🎉 Día del Niño · 25 de abril 2026</div>
+    <h2 class="sbnr-title">¡Sorpréndelos<br><em>con algo increíble!</em></h2>
+    <p class="sbnr-sub">Juguetes, ropa y más — porque hoy es su día</p>
+    <div class="sbnr-btns">
+      <button class="sbnr-btn" onclick="filterCategory('1f82f739-eb58-41fa-8016-219fe52a4d09',null)">Ver juguetes 🎁</button>
+      <button class="sbnr-ghost" onclick="filterCategory('f85aefa9-0e31-4fe3-a354-948dbfc7721d',null)">Bebés 👶</button>
+    </div>
+  </div>
+</div-->
+
+<div class="sbnr sbnr5">
   <div class="sbnr-inner">
     <div class="sbnr-deco">💐</div>
     <div class="sbnr-deco2">🌸</div>
@@ -242,7 +402,7 @@
   </div>
 </div>
 
-<div class="sbnr sbnr6">
+<!--div class="sbnr sbnr6">
   <div class="sbnr-inner">
     <div class="sbnr-deco">🎄</div>
     <div class="sbnr-deco2">⭐</div>
@@ -354,64 +514,13 @@
   </div>
 </div-->
 
-<!-- RECENTLY VIEWED -->
-<section class="section recent-section" id="recentSection" style="display:none">
-  <div class="section-header">
-    <h2 class="section-title"><span class="section-title-dot"></span>Visto recientemente</h2>
-  </div>
-  <div class="carousel-wrap">
-    <button class="carousel-arrow prev" onclick="scrollCarousel('recentContainer',-1)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-    </button>
-    <div class="carousel-scroll" id="recentContainer"></div>
-    <button class="carousel-arrow next" onclick="scrollCarousel('recentContainer',1)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-    </button>
-  </div>
-</section>
-
-<!-- OFFERS ONLY (no featured section) -->
-<div class="deals-zone">
-  <div class="deals-zone-head">
-    <div class="deals-zone-title">
-      <iconify-icon icon="noto:fire" width="20" height="20" style="flex-shrink:0"></iconify-icon>
-      Productos con descuento
-    </div>
-    <span class="deals-zone-badge">Precio especial</span>
-  </div>
-  <section class="section" id="offersSection" style="padding-top:0">
-    <div class="carousel-wrap">
-      <button class="carousel-arrow prev" onclick="scrollCarousel('offersContainer',-1)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
-      <div class="carousel-scroll" id="offersContainer"></div>
-      <button class="carousel-arrow next" onclick="scrollCarousel('offersContainer',1)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
-    </div>
-  </section>
-</div>
-
-<div class="sbnr sbnr12">
-  <div class="sbnr-inner">
-    <div class="sbnr-deco">🎈</div>
-    <div class="sbnr-deco2">🧸</div>
-    <div class="sbnr-label">🎉 Día del Niño · 25 de abril 2026</div>
-    <h2 class="sbnr-title">¡Sorpréndelos<br><em>con algo increíble!</em></h2>
-    <p class="sbnr-sub">Juguetes, ropa y más — porque hoy es su día</p>
-    <div class="sbnr-btns">
-      <button class="sbnr-btn" onclick="filterCategory('1f82f739-eb58-41fa-8016-219fe52a4d09',null)">Ver juguetes 🎁</button>
-      <button class="sbnr-ghost" onclick="filterCategory('f85aefa9-0e31-4fe3-a354-948dbfc7721d',null)">Bebés 👶</button>
-    </div>
-  </div>
-</div>
-
 <!-- FILTERS -->
 <div class="filters-bar">
   <button class="filter-chip active" onclick="filterPrice('all',this)">Todos</button>
   <button class="filter-chip" onclick="filterPrice('0-10000',this)">Hasta $10k</button>
   <button class="filter-chip" onclick="filterPrice('10000-50000',this)">$10k–$50k</button>
   <button class="filter-chip" onclick="filterPrice('50000-',this)">+$50k</button>
+  <label class="sr-only" for="sortSelect">Ordenar productos</label>
   <select class="sort-select" id="sortSelect" onchange="sortProducts()">
     <option value="popular">Más populares</option>
     <option value="price-asc">Precio ↑</option>
@@ -434,26 +543,27 @@
   <p>Comercio local · <strong>PideFacil</strong> © 2026</p>
   <p style="margin-top:4px">Compra segura vía WhatsApp · Sin cargos ocultos</p>
 </footer>
+</main>
 
 <!-- FAB -->
-<button class="fab-cart" id="fabCart" onclick="openCart()">
+<button class="fab-cart" id="fabCart" onclick="openCart()" aria-label="Abrir carrito">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
   <span id="fabTotal">$0</span>
 </button>
 
 <!-- WISH PANEL -->
 <div class="cart-overlay" id="wishOverlay" onclick="closeWish()"></div>
-<div class="wish-panel" id="wishPanel">
+<div class="wish-panel" id="wishPanel" role="dialog" aria-modal="true" aria-labelledby="wishPanelTitle">
   <div class="wish-header">
-    <div class="wish-title">
+    <div class="wish-title" id="wishPanelTitle">
       Mis favoritos
       <span class="wish-count-pill" id="wishCountPill">0</span>
     </div>
-    <button class="btn-clear-wish" id="btnClearWish" onclick="clearWish()">
+    <button class="btn-clear-wish" id="btnClearWish" onclick="clearWish()" aria-label="Limpiar favoritos">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
       Limpiar
     </button>
-    <button class="btn-close" onclick="closeWish()">
+    <button class="btn-close" onclick="closeWish()" aria-label="Cerrar favoritos">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
     </button>
   </div>
@@ -463,17 +573,17 @@
 
 <!-- ORDERS HISTORY PANEL -->
 <div class="cart-overlay" id="ordersOverlay" onclick="closeOrdersHistory()"></div>
-<div class="orders-panel" id="ordersPanel">
+<div class="orders-panel" id="ordersPanel" role="dialog" aria-modal="true" aria-labelledby="ordersPanelTitle">
   <div class="orders-ph">
-    <div class="orders-ph-title">
+    <div class="orders-ph-title" id="ordersPanelTitle">
       Mis pedidos
       <span class="orders-ph-count" id="ordersCountPill">0</span>
     </div>
-    <button class="btn-clear-orders" id="btnClearOrders" onclick="clearOrdersHistory()">
+    <button class="btn-clear-orders" id="btnClearOrders" onclick="clearOrdersHistory()" aria-label="Borrar historial de pedidos">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
       Borrar
     </button>
-    <button class="btn-close" onclick="closeOrdersHistory()">
+    <button class="btn-close" onclick="closeOrdersHistory()" aria-label="Cerrar pedidos">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
     </button>
   </div>
@@ -482,17 +592,17 @@
 
 <!-- CART PANEL -->
 <div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
-<div class="cart-panel" id="cartPanel">
+<div class="cart-panel" id="cartPanel" role="dialog" aria-modal="true" aria-labelledby="cartPanelTitle">
   <div class="cart-header">
-    <div class="cart-title">
+    <div class="cart-title" id="cartPanelTitle">
       Mi carrito
       <span class="cart-count-pill" id="cartCountPill">0</span>
     </div>
-    <button class="btn-clear-cart" id="btnClearCart" onclick="clearCart()">
+    <button class="btn-clear-cart" id="btnClearCart" onclick="clearCart()" aria-label="Limpiar carrito">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
       Limpiar
     </button>
-    <button class="btn-close" onclick="closeCart()">
+    <button class="btn-close" onclick="closeCart()" aria-label="Cerrar carrito">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
     </button>
   </div>
@@ -523,13 +633,13 @@
 
 <!-- ORDER POPUP -->
 <div class="order-overlay" id="orderOverlay" onclick="handleOrderOverlayClick(event)">
-  <div class="order-box">
+  <div class="order-box" role="dialog" aria-modal="true" aria-labelledby="orderBoxTitle">
     <div class="order-header">
       <div class="order-title">
         <svg viewBox="0 0 24 24" style="width:20px;height:20px"><path fill="#25D366" d="M12 0C5.373 0 0 5.373 0 12c0 2.025.507 3.967 1.399 5.671L.1 23.9l6.499-1.699A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/><path fill="#fff" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/></svg>
         Confirmar pedido
       </div>
-      <button class="btn-close" onclick="closeOrderPopup()">
+      <button class="btn-close" onclick="closeOrderPopup()" aria-label="Cerrar formulario de pedido">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
       </button>
     </div>
@@ -604,9 +714,9 @@
 
 <!-- PRODUCT MODAL -->
 <div class="modal-overlay" id="modalOverlay" onclick="handleModalClick(event)">
-  <div class="modal-box">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-label="Detalle del producto">
     <div class="modal-header">
-      <button class="btn-close" onclick="closeModal()">
+      <button class="btn-close" onclick="closeModal()" aria-label="Cerrar producto">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
       </button>
     </div>
@@ -616,10 +726,10 @@
 
 <!-- WOMPI PAYMENT RESULT -->
 <div class="wompi-result-overlay" id="wompiResultOverlay">
-  <div class="wompi-result-box">
+  <div class="wompi-result-box" role="dialog" aria-modal="true" aria-labelledby="wompiResultTitle">
     <div class="wompi-result-body">
       <div class="wompi-result-icon">🔐</div>
-      <h2 class="wompi-result-title">¿Tu pago fue exitoso?</h2>
+      <h2 class="wompi-result-title" id="wompiResultTitle">¿Tu pago fue exitoso?</h2>
       <p class="wompi-result-sub">Si el pago se completó en Wompi, confírmanos para enviar tu pedido y coordinar el envío por WhatsApp.</p>
       <div class="wompi-result-ref" id="wompiResultRef"></div>
       <div class="wompi-result-summary" id="wompiResultSummary"></div>
@@ -637,15 +747,15 @@
 
 <!-- REQUEST PRODUCT MODAL -->
 <div class="modal-overlay req-overlay" id="reqOverlay" onclick="handleReqOverlayClick(event)">
-  <div class="modal-box req-box">
+  <div class="modal-box req-box" role="dialog" aria-modal="true" aria-labelledby="reqBoxTitle">
     <div class="modal-header">
-      <button class="btn-close" onclick="closeRequestModal()">
+      <button class="btn-close" onclick="closeRequestModal()" aria-label="Cerrar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
       </button>
     </div>
     <div class="req-body">
       <div class="req-icon">🛍️</div>
-      <h2 class="req-title">¿No encontraste lo que buscas?</h2>
+      <h2 class="req-title" id="reqBoxTitle">¿No encontraste lo que buscas?</h2>
       <p class="req-subtitle">Cuéntanos qué necesitas y te ayudamos<br>a conseguirlo lo antes posible.</p>
       <div class="req-form">
         <span class="req-form-label">¿Qué producto necesitas?</span>
@@ -663,10 +773,10 @@
 
 <!-- BANNER POPUP -->
 <div class="bnr-popup-overlay" id="bnrPopupOverlay" onclick="handleBnrPopupClick(event)">
-  <div class="bnr-popup-box">
+  <div class="bnr-popup-box" role="dialog" aria-modal="true" aria-labelledby="bnrPopupTitle">
     <div class="bnr-popup-header">
       <div class="bnr-popup-title" id="bnrPopupTitle"></div>
-      <button class="btn-close" onclick="closeBannerPopup()">
+      <button class="btn-close" onclick="closeBannerPopup()" aria-label="Cerrar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
       </button>
     </div>
@@ -748,14 +858,15 @@
 <!-- PAGE LOADER -->
 <div class="page-loader" id="pageLoader" style="overflow:hidden">
   <div class="page-loader-inner">
-    <img class="page-loader-logo" src="./images/favicon.ico" alt="PideFacil">
+    <img class="page-loader-logo" src="./images/favicon.ico" alt="PideFacil" width="48" height="48">
     <div class="page-loader-brand">Pide<span>Facil</span></div>
     <div class="page-loader-dots"><span></span><span></span><span></span></div>
   </div>
 </div>
 
-<script src="js/config.js"></script>
-<script src="js/utils.js"></script>
-<script src="js/app.js"></script>
+<script src="js/config.js" defer></script>
+<script src="js/utils.js" defer></script>
+<script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js" defer></script>
+<script src="js/app.js" defer></script>
 </body>
 </html>

@@ -1,0 +1,30 @@
+/*
+  # ─────────────────────────────────────────────────────────────────
+  # PideFacil — Security Headers
+  # Aplica a todas las rutas del sitio estático.
+  # Compatible con Netlify, Cloudflare Pages y plataformas similares.
+  # Para nginx/Apache, copiar los valores en el bloque de servidor.
+  # ─────────────────────────────────────────────────────────────────
+
+  # Evita que el sitio sea embebido en iframes (clickjacking)
+  X-Frame-Options: DENY
+
+  # Evita que el navegador adivine el tipo de contenido
+  X-Content-Type-Options: nosniff
+
+  # Política de referrer estricta
+  Referrer-Policy: strict-origin-when-cross-origin
+
+  # Permisos de API del navegador — desactiva los que no se usan
+  Permissions-Policy: camera=(), microphone=(), payment=(), usb=(), geolocation=(self)
+
+  # HSTS — fuerza HTTPS por 1 año, incluye subdominios
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+
+  # Cross-Origin Opener Policy — permite window.open() para WhatsApp/Wompi
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
+
+  # Content Security Policy
+  # 'unsafe-inline' en script-src es necesario por los onclick handlers existentes.
+  # Reemplazar con nonces cuando se refactorice a event listeners.
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://code.iconify.design https://api.iconify.design; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net https://api.iconify.design https://nominatim.openstreetmap.org https://tile.openstreetmap.org https://checkout.wompi.co https://ventas-7-lunas-back-241033954184.southamerica-east1.run.app; frame-src https://checkout.wompi.co; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self' https://wa.me

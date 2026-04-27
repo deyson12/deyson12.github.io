@@ -588,9 +588,9 @@ function buildCard(p, extra = '') {
     badgeList.push('<span class="badge badge-new">Nuevo</span>');
   return `<div class="product-card ${extra}" onclick="openProduct('${p.id}')">
     <div class="card-img-wrap">
-      <img class="card-img" src="${p.image}" alt="${p.name}" loading="lazy" decoding="async" onload="this.classList.add('img-loaded')" onerror="this.classList.add('img-loaded')">
+      <img class="card-img" src="${p.image}" alt="${p.name}" width="300" height="300" loading="lazy" decoding="async" onload="this.classList.add('img-loaded')" onerror="this.classList.add('img-loaded')">
       <div class="badge-wrap">${badgeList.join('')}</div>
-      <button class="card-wishlist ${inWish ? 'active' : ''}" data-wish-id="${p.id}" onclick="toggleWish(event,'${p.id}')">
+      <button class="card-wishlist ${inWish ? 'active' : ''}" data-wish-id="${p.id}" onclick="toggleWish(event,'${p.id}')" aria-label="${inWish ? 'Quitar de favoritos' : 'Agregar a favoritos'}" aria-pressed="${inWish}">
         <svg viewBox="0 0 24 24" stroke="var(--primary)" stroke-width="2.5" fill="${inWish ? 'var(--primary)' : 'none'}"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
       </button>
     </div>
@@ -606,7 +606,7 @@ function buildCard(p, extra = '') {
       <div class="card-actions" onclick="event.stopPropagation()">
         <div id="btnCart${p.id}">
           ${inCart
-            ? `<div class="card-qty-ctrl"><button class="card-qty-btn" onclick="changeQty('${p.id}',-1)">−</button><span class="card-qty-num">${cartItem.qty}</span><button class="card-qty-btn" onclick="changeQty('${p.id}',1)">+</button></div>`
+            ? `<div class="card-qty-ctrl"><button class="card-qty-btn" onclick="changeQty('${p.id}',-1)" aria-label="Reducir cantidad">−</button><span class="card-qty-num" aria-live="polite">${cartItem.qty}</span><button class="card-qty-btn" onclick="changeQty('${p.id}',1)" aria-label="Aumentar cantidad">+</button></div>`
             : `<button class="btn btn-cart" onclick="addToCart('${p.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Agregar</button>`
           }
         </div>
@@ -621,7 +621,7 @@ function buildCard(p, extra = '') {
 
 function buildMiniCard(p) {
   return `<div class="mini-card" onclick="openProduct('${p.id}')">
-    <img class="mini-card-img" src="${p.image}" alt="${p.name}" loading="lazy">
+    <img class="mini-card-img" src="${p.image}" alt="${p.name}" width="118" height="118" loading="lazy" decoding="async">
     <div class="mini-card-body">
       <div class="mini-card-name">${p.name}</div>
       <div style="display:flex;align-items:baseline;gap:4px;flex-wrap:wrap">
@@ -651,7 +651,7 @@ function buildPromotedCard(p) {
   const waUrl = promoWaUrl(p);
   return `<div class="product-card promoted-card new-in" onclick="openPromotedProduct('${p.id}')">
     <div class="card-img-wrap">
-      <img class="card-img" src="${p.image}" alt="${p.name}" loading="lazy" decoding="async" onload="this.classList.add('img-loaded')" onerror="this.classList.add('img-loaded')">
+      <img class="card-img" src="${p.image}" alt="${p.name}" width="300" height="300" loading="lazy" decoding="async" onload="this.classList.add('img-loaded')" onerror="this.classList.add('img-loaded')">
       ${disc > 0 ? `<div class="badge-wrap"><span class="badge badge-offer">${disc}% OFF</span></div>` : ''}
       <div class="promo-label">Patrocinado</div>
     </div>
@@ -682,7 +682,7 @@ function openPromotedProduct(id) {
   document.getElementById('modalBody').innerHTML = `
     <div class="modal-grid">
       <div class="modal-gallery">
-        <img class="modal-main-img" src="${p.image}" alt="${p.name}">
+        <img class="modal-main-img" src="${p.image}" alt="${p.name}" decoding="async">
       </div>
       <div class="modal-info">
         <div class="modal-seller" style="display:flex;align-items:center;gap:7px">
@@ -929,7 +929,7 @@ function renderSearchDropdown(q) {
   }
   dd.innerHTML = results.map(p =>
     `<div class="search-drop-item" onmousedown="openProduct('${p.id}');document.getElementById('searchInput').value='';closeSearchDropdown()">
-      <img class="search-drop-img" src="${p.image}" alt="${p.name}" loading="lazy">
+      <img class="search-drop-img" src="${p.image}" alt="${p.name}" width="42" height="42" loading="lazy" decoding="async">
       <div class="search-drop-info"><div class="search-drop-name">${p.name}</div><div class="search-drop-price">${fmtPrice(p.price)}</div></div>
     </div>`
   ).join('');
@@ -962,7 +962,7 @@ function updateAllBtns() {
     const ci = cart.find(c => c.id === p.id);
     document.querySelectorAll(`#btnCart${p.id}`).forEach(wrap => {
       wrap.innerHTML = ci
-        ? `<div class="card-qty-ctrl"><button class="card-qty-btn" onclick="changeQty('${p.id}',-1)">−</button><span class="card-qty-num">${ci.qty}</span><button class="card-qty-btn" onclick="changeQty('${p.id}',1)">+</button></div>`
+        ? `<div class="card-qty-ctrl"><button class="card-qty-btn" onclick="changeQty('${p.id}',-1)" aria-label="Reducir cantidad">−</button><span class="card-qty-num" aria-live="polite">${ci.qty}</span><button class="card-qty-btn" onclick="changeQty('${p.id}',1)" aria-label="Aumentar cantidad">+</button></div>`
         : `<button class="btn btn-cart" onclick="addToCart('${p.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Agregar</button>`;
     });
   });
@@ -1050,14 +1050,14 @@ function renderCartPanel() {
         const checked = checkedItems.has(item.id);
         return `<div class="cart-item${checked ? '' : ' unchecked'}">
           <div class="cart-item-check"><input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleCheck('${item.id}')" title="Incluir en pedido"></div>
-          <img class="cart-item-img" src="${item.image}" alt="${item.name}" loading="lazy">
+          <img class="cart-item-img" src="${item.image}" alt="${item.name}" width="58" height="58" loading="lazy" decoding="async">
           <div class="cart-item-info">
             <div class="cart-item-name">${item.name}</div>
             <div class="cart-item-price">${fmtPrice(item.price * item.qty)}</div>
             <div class="cart-item-controls">
-              <button class="qty-btn" onclick="changeQty('${item.id}',-1)">−</button>
-              <span class="qty-num">${item.qty}</span>
-              <button class="qty-btn" onclick="changeQty('${item.id}',1)">+</button>
+              <button class="qty-btn" onclick="changeQty('${item.id}',-1)" aria-label="Reducir cantidad">−</button>
+              <span class="qty-num" aria-live="polite">${item.qty}</span>
+              <button class="qty-btn" onclick="changeQty('${item.id}',1)" aria-label="Aumentar cantidad">+</button>
               <button class="btn-remove" onclick="removeFromCart('${item.id}')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>Quitar
               </button>
@@ -1504,7 +1504,7 @@ function renderWishPanel() {
     if (!p) return '';
     const inCart = cart.some(c => c.id === id);
     return `<div class="wish-item">
-      <img class="wish-item-img" src="${p.image}" alt="${p.name}" onclick="closeWish();openProduct('${p.id}')">
+      <img class="wish-item-img" src="${p.image}" alt="${p.name}" width="80" height="80" loading="lazy" decoding="async" onclick="closeWish();openProduct('${p.id}')">
       <div class="wish-item-info">
         <div class="wish-item-name" onclick="closeWish();openProduct('${p.id}')">${p.name}</div>
         <div style="display:flex;align-items:baseline;gap:4px;flex-wrap:wrap">
@@ -1515,7 +1515,7 @@ function renderWishPanel() {
           <button class="wish-btn-cart ${inCart ? 'added' : ''}" onclick="addToCart('${p.id}');renderWishPanel()">
             ${inCart ? '✓ En carrito' : 'Agregar'}
           </button>
-          <button class="wish-btn-remove" title="Quitar de favoritos" onclick="toggleWish(event,'${p.id}');">💔</button>
+          <button class="wish-btn-remove" title="Quitar de favoritos" aria-label="Quitar de favoritos" onclick="toggleWish(event,'${p.id}');">💔</button>
         </div>
       </div>
     </div>`;
@@ -1562,7 +1562,7 @@ function openProduct(id) {
   document.getElementById('modalBody').innerHTML = `
     <div class="modal-grid">
       <div class="modal-gallery">
-        <img class="modal-main-img" id="modalMainImg" src="${p.image}" alt="${p.name}">
+        <img class="modal-main-img" id="modalMainImg" src="${p.image}" alt="${p.name}" decoding="async">
       </div>
       <div class="modal-info">
         <div class="modal-seller">${typeof STORE_NAME !== 'undefined' ? STORE_NAME : 'PideFacil'}</div>
