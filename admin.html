@@ -167,20 +167,58 @@
   .btn-cancel-order { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 11px 16px; background: #dc2626; border: none; border-radius: var(--radius-sm); font-family: var(--font); font-size: 13px; font-weight: 700; color: #fff; cursor: pointer; transition: background .2s; }
   .btn-cancel-order:hover { background: #b91c1c; }
 
-  /* ── MOBILE TABLE scroll ── */
+  /* ── MOBILE TABLE CARDS ── */
   @media(max-width: 767px) {
-    .table-wrap { overflow-x: auto; }
-    table { min-width: 700px; }
+    .table-wrap { overflow-x: visible; }
+    .table-wrap table { min-width: 0; }
+    .table-wrap thead { display: none; }
+    .table-wrap tbody { display: flex; flex-direction: column; gap: 10px; padding: 10px; }
+    .table-wrap tbody tr { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; }
+    .table-wrap tbody tr:hover td { background: transparent; }
+    .table-wrap td { display: flex; flex-direction: column; padding: 3px 0; border: none; font-size: 12px; white-space: normal; overflow: visible; text-overflow: unset; max-width: none; }
+    .table-wrap td::before { content: attr(data-label); font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 2px; display: block; }
+    .td-addr { grid-column: span 2 !important; }
+    .td-prods { grid-column: span 2 !important; }
+    .td-action { grid-column: span 2 !important; padding-top: 8px !important; border-top: 1px solid #f0f0f0 !important; display: flex !important; justify-content: flex-end !important; }
+    .td-action::before { display: none !important; }
+    .btn-refresh-text { display: none; }
+    .btn-refresh { padding: 6px 10px; }
   }
 
   /* ── toast ── */
   .adm-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #111; color: #fff; font-family: var(--font); font-size: 13px; font-weight: 500; padding: 10px 20px; border-radius: var(--radius-full); z-index: 9999; opacity: 0; pointer-events: none; transition: opacity .25s; white-space: nowrap; }
   .adm-toast.show { opacity: 1; }
 
-  /* ── SECTION NAV ── */
-  .section-nav { display: flex; gap: 4px; background: rgba(0,0,0,.15); border-radius: var(--radius-full); padding: 3px; }
-  .section-nav-btn { padding: 6px 18px; border: none; border-radius: var(--radius-full); font-family: var(--font); font-size: 13px; font-weight: 700; color: rgba(255,255,255,.75); background: transparent; cursor: pointer; transition: all .18s; white-space: nowrap; }
-  .section-nav-btn.active { background: #fff; color: var(--primary); }
+  /* ── HAMBURGER NAV BTN ── */
+  .topbar-ham-btn { background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.2); color: #fff; width: 36px; height: 36px; border-radius: var(--radius-sm); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .18s; flex-shrink: 0; }
+  .topbar-ham-btn:hover { background: rgba(255,255,255,.28); }
+  .topbar-ham-btn svg { width: 18px; height: 18px; }
+  .topbar-section-label { color: rgba(255,255,255,.9); font-size: 14px; font-weight: 700; white-space: nowrap; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .btn-refresh-text { display: inline; }
+
+  /* ── NAV DRAWER ── */
+  .nav-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 200; display: none; }
+  .nav-overlay.open { display: block; }
+  .nav-drawer { position: fixed; top: 0; left: 0; height: 100%; width: 260px; background: #fff; z-index: 201; transform: translateX(-100%); transition: transform .27s cubic-bezier(.4,0,.2,1); display: flex; flex-direction: column; box-shadow: 4px 0 24px rgba(0,0,0,.18); }
+  .nav-drawer.open { transform: translateX(0); }
+  .nav-drawer-head { background: var(--primary); padding: 0 16px; height: 56px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; gap: 12px; }
+  .nav-drawer-head-title { color: #fff; font-size: 16px; font-weight: 800; flex: 1; }
+  .nav-drawer-close { background: rgba(255,255,255,.15); border: none; color: #fff; width: 32px; height: 32px; border-radius: var(--radius-sm); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background .18s; }
+  .nav-drawer-close:hover { background: rgba(255,255,255,.3); }
+  .nav-drawer-close svg { width: 16px; height: 16px; }
+  .nav-drawer-body { flex: 1; padding: 10px 8px; overflow-y: auto; }
+  .nav-section-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); padding: 8px 12px 4px; }
+  .nav-item { width: 100%; display: flex; align-items: center; gap: 12px; padding: 11px 12px; border: none; background: none; font-family: var(--font); font-size: 14px; font-weight: 600; color: var(--text-secondary); border-radius: var(--radius-sm); cursor: pointer; transition: all .18s; text-align: left; }
+  .nav-item:hover { background: #fff7ed; color: var(--primary); }
+  .nav-item.active { background: #fff7ed; color: var(--primary); }
+  .nav-item-icon { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: var(--bg); flex-shrink: 0; font-size: 15px; transition: background .18s; }
+  .nav-item.active .nav-item-icon { background: var(--primary); }
+
+  /* ── MOBILE MODAL SHEET ── */
+  @media(max-width: 600px) {
+    .modal-overlay { padding: 0; align-items: flex-end; }
+    .modal-box { border-radius: 16px 16px 0 0; max-height: 90vh; overflow-y: auto; }
+  }
 
   /* ── ANALYTICS SECTION ── */
   .an-stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
@@ -214,20 +252,43 @@
 
 <!-- TOPBAR -->
 <div class="topbar">
+  <button class="topbar-ham-btn" id="hamNavBtn" onclick="openNavDrawer()" aria-label="Abrir menú de navegación">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
   <a class="topbar-logo" href="./index.html" title="Ir a la tienda">
     <img src="./images/favicon.ico" alt="PideFacil">
     <span>PideFacil</span>
   </a>
   <div class="topbar-sep"></div>
-  <span class="topbar-title">Panel de administración</span>
+  <span class="topbar-section-label" id="topbarSectionLabel">Pedidos</span>
   <div class="topbar-right">
-    <div class="section-nav">
-      <button class="section-nav-btn active" id="navPedidos" onclick="showSection('pedidos')">Pedidos</button>
-      <button class="section-nav-btn" id="navAnalytics" onclick="showSection('analytics')">Analytics</button>
-    </div>
     <button class="btn-refresh" id="btnRefresh" onclick="onRefresh()" title="Actualizar">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-      Actualizar
+      <span class="btn-refresh-text">Actualizar</span>
+    </button>
+  </div>
+</div>
+
+<!-- NAV OVERLAY -->
+<div class="nav-overlay" id="navOverlay" onclick="closeNavDrawer()"></div>
+
+<!-- NAV DRAWER -->
+<div class="nav-drawer" id="navDrawer">
+  <div class="nav-drawer-head">
+    <span class="nav-drawer-head-title">PideFacil Admin</span>
+    <button class="nav-drawer-close" onclick="closeNavDrawer()" aria-label="Cerrar menú">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="nav-drawer-body">
+    <div class="nav-section-label">Secciones</div>
+    <button class="nav-item active" id="navPedidos" onclick="showSection('pedidos');closeNavDrawer()">
+      <span class="nav-item-icon">📋</span>
+      Pedidos
+    </button>
+    <button class="nav-item" id="navAnalytics" onclick="showSection('analytics');closeNavDrawer()">
+      <span class="nav-item-icon">📊</span>
+      Analytics
     </button>
   </div>
 </div>
@@ -349,12 +410,27 @@ function showSection(section) {
   document.getElementById('analyticsSection').style.display = section === 'analytics' ? 'block' : 'none';
   document.getElementById('navPedidos').classList.toggle('active',   section === 'pedidos');
   document.getElementById('navAnalytics').classList.toggle('active', section === 'analytics');
+  const sectionLabels = { pedidos: 'Pedidos', analytics: 'Analytics' };
+  const labelEl = document.getElementById('topbarSectionLabel');
+  if (labelEl) labelEl.textContent = sectionLabels[section] ?? section;
   if (section === 'analytics') loadAnalytics();
 }
 
 function onRefresh() {
   if (_activeSection === 'analytics') loadAnalytics();
   else loadOrders();
+}
+
+function openNavDrawer() {
+  document.getElementById('navDrawer').classList.add('open');
+  document.getElementById('navOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeNavDrawer() {
+  document.getElementById('navDrawer').classList.remove('open');
+  document.getElementById('navOverlay').classList.remove('open');
+  document.body.style.overflow = '';
 }
 const _FIXED_SELLER_ID = 'd59ea1a4-5841-4740-950a-fb501a46ebae';
 let allOrders = [];
@@ -518,16 +594,16 @@ function renderTable(list) {
     ).join('') + (o.products?.length > 2 ? `<div class="prod-item" style="color:var(--text-muted)">+${o.products.length - 2} más</div>` : '');
 
     return `<tr>
-      <td class="td-id">${(o.id ?? '').substring(0,8)}…</td>
-      <td>${fmtDate(o.createdAt)}</td>
-      <td class="td-bold">${buyer}</td>
-      <td>${seller}</td>
-      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${o.address ?? ''}">${o.address ?? '—'}</td>
-      <td>${statusBadge(o.status)}</td>
-      <td>${payChip(o.paymentType)}</td>
-      <td class="td-bold">${total != null ? fmtPrice(total) : '—'}</td>
-      <td><div class="prod-list">${prods || '—'}</div></td>
-      <td><button class="btn-detail" onclick='openDetail(${JSON.stringify(o)})'>Ver</button></td>
+      <td data-label="ID" class="td-id">${(o.id ?? '').substring(0,8)}…</td>
+      <td data-label="Fecha">${fmtDate(o.createdAt)}</td>
+      <td data-label="Cliente" class="td-bold">${buyer}</td>
+      <td data-label="Vendedor">${seller}</td>
+      <td data-label="Dirección" class="td-addr" title="${o.address ?? ''}">${o.address ?? '—'}</td>
+      <td data-label="Estado">${statusBadge(o.status)}</td>
+      <td data-label="Pago">${payChip(o.paymentType)}</td>
+      <td data-label="Total" class="td-bold">${total != null ? fmtPrice(total) : '—'}</td>
+      <td data-label="Productos" class="td-prods"><div class="prod-list">${prods || '—'}</div></td>
+      <td class="td-action"><button class="btn-detail" onclick='openDetail(${JSON.stringify(o)})'>Ver</button></td>
     </tr>`;
   }).join('');
 
@@ -563,6 +639,11 @@ function openDetail(order) {
   const total  = order.products
     ? order.products.reduce((s, p) => s + (p.unitPrice != null ? Number(p.unitPrice) : (p.product?.price ?? 0)) * (p.quantity ?? 1), 0)
     : null;
+  const dropTotal = order.products
+    ? order.products.reduce((s, p) => s + (p.product?.dropshippingPrice != null ? Number(p.product.dropshippingPrice) * (p.quantity ?? 1) : 0), 0)
+    : 0;
+  const hasAnyDrop = order.products?.some(p => p.product?.dropshippingPrice != null) ?? false;
+  const earnings = (hasAnyDrop && total != null) ? total - dropTotal : null;
 
   const prods = (order.products ?? []).map(p => `
     <div class="detail-product-row">
@@ -594,6 +675,7 @@ function openDetail(order) {
         <div class="detail-field"><span class="detail-label">Cambio de</span><span class="detail-value">${order.changeFrom ? fmtPrice(order.changeFrom) : '—'}</span></div>
         <div class="detail-field"><span class="detail-label">Domicilio</span><span class="detail-value">${order.deliveryPrice ? fmtPrice(order.deliveryPrice) : '—'}</span></div>
         <div class="detail-field"><span class="detail-label">Total estimado</span><span class="detail-value" style="color:var(--primary);font-weight:800">${total != null ? fmtPrice(total) : '—'}</span></div>
+        ${earnings != null ? `<div class="detail-field" style="grid-column:span 2;background:#f0fdf4;border-radius:8px;padding:8px 12px"><span class="detail-label" style="color:#15803d">Ganancia estimada</span><span class="detail-value" style="color:#15803d;font-weight:800;font-size:16px">💰 ${fmtPrice(earnings)}</span></div>` : ''}
       </div>
     </div>
     ${Array.isArray(order.location) && order.location.length === 2 ? (() => {
@@ -636,7 +718,7 @@ function openDetail(order) {
 
 function closeModal() { document.getElementById('detailModal').classList.remove('open'); }
 function handleModalClick(e) { if (e.target === document.getElementById('detailModal')) closeModal(); }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeNavDrawer(); closeModal(); } });
 
 // ── ORDER ACTIONS ────────────────────────────────────────
 async function confirmOrder(orderId, sellerId) {
