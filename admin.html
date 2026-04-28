@@ -44,6 +44,9 @@
   .btn-refresh:hover { background: rgba(255,255,255,.28); }
   .btn-refresh svg { width: 14px; height: 14px; }
   .btn-refresh.spinning svg { animation: spin .7s linear infinite; }
+  .btn-cache { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.25); color: rgba(255,255,255,.9); font-family: var(--font); font-size: 13px; font-weight: 600; padding: 6px 14px; border-radius: var(--radius-full); cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background .2s; }
+  .btn-cache:hover { background: rgba(220,38,38,.55); border-color: rgba(255,255,255,.35); }
+  .btn-cache.clearing { opacity: .6; pointer-events: none; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
   /* ── CONTENT ── */
@@ -221,17 +224,46 @@
   }
 
   /* ── ANALYTICS SECTION ── */
-  .an-stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+  .an-stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px; }
   @media(max-width:600px) { .an-stats-grid { grid-template-columns: repeat(2, 1fr); } }
+  .an-kpis-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px; }
+  @media(max-width:600px) { .an-kpis-grid { grid-template-columns: repeat(2, 1fr); } }
+  .an-alerts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px; }
+  @media(max-width:600px) { .an-alerts-grid { grid-template-columns: repeat(2, 1fr); } }
+  .an-section-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); margin: 16px 0 8px; display: flex; align-items: center; gap: 6px; }
+  .an-section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
   .an-stat { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow); }
+  .an-stat.warn { border-color: #fed7aa; background: #fff7ed; }
+  .an-stat.warn .an-stat-value { color: #c2410c; }
+  .an-stat.good { border-color: #bbf7d0; background: #f0fdf4; }
+  .an-stat.good .an-stat-value { color: #15803d; }
+  .an-stat.blue { border-color: #bae6fd; background: #f0f9ff; }
+  .an-stat.blue .an-stat-value { color: #0369a1; }
   .an-stat-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); margin-bottom: 6px; }
   .an-stat-value { font-size: 28px; font-weight: 800; color: var(--text-primary); line-height: 1; }
-  .an-charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-  @media(max-width:700px) { .an-charts-grid { grid-template-columns: 1fr; } }
+  .an-stat-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+  /* ── Help tooltip ── */
+  .an-stat { position: relative; }
+  .an-tip { display: inline-flex; align-items: center; justify-content: center;
+    width: 15px; height: 15px; border-radius: 50%; font-size: 9px; font-weight: 800;
+    background: var(--border); color: var(--text-muted); cursor: default; line-height: 1;
+    position: absolute; top: 10px; right: 10px; flex-shrink: 0; user-select: none; }
+  .an-tip:hover { background: #6366f1; color: #fff; }
+  .an-tip[data-tip]::after { content: attr(data-tip); position: absolute; top: calc(100% + 6px); right: 0;
+    min-width: 200px; max-width: 260px; background: #1e293b; color: #f1f5f9;
+    font-size: 11px; font-weight: 400; line-height: 1.5; padding: 8px 10px;
+    border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,.25);
+    white-space: normal; text-align: left; z-index: 9999; pointer-events: none;
+    opacity: 0; transition: opacity .15s; }
+  .an-tip[data-tip]:hover::after { opacity: 1; }
+  /* tip inside card title row */
+  .an-card-title { display: flex; align-items: center; gap: 6px; }
+  .an-card-title .an-tip { position: static; margin-left: auto; flex-shrink: 0; }
+  .an-card-title .an-tip[data-tip]::after { right: 0; top: calc(100% + 6px); }
+  .an-charts-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 16px; }
   .an-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
   .an-card-title { font-size: 13px; font-weight: 800; color: var(--text-primary); margin-bottom: 14px; }
-  .an-card-full { grid-column: span 2; }
-  @media(max-width:700px) { .an-card-full { grid-column: span 1; } }
+  .an-card-full { grid-column: span 1; }
   .an-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
   .an-bar-label { font-size: 12px; color: var(--text-secondary); min-width: 0; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .an-bar-track { flex: 2; background: var(--bg); border-radius: var(--radius-full); height: 8px; overflow: hidden; }
@@ -246,12 +278,52 @@
   .an-day-bar { width: 100%; background: var(--primary); border-radius: 3px 3px 0 0; min-height: 2px; transition: height .4s; }
   .an-day-label { font-size: 9px; color: var(--text-muted); writing-mode: vertical-rl; transform: rotate(180deg); margin-top: 2px; }
   .an-empty { font-size: 13px; color: var(--text-muted); text-align: center; padding: 20px 0; }
+
+  /* ── PRODUCTS SECTION ── */
+  .prod-grid { display: flex; flex-direction: column; gap: 8px; }
+  .prod-card { background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); display: flex; gap: 14px; padding: 14px; align-items: flex-start; transition: box-shadow .18s; }
+  .prod-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.1); }
+  .prod-card-off { opacity: .65; }
+  .prod-card-img { width: 68px; height: 68px; border-radius: var(--radius-sm); object-fit: cover; background: var(--bg); flex-shrink: 0; border: 1px solid var(--border); }
+  .prod-card-body { flex: 1; min-width: 0; }
+  .prod-card-name { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .prod-card-ref { font-size: 11px; color: var(--text-muted); font-family: monospace; margin-bottom: 7px; }
+  .prod-card-price { font-size: 16px; font-weight: 800; color: var(--primary); }
+  .prod-card-old { font-size: 12px; color: var(--text-muted); text-decoration: line-through; }
+  .prod-card-disc { font-size: 11px; font-weight: 700; color: #15803d; background: #f0fdf4; padding: 1px 5px; border-radius: 4px; }
+  .prod-card-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 8px; }
+  .prod-card-cat { font-size: 11px; font-weight: 600; background: #f3f4f6; color: var(--text-secondary); padding: 2px 8px; border-radius: var(--radius-full); }
+  .prod-card-active { font-size: 11px; font-weight: 700; background: #f0fdf4; color: #15803d; padding: 2px 8px; border-radius: var(--radius-full); border: 1px solid #bbf7d0; }
+  .prod-card-inactive { font-size: 11px; font-weight: 700; background: #fef2f2; color: #b91c1c; padding: 2px 8px; border-radius: var(--radius-full); border: 1px solid #fecaca; }
+  .prod-card-actions { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+  /* ── PRICE BOX ── */
+  .prod-price-box { margin-top: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; }
+  .prod-price-box-header { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: #f1f5f9; border-bottom: 1px solid #e2e8f0; }
+  .prod-price-box-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); }
+  .prod-price-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+  .prod-price-cell { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; }
+  .prod-price-cell:nth-child(2n) { border-right: none; }
+  .prod-price-cell:nth-last-child(-n+2) { border-bottom: none; }
+  .prod-price-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); }
+  .prod-price-val { font-size: 13px; font-weight: 800; color: var(--text-primary); }
+  .prod-price-val.green { color: #15803d; }
+  .prod-price-val.blue  { color: #0369a1; }
+  .prod-price-val.orange { color: var(--primary); }
+  .prod-tag-promo { display: inline-flex; align-items: center; font-size: 10px; font-weight: 700; background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; padding: 1px 6px; border-radius: var(--radius-full); margin-left: 4px; vertical-align: middle; }
+
+  /* Product edit modal form */
+  .pf-form-field { display: flex; flex-direction: column; gap: 5px; }
+  .pf-form-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+  .pf-form-input { padding: 9px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: var(--font); font-size: 13px; outline: none; background: var(--bg-card); color: var(--text-primary); transition: border-color .18s; width: 100%; }
+  .pf-form-input:focus { border-color: var(--primary); }
+  .pf-clear-btn { padding: 8px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: var(--font); font-size: 12px; font-weight: 600; color: var(--text-secondary); background: var(--bg-card); cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all .18s; }
+  .pf-clear-btn:hover { border-color: #b91c1c; color: #b91c1c; }
 </style>
 </head>
 <body>
 
 <!-- TOPBAR -->
-<div class="topbar">
+<div class="topbar" id="mainTopbar" style="display:none">
   <button class="topbar-ham-btn" id="hamNavBtn" onclick="openNavDrawer()" aria-label="Abrir menú de navegación">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
   </button>
@@ -262,6 +334,10 @@
   <div class="topbar-sep"></div>
   <span class="topbar-section-label" id="topbarSectionLabel">Pedidos</span>
   <div class="topbar-right">
+    <button class="btn-cache" id="btnCache" onclick="clearCache()" title="Limpiar caché del servidor">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      <span class="btn-refresh-text">Limpiar caché</span>
+    </button>
     <button class="btn-refresh" id="btnRefresh" onclick="onRefresh()" title="Actualizar">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
       <span class="btn-refresh-text">Actualizar</span>
@@ -270,10 +346,10 @@
 </div>
 
 <!-- NAV OVERLAY -->
-<div class="nav-overlay" id="navOverlay" onclick="closeNavDrawer()"></div>
+<div class="nav-overlay" id="navOverlay" onclick="closeNavDrawer()" style="display:none"></div>
 
 <!-- NAV DRAWER -->
-<div class="nav-drawer" id="navDrawer">
+<div class="nav-drawer" id="navDrawer" style="display:none">
   <div class="nav-drawer-head">
     <span class="nav-drawer-head-title">PideFacil Admin</span>
     <button class="nav-drawer-close" onclick="closeNavDrawer()" aria-label="Cerrar menú">
@@ -289,6 +365,10 @@
     <button class="nav-item" id="navAnalytics" onclick="showSection('analytics');closeNavDrawer()">
       <span class="nav-item-icon">📊</span>
       Analytics
+    </button>
+    <button class="nav-item" id="navProductos" onclick="showSection('productos');closeNavDrawer()">
+      <span class="nav-item-icon">📦</span>
+      Productos
     </button>
   </div>
 </div>
@@ -347,40 +427,145 @@
 
 <!-- ANALYTICS SECTION -->
 <div class="content" id="analyticsSection" style="display:none">
-  <!-- Stat cards -->
-  <div class="an-stats-grid">
-    <div class="an-stat"><div class="an-stat-label">Visitantes hoy</div><div class="an-stat-value" id="anVisitorsToday">—</div></div>
-    <div class="an-stat"><div class="an-stat-label">Visitantes este mes</div><div class="an-stat-value" id="anVisitorsMonth">—</div></div>
-    <div class="an-stat"><div class="an-stat-label">Sesiones hoy</div><div class="an-stat-value" id="anSessionsToday">—</div></div>
+
+  <!-- KPIs principales -->
+  <div class="an-section-label">💰 KPIs principales (mes actual)</div>
+  <div class="an-kpis-grid">
+    <div class="an-stat good">
+      <span class="an-tip" data-tip="Total facturado a clientes en el mes actual, sumando todos los pedidos (incluye pendientes y confirmados).">?</span>
+      <div class="an-stat-label">Revenue total mes</div><div class="an-stat-value" id="anRevenueMes">—</div>
+    </div>
+    <div class="an-stat good">
+      <span class="an-tip" data-tip="Revenue menos el costo de dropshipping de cada producto. Requiere que los productos tengan precio drop configurado.">?</span>
+      <div class="an-stat-label">Ganancia estimada mes</div><div class="an-stat-value" id="anGananciaMes">—</div>
+    </div>
+    <div class="an-stat blue">
+      <span class="an-tip" data-tip="Valor promedio de cada pedido en el mes. Revenue total ÷ número de pedidos.">?</span>
+      <div class="an-stat-label">Ticket promedio</div><div class="an-stat-value" id="anTicketPromedio">—</div>
+    </div>
+    <div class="an-stat blue">
+      <span class="an-tip" data-tip="Porcentaje de visitantes únicos del mes que realizaron al menos un pedido. Pedidos ÷ visitantes mes × 100.">?</span>
+      <div class="an-stat-label">Tasa de conversión</div><div class="an-stat-value" id="anConvRate">—</div><div class="an-stat-sub" id="anConvRateSub"></div>
+    </div>
+    <div class="an-stat warn">
+      <span class="an-tip" data-tip="Revenue total de los pedidos que aún están en estado PENDIENTE — dinero esperado pero no confirmado.">?</span>
+      <div class="an-stat-label">Revenue en vuelo (pendientes)</div><div class="an-stat-value" id="anRevenuePendiente">—</div><div class="an-stat-sub" id="anRevenuePendienteSub"></div>
+    </div>
+    <div class="an-stat warn">
+      <span class="an-tip" data-tip="Porcentaje de pedidos del mes que fueron cancelados (ya sea manualmente o de forma automática). Cancelados ÷ total × 100.">?</span>
+      <div class="an-stat-label">% Pedidos cancelados</div><div class="an-stat-value" id="anCancelRate">—</div><div class="an-stat-sub" id="anCancelRateSub"></div>
+    </div>
   </div>
-  <!-- Charts row -->
+
+  <!-- Tráfico -->
+  <div class="an-section-label">📡 Tráfico</div>
+  <div class="an-stats-grid">
+    <div class="an-stat">
+      <span class="an-tip" data-tip="Cantidad de usuarios únicos (por IP / cookie) que abrieron la tienda hoy.">?</span>
+      <div class="an-stat-label">Visitantes hoy</div><div class="an-stat-value" id="anVisitorsToday">—</div>
+    </div>
+    <div class="an-stat">
+      <span class="an-tip" data-tip="Cantidad de usuarios únicos que visitaron la tienda en el mes actual (acumulado desde el día 1).">?</span>
+      <div class="an-stat-label">Visitantes este mes</div><div class="an-stat-value" id="anVisitorsMonth">—</div>
+    </div>
+    <div class="an-stat">
+      <span class="an-tip" data-tip="Número de sesiones registradas hoy. Una sesión puede incluir múltiples páginas vistas por el mismo usuario.">?</span>
+      <div class="an-stat-label">Sesiones hoy</div><div class="an-stat-value" id="anSessionsToday">—</div>
+    </div>
+  </div>
+
+  <!-- Alertas del catálogo -->
+  <div class="an-section-label">⚠️ Salud del catálogo</div>
+  <div class="an-alerts-grid">
+    <div class="an-stat warn">
+      <span class="an-tip" data-tip="Productos que no tienen foto asignada. Los productos sin imagen convierten mucho menos — ve a Productos para corregirlos.">?</span>
+      <div class="an-stat-label">Sin imagen</div><div class="an-stat-value" id="anNoImage">—</div><div class="an-stat-sub">productos afectados</div>
+    </div>
+    <div class="an-stat warn">
+      <span class="an-tip" data-tip="Productos sin precio de dropshipping configurado. Sin este dato no se puede calcular la ganancia estimada.">?</span>
+      <div class="an-stat-label">Sin precio drop</div><div class="an-stat-value" id="anNoDrop">—</div><div class="an-stat-sub">sin margen calculable</div>
+    </div>
+    <div class="an-stat warn">
+      <span class="an-tip" data-tip="Productos marcados como inactivos. No son visibles en la tienda ni aparecen en búsquedas para clientes.">?</span>
+      <div class="an-stat-label">Inactivos</div><div class="an-stat-value" id="anInactive">—</div><div class="an-stat-sub">ocultos en tienda</div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="an-section-label">📊 Detalle</div>
   <div class="an-charts-grid">
-    <!-- Top products -->
     <div class="an-card">
-      <div class="an-card-title">📦 Productos más vistos (30 días)</div>
-      <div id="anTopProducts"><div class="an-empty">Cargando…</div></div>
-    </div>
-    <!-- Top no-result searches -->
-    <div class="an-card">
-      <div class="an-card-title">🔍 Búsquedas sin resultados (30 días)</div>
-      <div id="anNoResults"><div class="an-empty">Cargando…</div></div>
-    </div>
-    <!-- Funnel -->
-    <div class="an-card">
-      <div class="an-card-title">🔄 Embudo de conversión</div>
+      <div class="an-card-title">🔄 Embudo de conversión <span class="an-tip" data-tip="Cuántos usuarios pasaron por cada etapa: Vista de página → Agregar al carrito → Inicio de checkout → Pedido realizado. Muestra dónde se pierden clientes.">?</span></div>
       <div id="anFunnel"><div class="an-empty">Cargando…</div></div>
     </div>
-    <!-- Top categories -->
     <div class="an-card">
-      <div class="an-card-title">🏷️ Categorías más filtradas (30 días)</div>
+      <div class="an-card-title">🏆 Productos más vendidos — por revenue <span class="an-tip" data-tip="Top 10 productos que generaron más ingresos en el mes actual. Calculado como precio de venta × unidades vendidas.">?</span></div>
+      <div id="anTopByRevenue"><div class="an-empty">Cargando…</div></div>
+    </div>
+    <div class="an-card">
+      <div class="an-card-title">📦 Productos más vendidos — por unidades <span class="an-tip" data-tip="Top 10 productos más vendidos por cantidad de unidades en el mes actual, sin importar su precio.">?</span></div>
+      <div id="anTopByUnits"><div class="an-empty">Cargando…</div></div>
+    </div>
+    <div class="an-card">
+      <div class="an-card-title">👥 Clientes con más pedidos <span class="an-tip" data-tip="Clientes que más pedidos realizaron en el mes actual. Útil para identificar compradores frecuentes o mayoristas.">?</span></div>
+      <div id="anTopBuyers"><div class="an-empty">Cargando…</div></div>
+    </div>
+    <div class="an-card">
+      <div class="an-card-title">⏰ Pedidos por hora del día <span class="an-tip" data-tip="Distribución de pedidos según la hora en que fueron creados. Identifica los picos de demanda para planificar atención.">?</span></div>
+      <div id="anByHour"><div class="an-empty">Cargando…</div></div>
+    </div>
+    <div class="an-card">
+      <div class="an-card-title">💳 Ventas por método de pago <span class="an-tip" data-tip="Cuántos pedidos del mes se pagaron con cada método (Wompi, contra entrega, transferencia, etc.).">?</span></div>
+      <div id="anByPayment"><div class="an-empty">Cargando…</div></div>
+    </div>
+    <div class="an-card">
+      <div class="an-card-title">👁️ Productos más vistos (30 días) <span class="an-tip" data-tip="Productos con más vistas de página en los últimos 30 días según el sistema de analytics. No equivale a ventas.">?</span></div>
+      <div id="anTopProducts"><div class="an-empty">Cargando…</div></div>
+    </div>
+    <div class="an-card">
+      <div class="an-card-title">🔍 Búsquedas sin resultados (30 días) <span class="an-tip" data-tip="Términos que los clientes buscaron y no encontraron ningún producto. Son oportunidades de ampliar el catálogo.">?</span></div>
+      <div id="anNoResults"><div class="an-empty">Cargando…</div></div>
+    </div>
+    <div class="an-card">
+      <div class="an-card-title">🏷️ Categorías más filtradas (30 días) <span class="an-tip" data-tip="Categorías que los clientes usaron más como filtro al navegar la tienda. Refleja el interés real del catálogo.">?</span></div>
       <div id="anTopCategories"><div class="an-empty">Cargando…</div></div>
     </div>
-    <!-- Events by day -->
-    <div class="an-card an-card-full">
-      <div class="an-card-title">📈 Eventos por día (últimos 30 días)</div>
+    <div class="an-card">
+      <div class="an-card-title">📈 Eventos por día (últimos 30 días) <span class="an-tip" data-tip="Total de eventos de analytics registrados por día (vistas, clics, búsquedas, etc.). Muestra la actividad general de la tienda.">?</span></div>
       <div id="anByDay"><div class="an-empty">Cargando…</div></div>
     </div>
   </div>
+</div>
+
+<!-- PRODUCTOS SECTION -->
+<div class="content" id="productosSection" style="display:none">
+  <div class="toolbar">
+    <div class="toolbar-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="prodSearch" placeholder="Buscar por nombre, REF, categoría, tags…" oninput="applyProdFilters()">
+    </div>
+    <div class="filter-group" id="prodFilterGroup">
+      <button class="filter-btn active" onclick="setProdFilter('all',this)">Todos</button>
+      <button class="filter-btn" onclick="setProdFilter('active',this)">Activos</button>
+      <button class="filter-btn" onclick="setProdFilter('inactive',this)">Inactivos</button>
+      <button class="filter-btn" onclick="setProdFilter('promo',this)">🏷 Con descuento</button>
+    </div>
+    <select id="prodCatSelect" onchange="applyProdFilters()" style="padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;background:var(--bg-card);color:var(--text-primary);cursor:pointer">
+      <option value="">Todas las categorías</option>
+    </select>
+    <select id="prodSortSelect" onchange="applyProdFilters()" style="padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;background:var(--bg-card);color:var(--text-primary);cursor:pointer">
+      <option value="">Ordenar por…</option>
+      <option value="price-asc">Precio: menor a mayor</option>
+      <option value="price-desc">Precio: mayor a menor</option>
+      <option value="margin-asc">Margen: menor a mayor</option>
+      <option value="margin-desc">Margen: mayor a menor</option>
+      <option value="cat-asc">Categoría A→Z</option>
+      <option value="name-asc">Nombre A→Z</option>
+      <option value="name-desc">Nombre Z→A</option>
+    </select>
+    <span id="prodCount" style="font-size:12px;color:var(--text-muted)"></span>
+  </div>
+  <div id="prodGrid"></div>
 </div>
 
 <!-- DETAIL MODAL -->
@@ -396,6 +581,19 @@
   </div>
 </div>
 
+<!-- PRODUCT EDIT MODAL -->
+<div class="modal-overlay" id="prodEditModal">
+  <div class="modal-box" style="max-width:480px">
+    <div class="modal-head">
+      <div class="modal-head-title">Editar producto</div>
+      <button class="modal-close" onclick="closeProdEditModal()" aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="prodEditBody" style="display:flex;flex-direction:column;gap:16px"></div>
+  </div>
+</div>
+
 <div class="adm-toast" id="admToast"></div>
 
 <script src="js/config.js"></script>
@@ -403,21 +601,39 @@
 const AUTH_KEY = 'adm_token';
 let _activeSection = 'pedidos';
 
+// ── PRODUCTS STATE (early declaration to avoid TDZ) ───────
+let allProducts = [];
+let allCategories = [];
+let _prodRawMap = {};
+let _prodFilter = 'all';
+let _prodSort = '';
+
+function _buildProdRawMap() {
+  _prodRawMap = {};
+  allProducts.forEach(p => { _prodRawMap[p.id] = p; });
+}
+
 // ── SECTION SWITCHING ─────────────────────────────────────
 function showSection(section) {
   _activeSection = section;
-  document.getElementById('dashSection').style.display      = section === 'pedidos'   ? 'block' : 'none';
-  document.getElementById('analyticsSection').style.display = section === 'analytics' ? 'block' : 'none';
+  document.getElementById('dashSection').style.display       = section === 'pedidos'   ? 'block' : 'none';
+  document.getElementById('analyticsSection').style.display  = section === 'analytics' ? 'block' : 'none';
+  document.getElementById('productosSection').style.display  = section === 'productos' ? 'block' : 'none';
   document.getElementById('navPedidos').classList.toggle('active',   section === 'pedidos');
   document.getElementById('navAnalytics').classList.toggle('active', section === 'analytics');
-  const sectionLabels = { pedidos: 'Pedidos', analytics: 'Analytics' };
+  document.getElementById('navProductos').classList.toggle('active', section === 'productos');
+  const sectionLabels = { pedidos: 'Pedidos', analytics: 'Analytics', productos: 'Productos' };
   const labelEl = document.getElementById('topbarSectionLabel');
   if (labelEl) labelEl.textContent = sectionLabels[section] ?? section;
+  history.replaceState(null, '', '#' + section);
   if (section === 'analytics') loadAnalytics();
+  if (section === 'productos' && !allProducts.length) loadProducts();
+  if (section === 'pedidos') loadOrders();
 }
 
 function onRefresh() {
   if (_activeSection === 'analytics') loadAnalytics();
+  else if (_activeSection === 'productos') loadProducts();
   else loadOrders();
 }
 
@@ -468,10 +684,20 @@ document.getElementById('inputPassword').addEventListener('keydown', e => { if (
 
 function showDashboard() {
   document.getElementById('loginSection').style.display = 'none';
+  document.getElementById('mainTopbar').style.display   = 'flex';
+  document.getElementById('navOverlay').style.removeProperty('display');
+  document.getElementById('navDrawer').style.removeProperty('display');
   document.getElementById('dashSection').style.display  = 'block';
   const picker = document.getElementById('monthPicker');
   if (picker) picker.value = currentMonth;
-  loadOrders();
+  // Restore section from URL hash if present
+  const validSections = ['pedidos', 'analytics', 'productos'];
+  const hashSection = location.hash.replace('#', '');
+  if (validSections.includes(hashSection)) {
+    showSection(hashSection);
+  } else {
+    showSection('pedidos');
+  }
 }
 
 // Auto-login if token already in session
@@ -718,7 +944,7 @@ function openDetail(order) {
 
 function closeModal() { document.getElementById('detailModal').classList.remove('open'); }
 function handleModalClick(e) { if (e.target === document.getElementById('detailModal')) closeModal(); }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeNavDrawer(); closeModal(); } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeNavDrawer(); closeModal(); closeProdEditModal(); } });
 
 // ── ORDER ACTIONS ────────────────────────────────────────
 async function confirmOrder(orderId, sellerId) {
@@ -762,6 +988,36 @@ async function loadAnalytics() {
   const btn = document.getElementById('btnRefresh');
   btn.classList.add('spinning');
   try {
+    // Ensure categories are loaded
+    if (!allCategories.length) {
+      try {
+        const rc = await fetch(`${API_BASE}/api/categories/active`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        if (rc.ok) allCategories = await rc.json();
+      } catch (_) {}
+    }
+
+    // Ensure products are loaded (for catalog health)
+    if (!allProducts.length) {
+      try {
+        const rp = await fetch(`${API_BASE}/api/products/seller/${_FIXED_SELLER_ID}`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        if (rp.ok) { allProducts = await rp.json(); _buildProdRawMap(); }
+      } catch (_) {}
+    }
+
+    // Ensure orders are loaded (for KPIs)
+    if (!allOrders.length) {
+      try {
+        const ro = await fetch(`${API_BASE}/api/orders/seller/${_FIXED_SELLER_ID}/month/${currentMonth}`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        if (ro.ok) allOrders = await ro.json();
+      } catch (_) {}
+    }
+
     const res = await fetch(`${API_BASE}/api/analytics/stats`, {
       headers: { 'Authorization': `Bearer ${getToken()}` }
     });
@@ -777,23 +1033,148 @@ async function loadAnalytics() {
 }
 
 function renderAnalytics(s) {
+  // ── Traffic stats ──────────────────────────────────────────────
   document.getElementById('anVisitorsToday').textContent  = s.uniqueVisitorsToday   ?? '—';
   document.getElementById('anVisitorsMonth').textContent  = s.uniqueVisitorsThisMonth ?? '—';
   document.getElementById('anSessionsToday').textContent  = s.sessionsToday          ?? '—';
 
-  // Top viewed products
+  // ── Order helpers ──────────────────────────────────────────────
+  const orderTotal = o => o.products
+    ? o.products.reduce((sum, p) => sum + (p.unitPrice != null ? Number(p.unitPrice) : (p.product?.price ?? 0)) * (p.quantity ?? 1), 0)
+    : 0;
+  const orderEarnings = o => o.products
+    ? o.products.reduce((sum, p) => {
+        const price = p.unitPrice != null ? Number(p.unitPrice) : (p.product?.price ?? 0);
+        const drop  = p.product?.dropshippingPrice != null ? Number(p.product.dropshippingPrice) : 0;
+        return sum + (price - drop) * (p.quantity ?? 1);
+      }, 0)
+    : 0;
+
+  // ── KPI computations ───────────────────────────────────────────
+  const orders    = allOrders;
+  const confirmed = orders.filter(o => o.status === 'CONFIRMADO');
+  const pending   = orders.filter(o => o.status === 'PENDIENTE');
+  const cancelled = orders.filter(o => o.status === 'CANCELADO' || o.status === 'CANCELADO_AUTOMATICAMENTE');
+
+  const totalRevenueMes    = orders.reduce((sum, o) => sum + orderTotal(o), 0);
+  const gananciaMes        = orders.reduce((sum, o) => sum + orderEarnings(o), 0);
+  const ticketPromedio     = orders.length ? totalRevenueMes / orders.length : null;
+  const revenuePendiente   = pending.reduce((sum, o) => sum + orderTotal(o), 0);
+  const cancelRate         = orders.length ? Math.round(cancelled.length / orders.length * 100) : null;
+  const convRate           = (s.uniqueVisitorsThisMonth > 0 && orders.length)
+                              ? ((orders.length / s.uniqueVisitorsThisMonth) * 100).toFixed(1)
+                              : null;
+
+  document.getElementById('anRevenueMes').textContent      = orders.length ? fmtPrice(totalRevenueMes) : '—';
+  document.getElementById('anGananciaMes').textContent     = orders.length ? fmtPrice(gananciaMes) : '—';
+  document.getElementById('anTicketPromedio').textContent  = ticketPromedio != null ? fmtPrice(ticketPromedio) : '—';
+  document.getElementById('anConvRate').textContent        = convRate != null ? convRate + '%' : '—';
+  document.getElementById('anConvRateSub').textContent     = orders.length ? `${orders.length} pedidos / ${s.uniqueVisitorsThisMonth} visitantes` : '';
+  document.getElementById('anRevenuePendiente').textContent = revenuePendiente > 0 ? fmtPrice(revenuePendiente) : '—';
+  document.getElementById('anRevenuePendienteSub').textContent = pending.length ? `${pending.length} pedido${pending.length !== 1 ? 's' : ''} pendiente${pending.length !== 1 ? 's' : ''}` : '';
+  document.getElementById('anCancelRate').textContent      = cancelRate != null ? cancelRate + '%' : '—';
+  document.getElementById('anCancelRateSub').textContent   = cancelled.length ? `${cancelled.length} de ${orders.length} pedidos` : '';
+
+  // ── Catalog health ─────────────────────────────────────────────
+  const noImage  = allProducts.filter(p => !p.image).length;
+  const noDrop   = allProducts.filter(p => p.dropshippingPrice == null).length;
+  const inactive = allProducts.filter(p => p.active === false).length;
+
+  const _setHealth = (id, n, total) => {
+    const el = document.getElementById(id);
+    el.textContent = n;
+    el.closest('.an-stat').classList.toggle('good', n === 0);
+    el.closest('.an-stat').classList.toggle('warn', n > 0);
+  };
+  _setHealth('anNoImage',  noImage,  allProducts.length);
+  _setHealth('anNoDrop',   noDrop,   allProducts.length);
+  _setHealth('anInactive', inactive, allProducts.length);
+
+  // ── Bar chart helper ───────────────────────────────────────────
+  const barChart = (items, getLabel, getValue, color) => {
+    if (!items.length) return '<div class="an-empty">Sin datos aún</div>';
+    const max = getValue(items[0]) || 1;
+    return items.map(it => `
+      <div class="an-bar-row">
+        <div class="an-bar-label" title="${getLabel(it)}">${getLabel(it)}</div>
+        <div class="an-bar-track"><div class="an-bar-fill" style="width:${Math.max(2,Math.round((getValue(it)/max)*100))}%;${color?`background:${color}`:''}"></div></div>
+        <div class="an-bar-count">${typeof getValue(it) === 'number' && getValue(it) > 9999 ? fmtPrice(getValue(it)) : getValue(it)}</div>
+      </div>`).join('');
+  };
+
+  // ── Top by Revenue ─────────────────────────────────────────────
+  const revenueMap = {};
+  orders.forEach(o => {
+    (o.products ?? []).forEach(p => {
+      const key  = p.product?.id ?? p.productId ?? '?';
+      const name = p.product?.name ?? p.name ?? key;
+      const val  = (p.unitPrice != null ? Number(p.unitPrice) : (p.product?.price ?? 0)) * (p.quantity ?? 1);
+      if (!revenueMap[key]) revenueMap[key] = { name, val: 0 };
+      revenueMap[key].val += val;
+    });
+  });
+  const topByRevenue = Object.values(revenueMap).sort((a,b) => b.val - a.val).slice(0, 10);
+  document.getElementById('anTopByRevenue').innerHTML = barChart(topByRevenue, r => r.name, r => Math.round(r.val), '#16a34a');
+
+  // ── Top by Units ───────────────────────────────────────────────
+  const unitsMap = {};
+  orders.forEach(o => {
+    (o.products ?? []).forEach(p => {
+      const key  = p.product?.id ?? p.productId ?? '?';
+      const name = p.product?.name ?? p.name ?? key;
+      if (!unitsMap[key]) unitsMap[key] = { name, qty: 0 };
+      unitsMap[key].qty += (p.quantity ?? 1);
+    });
+  });
+  const topByUnits = Object.values(unitsMap).sort((a,b) => b.qty - a.qty).slice(0, 10);
+  document.getElementById('anTopByUnits').innerHTML = barChart(topByUnits, r => r.name, r => r.qty, '#6366f1');
+
+  // ── By Payment ────────────────────────────────────────────────
+  const payMap = {};
+  orders.forEach(o => {
+    const k = o.paymentType ?? 'DESCONOCIDO';
+    payMap[k] = (payMap[k] ?? 0) + 1;
+  });
+  const payList = Object.entries(payMap).sort((a,b) => b[1]-a[1]).map(([k,v]) => ({ k, v }));
+  document.getElementById('anByPayment').innerHTML = barChart(payList, r => r.k, r => r.v, '#f59e0b');
+
+  // ── By Hour ───────────────────────────────────────────────────
+  const hourMap = Array(24).fill(0);
+  orders.forEach(o => {
+    if (o.createdAt) hourMap[new Date(o.createdAt).getHours()]++;
+  });
+  const maxH = Math.max(...hourMap, 1);
+  const hourHtml = `<div class="an-day-chart">${hourMap.map((v, h) => `
+    <div class="an-day-col" title="${String(h).padStart(2,'0')}:00 — ${v} pedidos">
+      <div class="an-day-bar" style="height:${Math.max(v?2:0, Math.round((v/maxH)*76))}px;background:#3b82f6"></div>
+      <div class="an-day-label">${h % 4 === 0 ? String(h).padStart(2,'0') : ''}</div>
+    </div>`).join('')}</div>`;
+  document.getElementById('anByHour').innerHTML = orders.length ? hourHtml : '<div class="an-empty">Sin datos aún</div>';
+
+  // ── Top Buyers ────────────────────────────────────────────────
+  const buyerMap = {};
+  orders.forEach(o => {
+    const k = o.buyer?.name ?? o.buyer?.businessName ?? o.buyer?.phone ?? '—';
+    buyerMap[k] = (buyerMap[k] ?? 0) + 1;
+  });
+  const buyers = Object.entries(buyerMap).sort((a,b) => b[1]-a[1]).slice(0,10).map(([k,v]) => ({ k, v }));
+  document.getElementById('anTopBuyers').innerHTML = barChart(buyers, r => r.k, r => r.v, '#8b5cf6');
+
+  // ── Top viewed products ────────────────────────────────────────
   const prods = s.topViewedProducts ?? [];
   const maxPV = prods[0]?.views ?? 1;
   document.getElementById('anTopProducts').innerHTML = prods.length
     ? prods.map(p => `
         <div class="an-bar-row">
-          <div class="an-bar-label" title="${p.name ?? p.productId}">${p.name ?? p.productId ?? '—'}</div>
+          <div class="an-bar-label" title="${p.name ?? p.productId}">
+            ${p.productId ? `<span style="font-size:10px;color:var(--text-muted);font-family:monospace;margin-right:5px">REF: ${String(p.productId).substring(0,8).toUpperCase()}</span>` : ''}${p.name ?? p.productId ?? '—'}
+          </div>
           <div class="an-bar-track"><div class="an-bar-fill" style="width:${Math.round((p.views/maxPV)*100)}%"></div></div>
           <div class="an-bar-count">${p.views}</div>
         </div>`).join('')
     : '<div class="an-empty">Sin datos aún</div>';
 
-  // Top no-result searches
+  // ── Top no-result searches ─────────────────────────────────────
   const searches = s.topNoResultSearches ?? [];
   const maxS = searches[0]?.total ?? 1;
   document.getElementById('anNoResults').innerHTML = searches.length
@@ -805,10 +1186,10 @@ function renderAnalytics(s) {
         </div>`).join('')
     : '<div class="an-empty">Sin datos aún</div>';
 
-  // Funnel
+  // ── Funnel ─────────────────────────────────────────────────────
   const funnel = s.conversionFunnel ?? [];
-  const funnelColors = { PAGE_VIEW: '#6366f1', CART_ADD: '#f59e0b', CHECKOUT_START: '#3b82f6', ORDER_PLACED: '#16a34a' };
-  const funnelLabels = { PAGE_VIEW: 'Visitas', CART_ADD: 'Al carrito', CHECKOUT_START: 'Checkout', ORDER_PLACED: 'Pedido' };
+  const funnelColors  = { PAGE_VIEW: '#6366f1', CART_ADD: '#f59e0b', CHECKOUT_START: '#3b82f6', ORDER_PLACED: '#16a34a' };
+  const funnelLabels  = { PAGE_VIEW: 'Visitas', CART_ADD: 'Al carrito', CHECKOUT_START: 'Checkout', ORDER_PLACED: 'Pedido' };
   const maxF = funnel[0]?.sessions ?? 1;
   document.getElementById('anFunnel').innerHTML = funnel.length
     ? funnel.map(f => `
@@ -822,19 +1203,22 @@ function renderAnalytics(s) {
         </div>`).join('')
     : '<div class="an-empty">Sin datos aún</div>';
 
-  // Top categories
+  // ── Top categories ─────────────────────────────────────────────
   const cats = s.topCategories ?? [];
   const maxC = cats[0]?.total ?? 1;
   document.getElementById('anTopCategories').innerHTML = cats.length
-    ? cats.map(c => `
+    ? cats.map(c => {
+        const catName = allCategories.find(ac => ac.id === c.category)?.name ?? c.category ?? '—';
+        return `
         <div class="an-bar-row">
-          <div class="an-bar-label">${c.category ?? '—'}</div>
+          <div class="an-bar-label">${catName}</div>
           <div class="an-bar-track"><div class="an-bar-fill" style="width:${Math.round((c.total/maxC)*100)}%;background:#8b5cf6"></div></div>
           <div class="an-bar-count">${c.total}</div>
-        </div>`).join('')
+        </div>`;
+      }).join('')
     : '<div class="an-empty">Sin datos aún</div>';
 
-  // Events by day
+  // ── Events by day ──────────────────────────────────────────────
   const days = s.eventsByDay ?? [];
   const maxD = Math.max(...days.map(d => Number(d.total)), 1);
   document.getElementById('anByDay').innerHTML = days.length
@@ -851,6 +1235,337 @@ function showToast(msg) {
   const t = document.getElementById('admToast');
   t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── PRODUCTS ───────────────────────────────────────────────
+async function loadProducts() {
+  const btn = document.getElementById('btnRefresh');
+  btn.classList.add('spinning');
+  document.getElementById('prodGrid').innerHTML = '<div class="state-box"><div class="state-sub">Cargando productos…</div></div>';
+  try {
+    // Categories (cache after first load)
+    if (!allCategories.length) {
+      try {
+        const rc = await fetch(`${API_BASE}/api/categories/active`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        if (rc.ok) allCategories = await rc.json();
+      } catch (_) {}
+    }
+    _populateProdCatSelect();
+    _restoreProdState();
+
+    const res = await fetch(`${API_BASE}/api/products/all`, {
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+    if (res.status === 401 || res.status === 403) { sessionStorage.removeItem(AUTH_KEY); location.reload(); return; }
+    if (!res.ok) throw new Error(res.statusText);
+
+    const raw = await res.json();
+    allProducts = raw;
+    _buildProdRawMap();
+    applyProdFilters();
+  } catch (e) {
+    showToast('Error al cargar productos: ' + e.message);
+    document.getElementById('prodGrid').innerHTML = `<div class="state-box"><div class="state-icon">⚠️</div><div class="state-title">Error al cargar</div><div class="state-sub">${e.message}</div></div>`;
+  } finally {
+    btn.classList.remove('spinning');
+  }
+}
+
+function _populateProdCatSelect() {
+  const sel = document.getElementById('prodCatSelect');
+  if (!sel) return;
+  const current = sel.value;
+  sel.innerHTML = '<option value="">Todas las categorías</option>';
+  allCategories.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.id;
+    opt.textContent = c.name;
+    if (c.id === current) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+function setProdFilter(f, btn) {
+  _prodFilter = f;
+  document.querySelectorAll('#prodFilterGroup .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyProdFilters();
+}
+
+const _PROD_STATE_KEY = 'adm_prod_state';
+
+function _saveProdState() {
+  sessionStorage.setItem(_PROD_STATE_KEY, JSON.stringify({
+    filter: _prodFilter,
+    sort:   document.getElementById('prodSortSelect')?.value || '',
+    cat:    document.getElementById('prodCatSelect')?.value  || '',
+    q:      document.getElementById('prodSearch')?.value     || ''
+  }));
+}
+
+function _restoreProdState() {
+  let state;
+  try { state = JSON.parse(sessionStorage.getItem(_PROD_STATE_KEY)); } catch (_) {}
+  if (!state) return;
+  // search
+  const searchEl = document.getElementById('prodSearch');
+  if (searchEl && state.q) searchEl.value = state.q;
+  // sort
+  const sortEl = document.getElementById('prodSortSelect');
+  if (sortEl && state.sort) sortEl.value = state.sort;
+  // category (select already populated by _populateProdCatSelect)
+  const catEl = document.getElementById('prodCatSelect');
+  if (catEl && state.cat) catEl.value = state.cat;
+  // active filter button
+  if (state.filter && state.filter !== 'all') {
+    _prodFilter = state.filter;
+    document.querySelectorAll('#prodFilterGroup .filter-btn').forEach(b => {
+      const matches = b.getAttribute('onclick')?.includes(`'${state.filter}'`);
+      b.classList.toggle('active', !!matches);
+    });
+  }
+}
+
+function applyProdFilters() {
+  const q = (document.getElementById('prodSearch')?.value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const catFilter = document.getElementById('prodCatSelect')?.value || '';
+  const sort = document.getElementById('prodSortSelect')?.value || '';
+  let list = [...allProducts];
+
+  if (_prodFilter === 'active')   list = list.filter(p => p.active !== false);
+  if (_prodFilter === 'inactive') list = list.filter(p => p.active === false);
+  if (_prodFilter === 'promo')    list = list.filter(p => p.originalPrice != null);
+
+  if (catFilter) list = list.filter(p => p.category === catFilter);
+
+  if (q) {
+    list = list.filter(p => {
+      const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      return norm(p.name).includes(q)
+        || norm(p.id).includes(q)
+        || norm(p.tags).includes(q)
+        || (allCategories.find(c => c.id === p.category)?.name || '').toLowerCase().includes(q);
+    });
+  }
+
+  if (sort === 'price-asc')   list.sort((a, b) => a.price - b.price);
+  if (sort === 'price-desc')  list.sort((a, b) => b.price - a.price);
+  const margin = p => { const d = p.dropshippingPrice ?? p.dropshipping_price ?? null; return (d && d > 0) ? (p.price - d) / d : -Infinity; };
+  if (sort === 'margin-asc')  list.sort((a, b) => margin(a) - margin(b));
+  if (sort === 'margin-desc') list.sort((a, b) => margin(b) - margin(a));
+  if (sort === 'cat-asc')    list.sort((a, b) => (allCategories.find(c=>c.id===a.category)?.name||'').localeCompare(allCategories.find(c=>c.id===b.category)?.name||''));
+  if (sort === 'name-asc')   list.sort((a, b) => a.name.localeCompare(b.name));
+  if (sort === 'name-desc')  list.sort((a, b) => b.name.localeCompare(a.name));
+
+  const countEl = document.getElementById('prodCount');
+  if (countEl) countEl.textContent = `${list.length} producto${list.length !== 1 ? 's' : ''}`;
+
+  renderProdGrid(list);
+  _saveProdState();
+}
+
+function renderProdGrid(list) {
+  const grid = document.getElementById('prodGrid');
+  if (!list.length) {
+    grid.innerHTML = '<div class="state-box"><div class="state-icon">📦</div><div class="state-title">Sin productos</div><div class="state-sub">No hay resultados con los filtros actuales.</div></div>';
+    return;
+  }
+
+  const catMap = {};
+  allCategories.forEach(c => { catMap[c.id] = c.name; });
+
+  grid.innerHTML = `<div class="prod-grid">${list.map(p => {
+    const active = p.active !== false;
+    const dropUrl = p.dropshippingUrl || p.dropshipping_url || null;
+    const dropPrice = p.dropshippingPrice ?? p.dropshipping_price ?? null;
+    const revenue = p.revenue ?? null;
+    const disc = (p.originalPrice && p.originalPrice > p.price)
+      ? Math.round((p.originalPrice - p.price) / p.originalPrice * 100) : 0;
+    const profitPct = (dropPrice && dropPrice > 0)
+      ? Math.round((p.price - dropPrice) / dropPrice * 100) : null;
+    const catName = catMap[p.category] || '—';
+    const imgEl = p.image
+      ? `<img class="prod-card-img" src="${p.image}" alt="" loading="lazy">`
+      : `<div class="prod-card-img"></div>`;
+    return `<div class="prod-card${active ? '' : ' prod-card-off'}">
+      ${imgEl}
+      <div class="prod-card-body">
+        <div class="prod-card-name" title="${p.name.replace(/"/g,'&quot;')}">${p.name}</div>
+        <div class="prod-card-ref">REF: ${(p.id || '').substring(0, 8).toUpperCase()}</div>
+        <div class="prod-price-box">
+          <div class="prod-price-box-header">
+            <span class="prod-price-box-title">💰 Desglose de precios</span>
+            ${profitPct != null ? `<span style="font-size:11px;font-weight:800;color:#15803d;background:#f0fdf4;border:1px solid #bbf7d0;padding:1px 8px;border-radius:var(--radius-full)">+${profitPct}% margen</span>` : ''}
+          </div>
+          <div class="prod-price-grid">
+            <div class="prod-price-cell">
+              <span class="prod-price-label">Precio venta</span>
+              <span class="prod-price-val orange">${fmtPrice(p.price)}</span>
+            </div>
+            <div class="prod-price-cell">
+              <span class="prod-price-label">Precio original ${p.originalPrice ? `<span class="prod-card-disc" style="margin-left:2px">-${disc}%</span>` : ''}</span>
+              <span class="prod-price-val">${p.originalPrice ? `${fmtPrice(p.originalPrice)} <span class="prod-tag-promo" style="font-size:9px;padding:0 5px">\uD83C\uDFF7 Promoci\u00f3n</span>` : '\u2014'}</span>
+            </div>
+            <div class="prod-price-cell">
+              <span class="prod-price-label">Drop price</span>
+              <span class="prod-price-val blue">${dropPrice != null ? fmtPrice(dropPrice) : '—'}</span>
+            </div>
+            <div class="prod-price-cell">
+              <span class="prod-price-label">Revenue</span>
+              <span class="prod-price-val green">${revenue != null ? fmtPrice(revenue) : (dropPrice != null ? fmtPrice(p.price - dropPrice) : '—')}</span>
+            </div>
+          </div>
+        </div>
+        <div class="prod-card-meta">
+          <span class="prod-card-cat">${catName}</span>
+          <span class="${active ? 'prod-card-active' : 'prod-card-inactive'}">${active ? '● Activo' : '● Inactivo'}</span>
+        </div>
+        <div class="prod-card-actions">
+          <button class="btn-detail" onclick="openProdEdit('${p.id}')">✏️ Editar</button>
+          ${dropUrl
+            ? `<a class="btn-drop" href="${dropUrl}" target="_blank" rel="noopener noreferrer">🔗 Drop</a>`
+            : `<button class="btn-drop" disabled style="opacity:.35;cursor:not-allowed" title="Sin URL de dropshipping">🔗 Drop</button>`}
+        </div>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function openProdEdit(id) {
+  const p = _prodRawMap[id];
+  if (!p) return;
+  const dropUrl = p.dropshippingUrl || p.dropshipping_url || null;
+
+  const catOptions = allCategories.map(c =>
+    `<option value="${c.id}"${c.id === p.category ? ' selected' : ''}>${c.name}</option>`
+  ).join('');
+
+  const imgEl = p.image
+    ? `<img src="${p.image}" alt="" style="width:60px;height:60px;border-radius:var(--radius-sm);object-fit:cover;flex-shrink:0;border:1px solid var(--border)">`
+    : `<div style="width:60px;height:60px;border-radius:var(--radius-sm);background:var(--bg);flex-shrink:0;border:1px solid var(--border)"></div>`;
+
+  document.getElementById('prodEditBody').innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+      ${imgEl}
+      <div style="min-width:0">
+        <div style="font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:4px">${p.name}</div>
+        <div style="font-size:11px;color:var(--text-muted);font-family:monospace">REF: ${(p.id || '').substring(0, 8).toUpperCase()}</div>
+      </div>
+    </div>
+    <div class="pf-form-field">
+      <label class="pf-form-label" for="pePrice">Precio de venta *</label>
+      <input class="pf-form-input" type="number" id="pePrice" min="0" step="1" value="${p.price ?? ''}">
+    </div>
+    <div class="pf-form-field">
+      <label class="pf-form-label" for="peDropPrice">Precio dropshipping <span style="color:var(--text-muted);font-weight:400">(costo base)</span></label>
+      <input class="pf-form-input" type="number" id="peDropPrice" min="0" step="1" value="${(p.dropshippingPrice ?? p.dropshipping_price) ?? ''}">
+    </div>
+    <div class="pf-form-field">
+      <label class="pf-form-label" for="peOldPrice">Precio original <span style="color:var(--text-muted);font-weight:400">(vacío = sin descuento)</span></label>
+      <div style="display:flex;gap:6px">
+        <input class="pf-form-input" type="number" id="peOldPrice" min="0" step="1" value="${p.originalPrice ?? ''}">
+        <button type="button" class="pf-clear-btn" onclick="document.getElementById('peOldPrice').value=''">Sin descuento</button>
+      </div>
+    </div>
+    <div class="pf-form-field">
+      <label class="pf-form-label" for="peCat">Categoría</label>
+      <select class="pf-form-input" id="peCat">${catOptions}</select>
+    </div>
+    <div class="pf-form-field">
+      <label class="pf-form-label">Estado</label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text-primary)">
+        <input type="checkbox" id="peActive"${p.active !== false ? ' checked' : ''} style="width:16px;height:16px;accent-color:var(--primary)">
+        Producto activo (visible en la tienda)
+      </label>
+    </div>
+    <div class="pf-form-field">
+      <label class="pf-form-label" for="peDropUrl">Dropshipping URL <span style="color:var(--text-muted);font-weight:400">(opcional)</span></label>
+      <div style="display:flex;gap:6px">
+        <input class="pf-form-input" type="url" id="peDropUrl" placeholder="https://…" value="${dropUrl || ''}">
+        <button type="button" class="pf-clear-btn" onclick="document.getElementById('peDropUrl').value=''">Quitar</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-confirm" onclick="saveProdEdit('${id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M20 6 9 17l-5-5"/></svg>
+        Guardar cambios
+      </button>
+      <button style="flex:1;padding:11px;border:1.5px solid var(--border);background:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;color:var(--text-secondary);transition:background .15s" onclick="closeProdEditModal()">Cancelar</button>
+    </div>`;
+
+  document.getElementById('prodEditModal').classList.add('open');
+}
+
+async function saveProdEdit(id) {
+  const p = _prodRawMap[id];
+  if (!p) return;
+
+  const price = parseFloat(document.getElementById('pePrice').value);
+  const dropPriceRaw = document.getElementById('peDropPrice').value.trim();
+  const dropshippingPrice = dropPriceRaw === '' ? null : parseFloat(dropPriceRaw);
+  const oldRaw = document.getElementById('peOldPrice').value.trim();
+  const originalPrice = oldRaw === '' ? null : parseFloat(oldRaw);
+  const category = document.getElementById('peCat').value;
+  const active = document.getElementById('peActive').checked;
+  const dropRaw = document.getElementById('peDropUrl').value.trim();
+  const dropshippingUrl = dropRaw === '' ? null : dropRaw;
+
+  if (isNaN(price) || price < 0) { showToast('Precio inválido.'); return; }
+  if (dropshippingPrice !== null && (isNaN(dropshippingPrice) || dropshippingPrice < 0)) { showToast('Precio dropshipping inválido.'); return; }
+  if (originalPrice !== null && (isNaN(originalPrice) || originalPrice < 0)) { showToast('Precio original inválido.'); return; }
+
+  const revenue = (price != null && dropshippingPrice != null) ? parseFloat((price - dropshippingPrice).toFixed(2)) : (p.revenue ?? null);
+  const body = { ...p, price, originalPrice, category, active, dropshippingUrl, dropshipping_url: dropshippingUrl, dropshippingPrice, dropshipping_price: dropshippingPrice, revenue };
+
+  try {
+    const res = await fetch(`${API_BASE}/api/products/saveOrUpdate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getToken()}`
+      },
+      body: JSON.stringify(body)
+    });
+    if (res.status === 401 || res.status === 403) { sessionStorage.removeItem(AUTH_KEY); location.reload(); return; }
+    if (!res.ok) throw new Error(res.statusText);
+
+    const updated = { ...p, price, originalPrice, category, active, dropshippingUrl, dropshipping_url: dropshippingUrl, dropshippingPrice, dropshipping_price: dropshippingPrice, revenue };
+    _prodRawMap[id] = updated;
+    const idx = allProducts.findIndex(x => x.id === id);
+    if (idx !== -1) allProducts[idx] = updated;
+
+    closeProdEditModal();
+    applyProdFilters();
+    showToast('Producto actualizado correctamente.');
+  } catch (e) {
+    showToast('Error al guardar: ' + e.message);
+  }
+}
+
+function closeProdEditModal() {
+  document.getElementById('prodEditModal').classList.remove('open');
+}
+
+// ── CACHE ──────────────────────────────────────────────────
+async function clearCache() {
+  if (!confirm('\u00bfLimpiar cach\u00e9 del servidor? Esto forzar\u00e1 a recargar los datos en la pr\u00f3xima visita.')) return;
+  const btn = document.getElementById('btnCache');
+  btn.classList.add('clearing');
+  try {
+    const res = await fetch(`${API_BASE}/api/cache`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+    if (res.status === 401 || res.status === 403) { sessionStorage.removeItem(AUTH_KEY); location.reload(); return; }
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+    showToast('Cach\u00e9 limpiada correctamente.');
+  } catch (e) {
+    showToast('Error al limpiar cach\u00e9: ' + e.message);
+  } finally {
+    btn.classList.remove('clearing');
+  }
 }
 </script>
 </body>

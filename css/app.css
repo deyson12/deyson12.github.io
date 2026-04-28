@@ -110,6 +110,9 @@ h1,h2,h3,h4,h5{font-family:var(--font-head);font-weight:700;line-height:1.2}
 .wish-item-actions{display:flex;align-items:center;gap:7px;margin-top:6px;}
 .wish-btn-cart{background:var(--primary-light);color:var(--primary);border:1.5px solid rgba(241,82,0,.2);padding:5px 11px;border-radius:var(--radius-md);font-family:var(--font-head);font-size:11px;font-weight:700;cursor:pointer;transition:var(--transition);}
 .wish-btn-cart:hover{background:var(--primary);color:#fff;}
+.wish-btn-cart.added{background:var(--primary);color:#fff;}
+.wish-btn-buy{background:var(--primary);color:#fff;border:1.5px solid var(--primary);padding:5px 11px;border-radius:var(--radius-md);font-family:var(--font-head);font-size:11px;font-weight:700;cursor:pointer;transition:var(--transition);}
+.wish-btn-buy:hover{opacity:.85;}
 .wish-btn-remove{margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:18px;line-height:1;padding:2px;transition:var(--transition);}
 .wish-btn-remove:hover{color:#EF4444;transform:scale(1.2);}
 

@@ -69,5 +69,5 @@ const WOMPI = {
   integrityKey: _WOMPI_ENVS[WOMPI_ENV].integrityKey,
   checkoutUrl:  _WOMPI_ENVS[WOMPI_ENV].checkoutUrl,
   currency:     'COP',
-  redirectUrl:  'https://ventas7lunas.shop/wompi-checkout.html',
+  redirectUrl:  'https://pidefacil.shop/wompi-checkout.html',
 };

@@ -1512,8 +1512,11 @@ function renderWishPanel() {
           ${p.oldPrice ? `<span class="wish-item-old">${fmtPrice(p.oldPrice)}</span>` : ''}
         </div>
         <div class="wish-item-actions">
+          <button class="wish-btn-buy" onclick="closeWish();buyNow('${p.id}')">
+            ⚡ Comprar ahora
+          </button>
           <button class="wish-btn-cart ${inCart ? 'added' : ''}" onclick="addToCart('${p.id}');renderWishPanel()">
-            ${inCart ? '✓ En carrito' : 'Agregar'}
+            ${inCart ? '✓ En carrito' : '🛒 Al carrito'}
           </button>
           <button class="wish-btn-remove" title="Quitar de favoritos" aria-label="Quitar de favoritos" onclick="toggleWish(event,'${p.id}');">💔</button>
         </div>
