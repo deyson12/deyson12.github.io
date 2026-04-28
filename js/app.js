@@ -522,8 +522,7 @@ function confirmMapLocation() {
     }
   }
   _mapConfirmed = true;
-  localStorage.setItem('cy_delivery_lat', _deliveryLat);
-  localStorage.setItem('cy_delivery_lng', _deliveryLng);
+  setCyUser({ lat: _deliveryLat, lng: _deliveryLng });
 
   document.getElementById('mapConfirmBtns').style.display = 'none';
   document.getElementById('mapConfirmHint').classList.remove('visible');
@@ -1093,10 +1092,10 @@ function openOrderPopup() {
     document.getElementById('orderSummary').innerHTML = summary;
   }
 
-  const savedDir = localStorage.getItem('cy_dir') || '';
-  document.getElementById('inputDireccion').value = savedDir;
-  document.getElementById('inputNombre').value    = localStorage.getItem('cy_name')  || '';
-  document.getElementById('inputCelular').value   = localStorage.getItem('cy_phone') || '';
+  const _cu0 = getCyUser();
+  document.getElementById('inputDireccion').value = _cu0.dir   || '';
+  document.getElementById('inputNombre').value    = _cu0.name  || '';
+  document.getElementById('inputCelular').value   = _cu0.phone || '';
   const _psel = document.getElementById('inputPago');
   _psel.innerHTML = `<option value="">-- Seleccionar --</option>${WOMPI.enabled ? '<option value="Wompi">💳 Tarjeta / PSE</option>' : ''}<option value="Transferencia">🏦 Transferencia bancaria</option>`;
   _psel.value = '';
@@ -1136,21 +1135,23 @@ function fmtCelularInput(el) {
 
 // ===== ORDER API =====
 const _FIXED_SELLER_ID = 'd59ea1a4-5841-4740-950a-fb501a46ebae';
-const USER_ID_KEY      = 'cy_user_id';
+const CY_USER_KEY = 'cy_user';
+function getCyUser()        { try { return JSON.parse(localStorage.getItem(CY_USER_KEY) || '{}'); } catch(_) { return {}; } }
+function setCyUser(patch)   { localStorage.setItem(CY_USER_KEY, JSON.stringify({ ...getCyUser(), ...patch })); }
 
 /**
  * Registra al usuario como guest la primera vez.
  * Si ya existe un userId en localStorage lo retorna directamente.
+ * El userId real se extrae del JWT que devuelve el backend.
  * Lanza un error si la API falla.
  */
 async function ensureGuestUser(name, phone) {
-  const userId      = localStorage.getItem(USER_ID_KEY) || crypto.randomUUID();
-  const emailPrefix = 'user' + userId.replace(/-/g, '').slice(0, 8);
+  const emailPrefix = 'user' + crypto.randomUUID().replace(/-/g, '').slice(0, 8);
+  const storedPhone = getCyUser().phone;
   const res = await fetch(`${API_BASE}/api/auth/register`, {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      userId,
       name,
       password: 'guess_checkout',
       email:    `${emailPrefix}@noapply.com`,
@@ -1159,7 +1160,22 @@ async function ensureGuestUser(name, phone) {
     }),
   });
   if (!res.ok) throw new Error('register_failed');
-  localStorage.setItem(USER_ID_KEY, userId);
+  const data = await res.json();
+
+  // Extract userId from the returned JWT payload
+  const token = data.token ?? data.jwt ?? data.accessToken ?? data;
+  let userId = null;
+  if (typeof token === 'string') {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      userId = payload.userId ?? payload.user_id ?? payload.sub ?? null;
+    } catch (_) {}
+  }
+  // Fallback: if the response contains userId directly
+  if (!userId) userId = data.userId ?? data.user_id ?? data.id ?? null;
+  if (!userId) throw new Error('register_no_userid');
+
+  setCyUser({ id: userId });
   return userId;
 }
 
@@ -1177,24 +1193,23 @@ function closeRegisterError() {
 /** Convierte el producto normalizado (interno) al shape que espera la API. */
 function _toApiProduct(p) {
   return {
-    id:               p.id,
-    name:             p.name,
-    description:      p.description || '',
-    price:            p.price,
-    originalPrice:    p.oldPrice || null,
-    featured:         p.featured || false,
-    image:            p.image,
-    category:         p.category,
-    seller:           p.seller,
-    note:             null,
-    tags:             p.tags || '',
-    stock:            p.stock === 'ok' ? null : (p.stock || null),
-    active:           true,
-    dropshippingUrl:  null,
-    dropshippingPrice: null,
-    revenue:          null,
-    maxDeliveryTime:  null,
-    customOptions:    p.badges || [],
+    id:                p.id,
+    name:              p.name,
+    description:       p.description || '',
+    price:             p.price,
+    originalPrice:     p.originalPrice ?? p.oldPrice ?? null,
+    featured:          p.featured || false,
+    image:             p.image,
+    category:          p.category,
+    seller:            p.seller,
+    note:              p.note ?? null,
+    tags:              p.tags || '',
+    stock:             p.stock === 'ok' ? null : (p.stock ?? null),
+    active:            p.active !== undefined ? p.active : true,
+    dropshippingUrl:   p.dropshippingUrl ?? p.dropshipping_url ?? null,
+    dropshippingPrice: p.dropshippingPrice ?? p.dropshipping_price ?? null,
+    maxDeliveryTime:   p.maxDeliveryTime ?? null,
+    customOptions:     p.customOptions ?? p.badges ?? [],
   };
 }
 
@@ -1204,9 +1219,10 @@ function _toApiProduct(p) {
  * @param {{ fullItems: Array<{product, qty}>, address: string, paymentType: string }} opts
  */
 async function postOrderToApi({ fullItems, address, paymentType }) {
-  const lat    = parseFloat(localStorage.getItem('cy_delivery_lat')) || 0;
-  const lng    = parseFloat(localStorage.getItem('cy_delivery_lng')) || 0;
-  const userId = localStorage.getItem(USER_ID_KEY) || _FIXED_SELLER_ID;
+  const _cu   = getCyUser();
+  const lat    = parseFloat(_cu.lat) || 0;
+  const lng    = parseFloat(_cu.lng) || 0;
+  const userId = _cu.id || _FIXED_SELLER_ID;
   const body = {
     id:            crypto.randomUUID(),
     sellerId:      _FIXED_SELLER_ID,
@@ -1249,9 +1265,7 @@ async function sendWhatsappOrder() {
   if (!pago) { showToast('Selecciona el método de pago', '');       document.getElementById('inputPago').focus(); return; }
   if (pago === 'Efectivo' && !cambio) { showToast('Ingresa el valor con que vas a pagar', ''); document.getElementById('inputCambio').focus(); return; }
 
-  localStorage.setItem('cy_dir',   dir);
-  localStorage.setItem('cy_name',  nom);
-  localStorage.setItem('cy_phone', phone);
+  setCyUser({ dir, name: nom, phone });
 
   // ── Guest checkout: register if first time ──────────────
   try {
@@ -1259,6 +1273,20 @@ async function sendWhatsappOrder() {
   } catch (e) {
     openRegisterError(nom, phone);
     return;
+  }
+
+  // ── Auto-confirm map if user didn't do it manually ───────
+  if (!_mapConfirmed && _mapMarker) {
+    const pos = _mapMarker.getLatLng();
+    _deliveryLat  = pos.lat;
+    _deliveryLng  = pos.lng;
+    _mapConfirmed = true;
+    setCyUser({ lat: _deliveryLat, lng: _deliveryLng });
+    document.getElementById('mapConfirmBtns').style.display = 'none';
+    document.getElementById('mapConfirmHint').classList.remove('visible');
+    document.getElementById('btnMapConfirm').classList.remove('visible');
+    document.getElementById('mapConfirmedBadge').classList.add('visible');
+    document.getElementById('mapQuestion').textContent = '';
   }
 
   // ── Compute totals and build item blocks ─────────────────
@@ -1392,8 +1420,8 @@ function confirmWompiPayment() {
   postOrderToApi({ fullItems: od.fullItems || [], address: od.dir, paymentType: 'WOMPI' });
 
   const statusLabel = pending.wompiStatus ? pending.wompiStatus.toUpperCase() : null;
-  const savedLat = parseFloat(localStorage.getItem('cy_delivery_lat')) || null;
-  const savedLng = parseFloat(localStorage.getItem('cy_delivery_lng')) || null;
+  const savedLat = parseFloat(getCyUser().lat) || null;
+  const savedLng = parseFloat(getCyUser().lng) || null;
   const msg = buildOrderMessage({
     saludo: 'confirmo mi pedido', itemsBlock: od.itemsBlock, nom: od.nom, dir: od.dir,
     pago: 'Wompi', wompiRef: ref, wompiId: pending.wompiId, statusLabel,
@@ -1437,9 +1465,9 @@ function buyNow(id) {
   if (p.oldPrice) summary += `&nbsp;&nbsp;<small style="color:var(--text-muted);text-decoration:line-through">${fmtPrice(p.oldPrice)}</small><br>`;
   summary += `<br><strong>Total: ${fmtPrice(p.price)}</strong>`;
   document.getElementById('orderSummary').innerHTML = summary;
-  const savedDir2 = localStorage.getItem('cy_dir') || '';
-  document.getElementById('inputDireccion').value   = savedDir2;
-  document.getElementById('inputNombre').value      = localStorage.getItem('cy_name') || '';
+  const _cu2 = getCyUser();
+  document.getElementById('inputDireccion').value   = _cu2.dir  || '';
+  document.getElementById('inputNombre').value      = _cu2.name || '';
   const _bpsel = document.getElementById('inputPago');
   _bpsel.innerHTML = `<option value="">-- Seleccionar --</option>${WOMPI.enabled ? '<option value="Wompi">💳 Tarjeta / PSE (Wompi)</option>' : ''}<option value="Transferencia">🏦 Transferencia bancaria</option>`;
   _bpsel.value = '';

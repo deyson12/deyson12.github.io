@@ -47,6 +47,8 @@
   .btn-cache { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.25); color: rgba(255,255,255,.9); font-family: var(--font); font-size: 13px; font-weight: 600; padding: 6px 14px; border-radius: var(--radius-full); cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background .2s; }
   .btn-cache:hover { background: rgba(220,38,38,.55); border-color: rgba(255,255,255,.35); }
   .btn-cache.clearing { opacity: .6; pointer-events: none; }
+  .btn-logout { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.25); color: rgba(255,255,255,.9); font-family: var(--font); font-size: 13px; font-weight: 600; padding: 6px 14px; border-radius: var(--radius-full); cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background .2s; }
+  .btn-logout:hover { background: rgba(220,38,38,.55); border-color: rgba(255,255,255,.35); }
   @keyframes spin { to { transform: rotate(360deg); } }
 
   /* ── CONTENT ── */
@@ -210,6 +212,10 @@
   .nav-drawer-close:hover { background: rgba(255,255,255,.3); }
   .nav-drawer-close svg { width: 16px; height: 16px; }
   .nav-drawer-body { flex: 1; padding: 10px 8px; overflow-y: auto; }
+  .nav-drawer-footer { padding: 8px 8px 12px; border-top: 1px solid var(--border); }
+  .nav-item-logout { color: #dc2626; }
+  .nav-item-logout:hover { background: #fef2f2; color: #b91c1c; }
+  .nav-item-logout .nav-item-icon { background: #fee2e2; }
   .nav-section-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); padding: 8px 12px 4px; }
   .nav-item { width: 100%; display: flex; align-items: center; gap: 12px; padding: 11px 12px; border: none; background: none; font-family: var(--font); font-size: 14px; font-weight: 600; color: var(--text-secondary); border-radius: var(--radius-sm); cursor: pointer; transition: all .18s; text-align: left; }
   .nav-item:hover { background: #fff7ed; color: var(--primary); }
@@ -256,10 +262,9 @@
     white-space: normal; text-align: left; z-index: 9999; pointer-events: none;
     opacity: 0; transition: opacity .15s; }
   .an-tip[data-tip]:hover::after { opacity: 1; }
-  /* tip inside card title row */
+  /* tip inside card title row — must stay relative so ::after anchors to the button */
   .an-card-title { display: flex; align-items: center; gap: 6px; }
-  .an-card-title .an-tip { position: static; margin-left: auto; flex-shrink: 0; }
-  .an-card-title .an-tip[data-tip]::after { right: 0; top: calc(100% + 6px); }
+  .an-card-title .an-tip { position: relative; top: auto; right: auto; margin-left: auto; flex-shrink: 0; }
   .an-charts-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 16px; }
   .an-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
   .an-card-title { font-size: 13px; font-weight: 800; color: var(--text-primary); margin-bottom: 14px; }
@@ -342,6 +347,10 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
       <span class="btn-refresh-text">Actualizar</span>
     </button>
+    <button class="btn-logout" onclick="doLogout()" title="Cerrar sesión">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      <span class="btn-refresh-text">Salir</span>
+    </button>
   </div>
 </div>
 
@@ -369,6 +378,12 @@
     <button class="nav-item" id="navProductos" onclick="showSection('productos');closeNavDrawer()">
       <span class="nav-item-icon">📦</span>
       Productos
+    </button>
+  </div>
+  <div class="nav-drawer-footer">
+    <button class="nav-item nav-item-logout" onclick="doLogout()">
+      <span class="nav-item-icon">🚪</span>
+      Cerrar sesión
     </button>
   </div>
 </div>
@@ -432,19 +447,19 @@
   <div class="an-section-label">💰 KPIs principales (mes actual)</div>
   <div class="an-kpis-grid">
     <div class="an-stat good">
-      <span class="an-tip" data-tip="Total facturado a clientes en el mes actual, sumando todos los pedidos (incluye pendientes y confirmados).">?</span>
+      <span class="an-tip" data-tip="Total facturado de pedidos CONFIRMADOS en el mes actual. No incluye pendientes ni cancelados.">?</span>
       <div class="an-stat-label">Revenue total mes</div><div class="an-stat-value" id="anRevenueMes">—</div>
     </div>
     <div class="an-stat good">
-      <span class="an-tip" data-tip="Revenue menos el costo de dropshipping de cada producto. Requiere que los productos tengan precio drop configurado.">?</span>
+      <span class="an-tip" data-tip="Revenue de pedidos CONFIRMADOS menos su costo de dropshipping. Requiere que los productos tengan precio drop configurado.">?</span>
       <div class="an-stat-label">Ganancia estimada mes</div><div class="an-stat-value" id="anGananciaMes">—</div>
     </div>
     <div class="an-stat blue">
-      <span class="an-tip" data-tip="Valor promedio de cada pedido en el mes. Revenue total ÷ número de pedidos.">?</span>
+      <span class="an-tip" data-tip="Valor promedio de cada pedido CONFIRMADO en el mes. Revenue confirmado ÷ número de pedidos confirmados.">?</span>
       <div class="an-stat-label">Ticket promedio</div><div class="an-stat-value" id="anTicketPromedio">—</div>
     </div>
     <div class="an-stat blue">
-      <span class="an-tip" data-tip="Porcentaje de visitantes únicos del mes que realizaron al menos un pedido. Pedidos ÷ visitantes mes × 100.">?</span>
+      <span class="an-tip" data-tip="Porcentaje de visitantes únicos del mes que generaron un pedido CONFIRMADO. Confirmados ÷ visitantes mes × 100.">?</span>
       <div class="an-stat-label">Tasa de conversión</div><div class="an-stat-value" id="anConvRate">—</div><div class="an-stat-sub" id="anConvRateSub"></div>
     </div>
     <div class="an-stat warn">
@@ -655,6 +670,7 @@ let currentMonth = (() => { const n = new Date(); return `${n.getFullYear()}-${S
 
 // ── AUTH ──────────────────────────────────────────────────
 function getToken() { return sessionStorage.getItem(AUTH_KEY); }
+function doLogout() { sessionStorage.removeItem(AUTH_KEY); location.reload(); }
 
 async function doLogin() {
   const email = document.getElementById('inputEmail').value.trim();
@@ -1045,7 +1061,10 @@ function renderAnalytics(s) {
   const orderEarnings = o => o.products
     ? o.products.reduce((sum, p) => {
         const price = p.unitPrice != null ? Number(p.unitPrice) : (p.product?.price ?? 0);
-        const drop  = p.product?.dropshippingPrice != null ? Number(p.product.dropshippingPrice) : 0;
+        const drop  = p.product?.dropshippingPrice != null ? Number(p.product.dropshippingPrice)
+                    : p.product?.dropshipping_price != null ? Number(p.product.dropshipping_price) : null;
+        // If drop is unknown or >= sale price, skip this item (cost data unreliable)
+        if (drop == null || drop <= 0 || drop >= price) return sum;
         return sum + (price - drop) * (p.quantity ?? 1);
       }, 0)
     : 0;
@@ -1056,20 +1075,20 @@ function renderAnalytics(s) {
   const pending   = orders.filter(o => o.status === 'PENDIENTE');
   const cancelled = orders.filter(o => o.status === 'CANCELADO' || o.status === 'CANCELADO_AUTOMATICAMENTE');
 
-  const totalRevenueMes    = orders.reduce((sum, o) => sum + orderTotal(o), 0);
-  const gananciaMes        = orders.reduce((sum, o) => sum + orderEarnings(o), 0);
-  const ticketPromedio     = orders.length ? totalRevenueMes / orders.length : null;
+  const totalRevenueMes    = confirmed.reduce((sum, o) => sum + orderTotal(o), 0);
+  const gananciaMes        = confirmed.reduce((sum, o) => sum + orderEarnings(o), 0);
+  const ticketPromedio     = confirmed.length ? totalRevenueMes / confirmed.length : null;
   const revenuePendiente   = pending.reduce((sum, o) => sum + orderTotal(o), 0);
   const cancelRate         = orders.length ? Math.round(cancelled.length / orders.length * 100) : null;
-  const convRate           = (s.uniqueVisitorsThisMonth > 0 && orders.length)
-                              ? ((orders.length / s.uniqueVisitorsThisMonth) * 100).toFixed(1)
+  const convRate           = (s.uniqueVisitorsThisMonth > 0 && confirmed.length)
+                              ? ((confirmed.length / s.uniqueVisitorsThisMonth) * 100).toFixed(1)
                               : null;
 
-  document.getElementById('anRevenueMes').textContent      = orders.length ? fmtPrice(totalRevenueMes) : '—';
-  document.getElementById('anGananciaMes').textContent     = orders.length ? fmtPrice(gananciaMes) : '—';
+  document.getElementById('anRevenueMes').textContent      = confirmed.length ? fmtPrice(totalRevenueMes) : '—';
+  document.getElementById('anGananciaMes').textContent     = confirmed.length ? fmtPrice(gananciaMes) : '—';
   document.getElementById('anTicketPromedio').textContent  = ticketPromedio != null ? fmtPrice(ticketPromedio) : '—';
   document.getElementById('anConvRate').textContent        = convRate != null ? convRate + '%' : '—';
-  document.getElementById('anConvRateSub').textContent     = orders.length ? `${orders.length} pedidos / ${s.uniqueVisitorsThisMonth} visitantes` : '';
+  document.getElementById('anConvRateSub').textContent     = confirmed.length ? `${confirmed.length} confirmados / ${s.uniqueVisitorsThisMonth} visitantes` : '';
   document.getElementById('anRevenuePendiente').textContent = revenuePendiente > 0 ? fmtPrice(revenuePendiente) : '—';
   document.getElementById('anRevenuePendienteSub').textContent = pending.length ? `${pending.length} pedido${pending.length !== 1 ? 's' : ''} pendiente${pending.length !== 1 ? 's' : ''}` : '';
   document.getElementById('anCancelRate').textContent      = cancelRate != null ? cancelRate + '%' : '—';
@@ -1104,7 +1123,7 @@ function renderAnalytics(s) {
 
   // ── Top by Revenue ─────────────────────────────────────────────
   const revenueMap = {};
-  orders.forEach(o => {
+  confirmed.forEach(o => {
     (o.products ?? []).forEach(p => {
       const key  = p.product?.id ?? p.productId ?? '?';
       const name = p.product?.name ?? p.name ?? key;
@@ -1118,7 +1137,7 @@ function renderAnalytics(s) {
 
   // ── Top by Units ───────────────────────────────────────────────
   const unitsMap = {};
-  orders.forEach(o => {
+  confirmed.forEach(o => {
     (o.products ?? []).forEach(p => {
       const key  = p.product?.id ?? p.productId ?? '?';
       const name = p.product?.name ?? p.name ?? key;
@@ -1380,7 +1399,7 @@ function renderProdGrid(list) {
     const active = p.active !== false;
     const dropUrl = p.dropshippingUrl || p.dropshipping_url || null;
     const dropPrice = p.dropshippingPrice ?? p.dropshipping_price ?? null;
-    const revenue = p.revenue ?? null;
+    const revenue = (p.price != null && dropPrice != null) ? parseFloat((p.price - dropPrice).toFixed(2)) : null;
     const disc = (p.originalPrice && p.originalPrice > p.price)
       ? Math.round((p.originalPrice - p.price) / p.originalPrice * 100) : 0;
     const profitPct = (dropPrice && dropPrice > 0)
@@ -1516,8 +1535,12 @@ async function saveProdEdit(id) {
   if (dropshippingPrice !== null && (isNaN(dropshippingPrice) || dropshippingPrice < 0)) { showToast('Precio dropshipping inválido.'); return; }
   if (originalPrice !== null && (isNaN(originalPrice) || originalPrice < 0)) { showToast('Precio original inválido.'); return; }
 
-  const revenue = (price != null && dropshippingPrice != null) ? parseFloat((price - dropshippingPrice).toFixed(2)) : (p.revenue ?? null);
-  const body = { ...p, price, originalPrice, category, active, dropshippingUrl, dropshipping_url: dropshippingUrl, dropshippingPrice, dropshipping_price: dropshippingPrice, revenue };
+  const revenue = (price != null && dropshippingPrice != null)
+    ? parseFloat((price - dropshippingPrice).toFixed(2))
+    : ((p.price != null && (p.dropshippingPrice ?? p.dropshipping_price) != null)
+        ? parseFloat((p.price - (p.dropshippingPrice ?? p.dropshipping_price)).toFixed(2))
+        : null);
+  const body = { ...p, price, originalPrice, category, active, dropshippingUrl, dropshipping_url: dropshippingUrl, dropshippingPrice, dropshipping_price: dropshippingPrice };
 
   try {
     const res = await fetch(`${API_BASE}/api/products/saveOrUpdate`, {
