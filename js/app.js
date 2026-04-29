@@ -86,6 +86,11 @@ const POPUP_DISMISSED_KEY = 'cy_popup_id'; // single key; value = last dismissed
 let COUPONS = [];
 let _appliedCoupon    = null;
 let _currentOrderTotal = 0;
+function _setSummaryTotal(val) {
+  _currentOrderTotal = val;
+  const hdr = document.getElementById('orderSummaryTotal');
+  if (hdr) hdr.textContent = 'Total: ' + fmtPrice(val);
+}
 
 // ===== RECENTLY VIEWED =====
 const RECENT_KEY = 'cy_recent';
@@ -145,6 +150,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (rc.ok) COUPONS = await rc.json();
   } catch (_) {}
   try {
+    const rb = await fetch('promoted/banners.json');
+    if (rb.ok) renderSbnrBanners(await rb.json());
+  } catch (_) {}
+  try {
     const rpp = await fetch('promoted/popup.json');
     if (rpp.ok) {
       const d = await rpp.json();
@@ -186,6 +195,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.addEventListener('scroll', () => {
       _scrollBtn.classList.toggle('visible', window.scrollY > 320);
     }, { passive: true });
+    _scrollBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
     _scrollBtn.addEventListener('touchend', e => {
       e.preventDefault();
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -542,6 +554,40 @@ function resetMapState() {
   if (mapEl) mapEl.style.display = 'none';
 }
 
+// ===== SBNR BANNERS (from promoted/banners.json) =====
+function renderSbnrBanners(banners) {
+  const container = document.getElementById('sbnrContainer');
+  if (!container) return;
+  container.innerHTML = banners.filter(b => b.visible).map(b => {
+    const innerStyle = `background:${b.bg};`;
+    const labelStyle = `color:${b.labelColor};`;
+    const emStyle    = `color:${b.accentColor};`;
+    const btnStyle   = `background:${b.btnBg};color:${b.btnColor};`;
+    return `<div class="sbnr">
+  <div class="sbnr-inner" style="${innerStyle}">
+    <div class="sbnr-deco">${b.deco}</div>
+    <div class="sbnr-deco2">${b.deco2}</div>
+    <div class="sbnr-label" style="${labelStyle}">${b.label}</div>
+    <h2 class="sbnr-title">${b.title}<br><em style="${emStyle}">${b.titleEm}</em></h2>
+    <p class="sbnr-sub">${b.sub}</p>
+    <div class="sbnr-btns">
+      <button class="sbnr-btn" style="${btnStyle}" onclick="_sbnrAct('${b.id}',0)">${b.btn1.text}</button>
+      <button class="sbnr-ghost" onclick="_sbnrAct('${b.id}',1)">${b.btn2.text}</button>
+    </div>
+  </div>
+</div>`;
+  }).join('');
+  window._sbnrData = banners;
+}
+window._sbnrAct = function(id, btnIdx) {
+  if (!window._sbnrData) return;
+  const b = window._sbnrData.find(x => x.id === id);
+  if (!b) return;
+  const btn = btnIdx === 0 ? b.btn1 : b.btn2;
+  if (btn.action === 'filterCategory') filterCategory(btn.args[0], btn.args[1]);
+  else if (btn.action === 'openBannerPopup') openBannerPopup(btn.args[0], btn.args[1]);
+};
+
 // ===== BANNER =====
 function initBanner() {
   const slides = document.querySelectorAll('.banner-slide');
@@ -619,13 +665,48 @@ function buildCard(p, extra = '') {
 }
 
 function buildMiniCard(p) {
+  const disc = calcDiscount(p);
   return `<div class="mini-card" onclick="openProduct('${p.id}')">
-    <img class="mini-card-img" src="${p.image}" alt="${p.name}" width="118" height="118" loading="lazy" decoding="async">
+    <img class="mini-card-img" src="${p.image}" alt="${p.name}" loading="lazy" decoding="async" onload="this.classList.add('img-loaded')" onerror="this.classList.add('img-loaded')">
     <div class="mini-card-body">
       <div class="mini-card-name">${p.name}</div>
-      <div style="display:flex;align-items:baseline;gap:4px;flex-wrap:wrap">
+      <div>
         <span class="mini-card-price">${fmtPrice(p.price)}</span>
-        ${p.oldPrice ? `<span class="mini-card-old">${fmtPrice(p.oldPrice)}</span>` : ''}
+        ${disc > 0 ? `<span class="mini-card-old">${fmtPrice(p.oldPrice)}</span>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+function buildRecentCard(p) {
+  const cartItem = cart.find(c => c.id === p.id), inCart = !!cartItem, inWish = wishlist.includes(p.id);
+  const disc = calcDiscount(p);
+  return `<div class="recent-hcard" onclick="openProduct('${p.id}')">
+    <div class="recent-hcard-img-wrap">
+      <img class="recent-hcard-img" src="${p.image}" alt="${p.name}" loading="lazy" decoding="async" onload="this.classList.add('img-loaded')" onerror="this.classList.add('img-loaded')">
+      ${disc > 0 ? `<span class="recent-hcard-disc">-${disc}%</span>` : ''}
+      <button class="card-wishlist ${inWish ? 'active' : ''}" data-wish-id="${p.id}" onclick="toggleWish(event,'${p.id}')" aria-label="Favorito">
+        <svg viewBox="0 0 24 24" stroke="var(--primary)" stroke-width="2.5" fill="${inWish ? 'var(--primary)' : 'none'}"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </button>
+    </div>
+    <div class="recent-hcard-body">
+      <div class="recent-hcard-name">${p.name}</div>
+      <div class="recent-hcard-prices">
+        <span class="card-price">${fmtPrice(p.price)}</span>
+        ${disc > 0 ? `<span class="card-old-price">${fmtPrice(p.oldPrice)}</span>` : ''}
+      </div>
+      ${p.stock === 'low' ? '<div class="low-stock">Últimas unidades</div>' : ''}
+      <div class="recent-hcard-actions" onclick="event.stopPropagation()">
+        <div id="btnCart${p.id}">
+          ${inCart
+            ? `<div class="card-qty-ctrl"><button class="card-qty-btn" onclick="changeQty('${p.id}',-1)" aria-label="Reducir">−</button><span class="card-qty-num" aria-live="polite">${cartItem.qty}</span><button class="card-qty-btn" onclick="changeQty('${p.id}',1)" aria-label="Aumentar">+</button></div>`
+            : `<button class="btn btn-cart" onclick="addToCart('${p.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Agregar</button>`
+          }
+        </div>
+        <button class="btn btn-buy-now" onclick="buyNow('${p.id}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Comprar ya
+        </button>
       </div>
     </div>
   </div>`;
@@ -1075,21 +1156,21 @@ function openOrderPopup() {
   if (repeatOrderItems) {
     const items = repeatOrderItems;
     const totalAmount = items.reduce((s, i) => s + i.product.price * i.qty, 0);
-    let summary = '<strong>Resumen del pedido:</strong><br>';
-    items.forEach(i => { summary += `&nbsp;&nbsp;• ${i.product.name} ×${i.qty} — ${fmtPrice(i.product.price * i.qty)}<br>`; });
-    summary += `<br><strong>Total: ${fmtPrice(totalAmount)}</strong>`;
+    let summary = '';
+    items.forEach(i => { summary += `• ${i.product.name} ×${i.qty} — ${fmtPrice(i.product.price * i.qty)}<br>`; });
     document.getElementById('orderSummary').innerHTML = summary;
+    _setSummaryTotal(totalAmount);
   } else {
     const selected = getCheckedItems();
     if (!selected.length) { showToast('Selecciona al menos un producto', '⚠️'); return; }
     const g = {}; selected.forEach(i => { if (!g[i.seller]) g[i.seller] = []; g[i.seller].push(i); });
-    let summary = '<strong>Resumen del pedido:</strong><br>';
+    let summary = '';
     Object.entries(g).forEach(([seller, items]) => {
       summary += `🏪 ${seller}<br>`;
       items.forEach(i => { summary += `&nbsp;&nbsp;• ${i.name} ×${i.qty} — ${fmtPrice(i.price * i.qty)}<br>`; });
     });
-    summary += `<br><strong>Total: ${fmtPrice(getSelectedTotal())}</strong>`;
     document.getElementById('orderSummary').innerHTML = summary;
+    _setSummaryTotal(getSelectedTotal());
   }
 
   const _cu0 = getCyUser();
@@ -1101,6 +1182,13 @@ function openOrderPopup() {
   _psel.value = '';
   document.getElementById('inputCambio').value = '';
   document.getElementById('cambioWrap').style.display = 'none';
+  const _chkCupon = document.getElementById('chkCupon');
+  if (_chkCupon) { _chkCupon.checked = false; document.getElementById('cuponWrap').style.display = 'none'; }
+  document.getElementById('inputCupon').value = '';
+  document.getElementById('cuponFeedback').textContent = ''; document.getElementById('cuponFeedback').className = 'cupon-feedback';
+  _appliedCoupon = null;
+  const _panel = document.getElementById('orderSummaryPanel');
+  if (_panel) _panel.removeAttribute('open');
   updateOrderBtn();
   document.getElementById('orderOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -1109,6 +1197,7 @@ function openOrderPopup() {
   resetMapState();
   const mapWrap = document.getElementById('mapConfirmWrap');
   if (mapWrap) mapWrap.style.display = MAPS_ENABLED ? '' : 'none';
+  const savedDir = _cu0.dir || '';
   if (MAPS_ENABLED && savedDir) { _lastGeoDir = ''; setTimeout(() => geocodeAddress(savedDir), 400); }
 }
 
@@ -1246,7 +1335,6 @@ async function postOrderToApi({ fullItems, address, paymentType }) {
       body:    JSON.stringify(body),
     });
     if (!res.ok) console.warn('postOrderToApi: HTTP', res.status, await res.text().catch(() => ''));
-    else console.log('postOrderToApi: orden creada', body.id);
   } catch (e) {
     console.warn('postOrderToApi error:', e);
   }
@@ -1460,11 +1548,10 @@ function cancelWompiPayment() {
 function buyNow(id) {
   buyNowProduct = PRODUCTS.find(x => x.id === id);
   const p = buyNowProduct;
-  let summary = '<strong>Producto:</strong><br>';
-  summary += `&nbsp;&nbsp;• ${p.name} &mdash; ${fmtPrice(p.price)}<br>`;
-  if (p.oldPrice) summary += `&nbsp;&nbsp;<small style="color:var(--text-muted);text-decoration:line-through">${fmtPrice(p.oldPrice)}</small><br>`;
-  summary += `<br><strong>Total: ${fmtPrice(p.price)}</strong>`;
+  let summary = `• ${p.name} &mdash; ${fmtPrice(p.price)}<br>`;
+  if (p.oldPrice) summary += `<small style="color:var(--text-muted);text-decoration:line-through">${fmtPrice(p.oldPrice)}</small><br>`;
   document.getElementById('orderSummary').innerHTML = summary;
+  _setSummaryTotal(p.price);
   const _cu2 = getCyUser();
   document.getElementById('inputDireccion').value   = _cu2.dir  || '';
   document.getElementById('inputNombre').value      = _cu2.name || '';
@@ -1473,6 +1560,13 @@ function buyNow(id) {
   _bpsel.value = '';
   document.getElementById('inputCambio').value = '';
   document.getElementById('cambioWrap').style.display = 'none';
+  const _chkCupon2 = document.getElementById('chkCupon');
+  if (_chkCupon2) { _chkCupon2.checked = false; document.getElementById('cuponWrap').style.display = 'none'; }
+  document.getElementById('inputCupon').value = '';
+  document.getElementById('cuponFeedback').textContent = ''; document.getElementById('cuponFeedback').className = 'cupon-feedback';
+  _appliedCoupon = null;
+  const _panel2 = document.getElementById('orderSummaryPanel');
+  if (_panel2) _panel2.removeAttribute('open');
   updateOrderBtn();
   document.getElementById('orderOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -1481,6 +1575,7 @@ function buyNow(id) {
   resetMapState();
   const mapWrap2 = document.getElementById('mapConfirmWrap');
   if (mapWrap2) mapWrap2.style.display = MAPS_ENABLED ? '' : 'none';
+  const savedDir2 = _cu2.dir || '';
   if (MAPS_ENABLED && savedDir2) { _lastGeoDir = ''; setTimeout(() => geocodeAddress(savedDir2), 400); }
 }
 
@@ -1626,29 +1721,24 @@ function openProduct(id) {
 // ===== IMAGE HOVER ZOOM (desktop only) =====
 function initModalZoom() {
   const hoverOK = window.matchMedia('(hover:hover)').matches;
-  console.log('[zoom] initModalZoom called | hover:hover =', hoverOK);
   if (!hoverOK) return;
   setTimeout(() => {
     const gallery = document.querySelector('.modal-gallery');
     const img     = document.querySelector('.modal-main-img');
-    console.log('[zoom] gallery =', gallery, '| img =', img);
     if (!gallery || !img) { console.warn('[zoom] elementos no encontrados, abortando'); return; }
     const SCALE = 2.5;
     let moveCount = 0;
     gallery.addEventListener('mouseenter', () => {
-      console.log('[zoom] mouseenter gallery');
       gallery.classList.add('zooming');
     });
     gallery.addEventListener('mousemove', e => {
       const r  = img.getBoundingClientRect();
       const xp = Math.min(100, Math.max(0, (e.clientX - r.left) / r.width  * 100)).toFixed(2);
       const yp = Math.min(100, Math.max(0, (e.clientY - r.top)  / r.height * 100)).toFixed(2);
-      if (++moveCount % 30 === 1) console.log('[zoom] mousemove origin =', xp + '%', yp + '%');
       img.style.transformOrigin = `${xp}% ${yp}%`;
       img.style.transform = `scale(${SCALE})`;
     });
     gallery.addEventListener('mouseleave', () => {
-      console.log('[zoom] mouseleave gallery');
       gallery.classList.remove('zooming');
       img.style.transform = 'scale(1)';
       img.style.transformOrigin = '50% 50%';
@@ -2008,7 +2098,27 @@ function renderRecentlyViewed() {
   if (!sec) return;
   if (!products.length) { sec.style.display = 'none'; return; }
   sec.style.display = '';
-  document.getElementById('recentContainer').innerHTML = products.map(p => buildCard(p)).join('');
+  const ctaCard = `<div class="recent-cta-card" onclick="document.getElementById('productsGrid').scrollIntoView({behavior:'smooth'})">
+    <div class="recent-cta-icon">🛍️</div>
+    <div class="recent-cta-text">Ver catálogo completo</div>
+    <div class="recent-cta-arrow">→</div>
+  </div>`;
+  document.getElementById('recentContainer').innerHTML =
+    products.map(p => `<div class="recent-item-wrap">
+      <button class="btn-remove-recent" onclick="removeRecent('${p.id}')" aria-label="Quitar" title="Quitar">×</button>
+      ${buildRecentCard(p)}
+    </div>`).join('') + ctaCard;
+}
+function removeRecent(id) {
+  let ids = [];
+  try { ids = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch (_) {}
+  ids = ids.filter(x => x !== id);
+  localStorage.setItem(RECENT_KEY, JSON.stringify(ids));
+  renderRecentlyViewed();
+}
+function clearRecentlyViewed() {
+  localStorage.removeItem(RECENT_KEY);
+  renderRecentlyViewed();
 }
 
 // ===== COUPONS =====
@@ -2040,12 +2150,15 @@ function _refreshSummaryDiscount() {
   const existing = document.getElementById('cuponDiscountRow');
   if (existing) existing.remove();
   const disc = calcCouponDiscount(_currentOrderTotal);
+  const hdr2 = document.getElementById('orderSummaryTotal');
   if (disc > 0) {
     const row = document.createElement('div');
     row.id        = 'cuponDiscountRow';
-    row.innerHTML = '<br>\uD83C\uDFF7\uFE0F Cup\u00f3n <strong>' + _appliedCoupon.code + '</strong>: -' + fmtPrice(disc) +
-      '<br><strong>Total con descuento: ' + fmtPrice(_currentOrderTotal - disc) + '</strong>';
+    row.innerHTML = '\uD83C\uDFF7\uFE0F Cup\u00f3n <strong>' + _appliedCoupon.code + '</strong>: -' + fmtPrice(disc);
     row.style.cssText = 'color:var(--secondary);font-size:13px;margin-top:6px;';
     el.appendChild(row);
+    if (hdr2) hdr2.textContent = 'Total: ' + fmtPrice(_currentOrderTotal - disc);
+  } else {
+    if (hdr2) hdr2.textContent = 'Total: ' + fmtPrice(_currentOrderTotal);
   }
 }

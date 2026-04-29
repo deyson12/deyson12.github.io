@@ -63,11 +63,11 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
 /* Header */
 .header{position:sticky;top:0;z-index:100;background:#F15200;box-shadow:0 1px 3px rgba(0,0,0,.08);}
 .header-top{max-width:1400px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:12px;}
-.logo{display:flex;align-items:center;text-decoration:none;flex-shrink:0;gap:6px;background:#fff;border-radius:10px;padding:5px 10px 5px 6px;}
-.logo-img{width:28px;height:28px;object-fit:contain;flex-shrink:0;}
+.logo{display:flex;align-items:center;text-decoration:none;flex-shrink:0;gap:6px;background:none;padding:4px 2px;}
+.logo-img{width:28px;height:28px;object-fit:contain;flex-shrink:0;filter:brightness(0) invert(1);}
 .logo-text{font-family:var(--font-head);font-weight:800;font-size:20px;letter-spacing:-0.5px;}
-.logo-text .logo-full,.logo-text .logo-short{color:#111}
-.logo-text .logo-full>span,.logo-text .logo-short>span{color:#F15200}
+.logo-text .logo-full,.logo-text .logo-short{color:#fff}
+.logo-text .logo-full>span,.logo-text .logo-short>span{color:#fff}
 .logo-text .logo-full{display:none}
 .logo-text .logo-short{display:inline}
 @media(min-width:480px){.logo-text .logo-full{display:inline}.logo-text .logo-short{display:none}}
@@ -235,125 +235,17 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
 <!-- BANNER -->
 <main id="main-content">
 
-<div class="sbnr sbnr5">
-  <div class="sbnr-inner">
-    <div class="sbnr-deco">💐</div>
-    <div class="sbnr-deco2">🌸</div>
-    <div class="sbnr-label">💐 Día de la Madre · 2.º Domingo de Mayo</div>
-    <h2 class="sbnr-title">El mejor regalo<br><em>para mamá 💕</em></h2>
-    <p class="sbnr-sub">Hazla sentir especial con algo que de verdad quiere</p>
-    <div class="sbnr-btns">
-      <button class="sbnr-btn" onclick="filterCategory('all',null)">Ver catálogo completo</button>
-      <button class="sbnr-ghost" onclick="openBannerPopup('offer','Ofertas del día')">Ver ofertas 🌸</button>
-    </div>
-  </div>
-</div>
-
-<!--div class="hero">
-  <div class="banner-slider" id="bannerSlider">
-    <div class="banner-slide active" style="background:linear-gradient(135deg,#FF4D00,#FF8C00)">
-      <div class="banner-content">
-        <div class="banner-tag">🔥 Ofertas del día</div>
-        <h1 class="banner-title">Hasta 40% OFF en productos seleccionados</h1>
-        <p class="banner-sub">Los mejores precios de tu barrio, ahora en línea</p>
-        <button class="banner-cta" onclick="openBannerPopup('offer','Ofertas del día')">Ver ofertas →</button>
-      </div>
-      <div class="banner-image">🛍️</div>
-    </div>
-    <div class="banner-slide" style="background:linear-gradient(135deg,#a60000,#6b0000)">
-      <div class="banner-content">
-        <div class="banner-tag">✨ PideFacil</div>
-        <h1 class="banner-title">Tu mercado de confianza, ahora en WhatsApp</h1>
-        <p class="banner-sub">Pide, paga y recibe en tu casa</p>
-        <button class="banner-cta" onclick="openBannerPopup('hogar','Hogar')">Explorar →</button>
-      </div>
-      <div class="banner-image">🏠</div>
-    </div>
-    <div class="banner-slide" style="background:linear-gradient(135deg,#6C3FEF,#4527A0)">
-      <div class="banner-content">
-        <div class="banner-tag">⚡ Flash sale</div>
-        <h1 class="banner-title">Tecnología al mejor precio de la cuadra</h1>
-        <p class="banner-sub">Directo del vendedor, sin intermediarios</p>
-        <button class="banner-cta" onclick="openBannerPopup('tecnologia','Tecnología')">Ver tech →</button>
-      </div>
-      <div class="banner-image">📱</div>
-    </div>
-    <button class="banner-arrow banner-arrow-prev" onclick="prevSlide()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="15 18 9 12 15 6"/></svg>
-    </button>
-    <button class="banner-arrow banner-arrow-next" onclick="nextSlide()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
-    </button>
-    <div class="banner-dots" id="bannerDots"></div>
-  </div>
-</div-->
-
-<!--div class="bnr2">
-  <div class="bnr2-inner">
-    <div class="bnr2-left">
-      <span class="bnr2-badge">🔥 Semana de ofertas</span>
-      <div class="bnr2-eyebrow">Solo por tiempo limitado</div>
-      <h2 class="bnr2-title">Precios que<br><span>no vas a creer</span></h2>
-      <div class="bnr2-row">
-        <span class="bnr2-pill">📦 Envío rápido</span>
-        <span class="bnr2-pill">✅ Pago seguro</span>
-      </div>
-      <div>
-        <button class="bnr2-cta" onclick="openBannerPopup('offer','Ofertas del día')">Ver todas las ofertas →</button>
-      </div>
-    </div>
-    <div class="bnr2-right">
-      🛒
-      <div class="bnr2-deco">💥</div>
-    </div>
-  </div>
-</div-->
-
-<!--div class="bnr3" id="bnr3El">
-  <div class="bnr3-inner">
-    <div class="bnr3-glow"></div>
-    <div class="bnr3-label">PideFacil · Tu tienda facil online</div>
-    <h2 class="bnr3-title">Todo lo que necesitas,<br><em>en un clic.</em></h2>
-    <p class="bnr3-sub">Productos variados, precios honestos, entrega a domicilio.</p>
-    <div class="bnr3-btns">
-      <button class="bnr3-btn-main" onclick="filterCategory('all',null)">Ver catálogo completo</button>
-      <button class="bnr3-btn-ghost" onclick="openBannerPopup('offer','Ofertas del día')">Ver ofertas 🔥</button>
-    </div>
-  </div>
-</div-->
-
-
-<!--div class="bnr4">
-  <div class="bnr4-inner">
-    <div class="bnr4-main">
-      <div class="bnr4-main-emoji">🛍️</div>
-      <div class="bnr4-kicker">Esta semana en PideFacil</div>
-      <h2 class="bnr4-main-title">Hasta <b>40% OFF</b><br>en cientos de productos</h2>
-      <button class="bnr4-main-cta" onclick="openBannerPopup('offer','Ofertas del día')">Aprovechar ahora →</button>
-    </div>
-    <div class="bnr4-mini" style="background:linear-gradient(135deg,#00A651,#006B35)" onclick="filterCategory('hogar',null)">
-      <div class="bnr4-mini-emoji">🏡</div>
-      <div>
-        <div class="bnr4-mini-label">Hogar</div>
-        <div class="bnr4-mini-sub">Organiza tu espacio</div>
-      </div>
-      <div class="bnr4-mini-arrow">→</div>
-    </div>
-    <div class="bnr4-mini" style="background:linear-gradient(135deg,#6C3FEF,#4527A0)" onclick="filterCategory('tecnologia',null)">
-      <div class="bnr4-mini-emoji">📱</div>
-      <div>
-        <div class="bnr4-mini-label">Tech</div>
-        <div class="bnr4-mini-sub">Los mejores gadgets</div>
-      </div>
-      <div class="bnr4-mini-arrow">→</div>
-    </div>
-  </div>
-</div-->
+<!-- Banners dinámicos — cargados desde promoted/banners.json -->
+<div id="sbnrContainer"></div>
 
 <!-- RECENTLY VIEWED -->
 <section class="section recent-section" id="recentSection" style="display:none">
   <div class="section-header">
     <h2 class="section-title"><span class="section-title-dot"></span>Visto recientemente</h2>
+    <button class="btn-clear-recent" onclick="clearRecentlyViewed()" aria-label="Borrar historial">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+      Borrar
+    </button>
   </div>
   <div class="carousel-wrap">
     <button class="carousel-arrow prev" onclick="scrollCarousel('recentContainer',-1)" aria-label="Anterior: Visto recientemente">
@@ -389,131 +281,6 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
 </div>
 
 <!--div class="sbnr sbnr12">
-  <div class="sbnr-inner">
-    <div class="sbnr-deco">🎈</div>
-    <div class="sbnr-deco2">🧸</div>
-    <div class="sbnr-label">🎉 Día del Niño · 25 de abril 2026</div>
-    <h2 class="sbnr-title">¡Sorpréndelos<br><em>con algo increíble!</em></h2>
-    <p class="sbnr-sub">Juguetes, ropa y más — porque hoy es su día</p>
-    <div class="sbnr-btns">
-      <button class="sbnr-btn" onclick="filterCategory('1f82f739-eb58-41fa-8016-219fe52a4d09',null)">Ver juguetes 🎁</button>
-      <button class="sbnr-ghost" onclick="filterCategory('f85aefa9-0e31-4fe3-a354-948dbfc7721d',null)">Bebés 👶</button>
-    </div>
-  </div>
-</div-->
-
-<!--div class="sbnr sbnr6">
-  <div class="sbnr-inner">
-    <div class="sbnr-deco">🎄</div>
-    <div class="sbnr-deco2">⭐</div>
-    <div class="sbnr-label">🎄 Navidad · 25 de Diciembre</div>
-    <h2 class="sbnr-title">Regala felicidad<br><em>esta Navidad 🎁</em></h2>
-    <p class="sbnr-sub">Los mejores regalos para sorprender a toda la familia</p>
-    <div class="sbnr-btns">
-      <button class="sbnr-btn" onclick="filterCategory('all',null)">Ver catálogo navideño</button>
-      <button class="sbnr-ghost" onclick="openBannerPopup('offer','Ofertas del día')">Promociones ⭐</button>
-    </div>
-  </div>
-</div>
-
-<div class="sbnr sbnr7">
-  <div class="sbnr-inner">
-    <div class="sbnr-deco">⚡</div>
-    <div class="sbnr-deco2">🔥</div>
-    <div class="sbnr-label">⚡ Black Friday · Último Viernes de Noviembre</div>
-    <h2 class="sbnr-title">Descuentos que<br><em>no vas a creer</em></h2>
-    <p class="sbnr-sub">Precios de locos por tiempo muy limitado</p>
-    <div class="sbnr-btns">
-      <button class="sbnr-btn" onclick="openBannerPopup('offer','Ofertas del día')">Ver todas las ofertas ⚡</button>
-      <button class="sbnr-ghost" onclick="filterCategory('all',null)">Explorar catálogo</button>
-    </div>
-  </div>
-</div>
-
-<div class="sbnr sbnr8">
-  <div class="sbnr-inner">
-    <div class="sbnr-deco">💻</div>
-    <div class="sbnr-deco2">📱</div>
-    <div class="sbnr-label">💻 Cyber Monday · Lunes tras el Black Friday</div>
-    <h2 class="sbnr-title">Tech al precio<br><em>más bajo del año</em></h2>
-    <p class="sbnr-sub">Gadgets, electrónica y más — solo por 24 horas</p>
-    <div class="sbnr-btns">
-      <button class="sbnr-btn" onclick="filterCategory('tecnologia',null)">Ver tecnología 📱</button>
-      <button class="sbnr-ghost" onclick="openBannerPopup('offer','Ofertas del día')">Todas las ofertas</button>
-    </div>
-  </div>
-</div>
-
-<div class="sbnr sbnr9">
-  <div class="sbnr-inner">
-    <div class="sbnr-deco">💘</div>
-    <div class="sbnr-deco2">🎀</div>
-    <div class="sbnr-label">💕 Amor y Amistad · 22 de Septiembre</div>
-    <h2 class="sbnr-title">Celebra el amor<br><em>y la amistad 💝</em></h2>
-    <p class="sbnr-sub">Sorprende a quien quieres con un regalo especial</p>
-    <div class="sbnr-btns">
-      <button class="sbnr-btn" onclick="filterCategory('all',null)">Ver regalos 💝</button>
-      <button class="sbnr-ghost" onclick="openBannerPopup('offer','Ofertas del día')">Ver ofertas</button>
-    </div>
-  </div>
-</div>
-
-<div class="sbnr sbnr10">
-  <div class="sbnr-inner">
-    <div class="sbnr-deco">👨‍👦</div>
-    <div class="sbnr-deco2">🏆</div>
-    <div class="sbnr-label">👔 Día del Padre · 3.er Domingo de Junio</div>
-    <h2 class="sbnr-title">Para papá,<br><em>lo mejor del catálogo</em></h2>
-    <p class="sbnr-sub">Regálale lo que de verdad merece este día especial</p>
-    <div class="sbnr-btns">
-      <button class="sbnr-btn" onclick="filterCategory('all',null)">Ver regalos para papá</button>
-      <button class="sbnr-ghost" onclick="openBannerPopup('offer','Ofertas del día')">Ver ofertas 🏆</button>
-    </div>
-  </div>
-</div>
-
-<div class="sbnr sbnr11">
-  <div class="sbnr-inner">
-    <div class="sbnr-deco">🌹</div>
-    <div class="sbnr-deco2">💕</div>
-    <div class="sbnr-label">💌 San Valentín · 14 de Febrero</div>
-    <h2 class="sbnr-title">Sorprende a quien<br><em>amas este 14 Feb 🌹</em></h2>
-    <p class="sbnr-sub">El regalo perfecto para demostrar lo mucho que sientes</p>
-    <div class="sbnr-btns">
-      <button class="sbnr-btn" onclick="filterCategory('all',null)">Explorar regalos 💕</button>
-      <button class="sbnr-ghost" onclick="openBannerPopup('offer','Ofertas del día')">Ofertas del amor</button>
-    </div>
-  </div>
-</div-->
-
-<!--div class="sbnr sbnr13">
-  <div class="sbnr-inner">
-    <div class="sbnr-deco">🎃</div>
-    <div class="sbnr-deco2">👻</div>
-    <div class="sbnr-label">🎃 Halloween · 31 de Octubre</div>
-    <h2 class="sbnr-title">¿Listo para<br><em>asustar al vecindario?</em></h2>
-    <p class="sbnr-sub">Disfraces, decoración y sorpresas para la noche más oscura</p>
-    <div class="sbnr-btns">
-      <button class="sbnr-btn" onclick="filterCategory('all',null)">Ver catálogo 👻</button>
-      <button class="sbnr-ghost" onclick="openBannerPopup('offer','Ofertas del día')">Ofertas de miedo 🦇</button>
-    </div>
-  </div>
-</div>
-
-<div-- class="sbnr sbnr14">
-  <div class="sbnr-inner">
-    <div class="sbnr-deco">🎒</div>
-    <div class="sbnr-deco2">📚</div>
-    <div class="sbnr-label">📚 Regreso a Clases · Enero–Febrero</div>
-    <h2 class="sbnr-title">Todo listo para<br><em>el nuevo año escolar</em></h2>
-    <p class="sbnr-sub">Útiles, tecnología y más para arrancar con todo</p>
-    <div class="sbnr-btns">
-      <button class="sbnr-btn" onclick="filterCategory('oficina',null)">Ver útiles ✏️</button>
-      <button class="sbnr-ghost" onclick="filterCategory('tecnologia',null)">Tecnología 💻</button>
-    </div>
-  </div>
-</div-->
-
 <!-- FILTERS -->
 <div class="filters-bar">
   <button class="filter-chip active" onclick="filterPrice('all',this)">Todos</button>
@@ -636,7 +403,6 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
   <div class="order-box" role="dialog" aria-modal="true" aria-labelledby="orderBoxTitle">
     <div class="order-header">
       <div class="order-title">
-        <svg viewBox="0 0 24 24" style="width:20px;height:20px"><path fill="#25D366" d="M12 0C5.373 0 0 5.373 0 12c0 2.025.507 3.967 1.399 5.671L.1 23.9l6.499-1.699A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/><path fill="#fff" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/></svg>
         Confirmar pedido
       </div>
       <button class="btn-close" onclick="closeOrderPopup()" aria-label="Cerrar formulario de pedido">
@@ -645,7 +411,13 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
     </div>
     <div class="order-scroll">
       <div class="order-body">
-        <div class="order-summary" id="orderSummary"></div>
+        <details class="order-summary-panel" id="orderSummaryPanel">
+          <summary class="order-summary-hdr">
+            <span id="orderSummaryTotal">Total: —</span>
+            <span class="osh-detail-hint">Ver detalle <svg class="osh-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></span>
+          </summary>
+          <div class="order-summary" id="orderSummary"></div>
+        </details>
         <div class="order-field">
           <label class="order-label" for="inputDireccion">📍 Dirección de entrega <span class="req">*</span></label>
           <input class="order-input" id="inputDireccion" type="text" placeholder="Ej: Calle 10 #5-23, Barrio El Prado">
@@ -676,7 +448,7 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
         <div class="order-field">
           <label class="order-label" for="inputCelular">📱 Celular <span class="req">*</span></label>
           <div class="input-prefix-wrap">
-            <span class="input-prefix">🇨🇴 +57</span>
+            <span class="input-prefix"><svg class="flag-co" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#FCD116"/><rect y="7" width="20" height="7" fill="#003893"/><rect y="9.33" width="20" height="4.67" fill="#CE1126"/></svg> +57</span>
             <input class="order-input order-input-prefixed" id="inputCelular" type="tel" placeholder="3001234567" inputmode="numeric" maxlength="10" oninput="fmtCelularInput(this)">
           </div>
         </div>
@@ -693,8 +465,13 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
             <input class="order-input order-input-prefixed" id="inputCambio" type="text" placeholder="50.000" inputmode="numeric" oninput="fmtCambioInput(this)">
           </div>
         </div>
-        <div class="order-field" id="cuponWrap">
-          <label class="order-label" for="inputCupon">&#127991;&#65039; Cupón de descuento <span style="font-weight:400;color:var(--text-muted)">(opcional)</span></label>
+        <div class="order-field cupon-toggle-row">
+          <label class="cupon-toggle-label">
+            <input type="checkbox" id="chkCupon" onchange="document.getElementById('cuponWrap').style.display=this.checked?'':'none'">
+            &#127991;&#65039; ¿Tienes un cupón de descuento?
+          </label>
+        </div>
+        <div class="order-field" id="cuponWrap" style="display:none">
           <div class="cupon-row">
             <input class="order-input" id="inputCupon" type="text" placeholder="Ej: CUPON10" autocomplete="off" oninput="this.value=this.value.toUpperCase()">
             <button class="btn-apply-cupon" onclick="applyCupon()">Aplicar</button>
