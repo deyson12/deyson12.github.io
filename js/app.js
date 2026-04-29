@@ -128,7 +128,61 @@ let _mapConfirmed   = false;
 let _lastGeoDir     = '';
 let _mapFieldInited = false;
 
+// Auto-detect city via IP geolocation (no permission required).
+// Updates DELIVERY_CITY silently; runs concurrently with product fetch.
+function _showCountryBlock(countryName) {
+  const el = document.createElement('div');
+  el.id = 'countryBlockOverlay';
+  el.style.cssText = [
+    'position:fixed', 'inset:0', 'z-index:99999',
+    'background:rgba(15,23,42,0.97)',
+    'display:flex', 'flex-direction:column',
+    'align-items:center', 'justify-content:center',
+    'padding:32px', 'text-align:center',
+    "font-family:'Plus Jakarta Sans',system-ui,sans-serif"
+  ].join(';');
+  el.innerHTML = `
+    <div style="font-size:56px;margin-bottom:16px">🇨🇴</div>
+    <div style="font-size:22px;font-weight:800;color:#f1f5f9;margin-bottom:10px;line-height:1.3">
+      Solo disponible en Colombia
+    </div>
+    <div style="font-size:14px;color:#94a3b8;max-width:320px;line-height:1.6">
+      Esta tienda opera únicamente dentro de Colombia.<br>
+      Tu ubicación detectada es <strong style="color:#cbd5e1">${countryName}</strong>.
+    </div>`;
+  document.body.appendChild(el);
+}
+
+async function _detectCity() {
+  try {
+    const res = await fetch('https://ipapi.co/json/', { cache: 'force-cache' });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.error) return;
+    console.groupCollapsed('%c📍 IP Geolocation', 'color:#3b82f6;font-weight:700');
+    console.log('IP:          ', data.ip);
+    console.log('País:        ', data.country_name, `(${data.country_code})`);
+    console.log('Departamento:', data.region);
+    console.log('Ciudad:      ', data.city);
+    console.log('CP:          ', data.postal || '—');
+    console.log('Coords:      ', `${data.latitude}, ${data.longitude}`);
+    console.log('Org:         ', data.org || '—');
+    console.groupEnd();
+    if (data.country_code !== 'CO') {
+      _showCountryBlock(data.country_name ?? 'otro país');
+      return;
+    }
+    if (data.city) {
+      DELIVERY_CITY = data.city;
+      console.log('%c📍 DELIVERY_CITY →', 'color:#3b82f6;font-weight:700', DELIVERY_CITY);
+    }
+  } catch (e) {
+    console.warn('📍 IP Geolocation: error →', e.message, '— usando ciudad por defecto →', DELIVERY_CITY);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
+  _detectCity(); // fire-and-forget; resolves before user finishes typing address
   const grid = document.getElementById('productsGrid');
   grid.innerHTML = Array(PAGE_SIZE).fill(0).map(buildSkeleton).join('');
   try {
@@ -437,7 +491,7 @@ function loadGoogleMaps() {
     window._gmapsReady = () => { _googleLoaded = true; resolve(); };
     const s  = document.createElement('script');
     s.id     = 'google-maps-js';
-    s.src    = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&callback=_gmapsReady`;
+    s.src    = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&loading=async&libraries=marker&callback=_gmapsReady`;
     s.async  = true;
     s.defer  = true;
     s.onerror = reject;
@@ -470,39 +524,35 @@ function renderGoogleMap(lat, lng) {
   const el = document.getElementById('mapEl');
   if (_googleMap) {
     _googleMap.setCenter({ lat, lng });
-    _googleMarker.setPosition({ lat, lng });
-    _googleMarker.setDraggable(false);
+    _googleMarker.position = { lat, lng };
+    _googleMarker.gmpDraggable = false;
     return;
   }
   _googleMap = new google.maps.Map(el, {
     center: { lat, lng },
     zoom: 16,
     gestureHandling: 'cooperative',
+    mapId: 'DEMO_MAP_ID'
   });
-  _googleMarker = new google.maps.Marker({
+  const _pinEl = document.createElement('div');
+  _pinEl.style.cssText = 'width:20px;height:20px;border-radius:50%;background:#F15200;border:3px solid #fff;box-sizing:border-box;';
+  _googleMarker = new google.maps.marker.AdvancedMarkerElement({
     position: { lat, lng },
     map: _googleMap,
-    draggable: false,
-    icon: {
-      path: google.maps.SymbolPath.CIRCLE,
-      scale: 10,
-      fillColor: '#F15200',
-      fillOpacity: 1,
-      strokeColor: '#ffffff',
-      strokeWeight: 3,
-    },
+    content: _pinEl,
+    gmpDraggable: false,
+    title: ''
   });
-  _googleMarker.addListener('dragend', () => {
-    const pos = _googleMarker.getPosition();
-    _deliveryLat = pos.lat();
-    _deliveryLng = pos.lng();
+  _googleMarker.addListener('dragend', (e) => {
+    _deliveryLat = e.latLng.lat();
+    _deliveryLng = e.latLng.lng();
   });
 }
 
 function enableMapDrag() {
   const useGoogle = (typeof MAPS_PROVIDER !== 'undefined' && MAPS_PROVIDER === 'google');
   if (useGoogle) {
-    if (_googleMarker) _googleMarker.setDraggable(true);
+    if (_googleMarker) _googleMarker.gmpDraggable = true;
   } else {
     if (!_mapMarker) return;
     _mapMarker.dragging.enable();
@@ -520,10 +570,12 @@ function confirmMapLocation() {
   const useGoogle = (typeof MAPS_PROVIDER !== 'undefined' && MAPS_PROVIDER === 'google');
   if (useGoogle) {
     if (_googleMarker) {
-      const pos    = _googleMarker.getPosition();
-      _deliveryLat = pos.lat();
-      _deliveryLng = pos.lng();
-      _googleMarker.setDraggable(false);
+      const pos = _googleMarker.position;
+      if (pos) {
+        _deliveryLat = typeof pos.lat === 'function' ? pos.lat() : +pos.lat;
+        _deliveryLng = typeof pos.lng === 'function' ? pos.lng() : +pos.lng;
+      }
+      _googleMarker.gmpDraggable = false;
     }
   } else {
     if (_mapMarker) {

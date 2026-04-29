@@ -2185,7 +2185,7 @@ function _gmLoadAdmin() {
     window._gmAdminReady = () => { _gmapAdminLoaded = true; resolve(); };
     const s  = document.createElement('script');
     s.id     = 'gm-admin-js';
-    s.src    = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&callback=_gmAdminReady`;
+    s.src    = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&loading=async&libraries=marker&callback=_gmAdminReady`;
     s.async  = true;
     s.defer  = true;
     s.onerror = reject;
@@ -2232,7 +2232,8 @@ async function toggleOrdersMap() {
       mapTypeControl: false,
       streetViewControl: false,
       fullscreenControl: true,
-      gestureHandling: 'cooperative'
+      gestureHandling: 'cooperative',
+      mapId: 'DEMO_MAP_ID'
     });
     _mapInfoWindow = new google.maps.InfoWindow({ maxWidth: 280 });
     _drawMapMarkers(_lastMapList);
@@ -2306,15 +2307,15 @@ function _clusterPopupHtml(orders) {
   </div>`;
 }
 
-function _makeMarkerIcon(color, scale, opacity) {
-  return {
-    path: google.maps.SymbolPath.CIRCLE,
-    fillColor: color,
-    fillOpacity: opacity,
-    strokeColor: '#ffffff',
-    strokeWeight: 2,
-    scale
-  };
+function _makeMarkerEl(color, scale, opacity) {
+  const el = document.createElement('div');
+  el.style.cssText = `width:${scale*2}px;height:${scale*2}px;border-radius:50%;background:${color};border:2px solid #fff;opacity:${opacity};box-sizing:border-box;cursor:pointer;`;
+  return el;
+}
+function _applyMarkerEl(el, color, scale, opacity) {
+  el.style.background = color;
+  el.style.width = el.style.height = `${scale * 2}px`;
+  el.style.opacity = String(opacity);
 }
 
 function _drawMapMarkers(list) {
@@ -2369,27 +2370,14 @@ function _drawMapMarkers(list) {
         ? orders.some(o => (o.products ?? []).some(p => p.product?.name === _mapProductFilter))
         : true;
       const opacity = _mapProductFilter ? (anyMatch ? 1 : 0.2) : 1;
-      const scale   = orders.length > 9 ? 16 : 14;
-      const icon = {
-        path: google.maps.SymbolPath.CIRCLE,
-        fillColor: '#1e293b',
-        fillOpacity: opacity,
-        strokeColor: '#ffffff',
-        strokeWeight: 2.5,
-        scale,
-        labelOrigin: new google.maps.Point(0, 0)
-      };
-      const marker = new google.maps.Marker({
+      const size    = orders.length > 9 ? 16 : 14;
+      const clEl = document.createElement('div');
+      clEl.style.cssText = `width:${size*2}px;height:${size*2}px;border-radius:50%;background:#1e293b;border:2.5px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:${orders.length > 9 ? '10px' : '11px'};opacity:${opacity};box-sizing:border-box;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;`;
+      clEl.textContent = String(orders.length);
+      const marker = new google.maps.marker.AdvancedMarkerElement({
         position: pos,
         map: _ordersMap,
-        icon,
-        label: {
-          text: String(orders.length),
-          color: '#ffffff',
-          fontWeight: '700',
-          fontSize: orders.length > 9 ? '10px' : '11px',
-          fontFamily: "'Plus Jakarta Sans', sans-serif"
-        },
+        content: clEl,
         zIndex: 15,
         title: `${orders.length} pedidos en esta ubicación`
       });
@@ -2398,14 +2386,16 @@ function _drawMapMarkers(list) {
         _mapInfoWindow.open(_ordersMap, marker);
       });
       marker.addListener('mouseover', () => {
-        marker.setIcon({ ...icon, fillColor: '#F15200', scale: scale + 3 });
-        marker.setZIndex(20);
+        clEl.style.background = '#F15200';
+        clEl.style.width = clEl.style.height = `${(size + 3) * 2}px`;
+        marker.zIndex = 20;
       });
       marker.addListener('mouseout', () => {
-        marker.setIcon(icon);
-        marker.setZIndex(15);
+        clEl.style.background = '#1e293b';
+        clEl.style.width = clEl.style.height = `${size * 2}px`;
+        marker.zIndex = 15;
       });
-      orders.forEach(o => _mapMarkersList.push({ orderId: o.id, marker, order: o, isCluster: true, clusterIcon: icon }));
+      orders.forEach(o => _mapMarkersList.push({ orderId: o.id, marker, order: o, isCluster: true, contentEl: clEl, clusterSize: size }));
 
     } else {
       // ── SINGLE MARKER ────────────────────────────────────────
@@ -2417,10 +2407,11 @@ function _drawMapMarkers(list) {
       const color   = _mapColor(o.status, highlight);
       const scale   = _markerScale(o);
       const opacity = _markerOpacity(o);
-      const marker = new google.maps.Marker({
+      const mEl = _makeMarkerEl(color, scale, opacity);
+      const marker = new google.maps.marker.AdvancedMarkerElement({
         position: pos,
         map: _ordersMap,
-        icon: _makeMarkerIcon(color, scale, opacity),
+        content: mEl,
         zIndex: highlight ? 10 : dim ? 1 : 5,
         title: o.buyer?.name ?? o.address ?? ''
       });
@@ -2429,16 +2420,16 @@ function _drawMapMarkers(list) {
         _mapInfoWindow.open(_ordersMap, marker);
       });
       marker.addListener('mouseover', () => {
-        marker.setIcon(_makeMarkerIcon('#F15200', scale + 4, 1));
-        marker.setZIndex(20);
+        _applyMarkerEl(mEl, '#F15200', scale + 4, 1);
+        marker.zIndex = 20;
         _mapInfoWindow.setContent(_markerPopupHtml(o));
         _mapInfoWindow.open(_ordersMap, marker);
       });
       marker.addListener('mouseout', () => {
-        marker.setIcon(_makeMarkerIcon(color, scale, opacity));
-        marker.setZIndex(highlight ? 10 : dim ? 1 : 5);
+        _applyMarkerEl(mEl, color, scale, opacity);
+        marker.zIndex = highlight ? 10 : dim ? 1 : 5;
       });
-      _mapMarkersList.push({ orderId: o.id, marker, order: o });
+      _mapMarkersList.push({ orderId: o.id, marker, order: o, contentEl: mEl });
     }
   });
 
@@ -2465,29 +2456,28 @@ function mapFocusOrder(orderId) {
   const entry = _mapMarkersList.find(m => m.orderId === orderId);
   if (!entry) return;
   if (entry.isCluster) {
-    const ci = entry.clusterIcon;
-    entry.marker.setIcon({ ...ci, fillColor: '#F15200', scale: ci.scale + 3 });
-    entry.marker.setZIndex(30);
+    entry.contentEl.style.background = '#F15200';
+    entry.contentEl.style.width = entry.contentEl.style.height = `${(entry.clusterSize + 3) * 2}px`;
   } else {
-    const s = _markerScale(entry.order);
-    entry.marker.setIcon(_makeMarkerIcon('#F15200', s + 5, 1));
-    entry.marker.setZIndex(30);
+    _applyMarkerEl(entry.contentEl, '#F15200', _markerScale(entry.order) + 5, 1);
   }
+  entry.marker.zIndex = 30;
 }
 
 function mapUnfocusOrder(orderId) {
   const entry = _mapMarkersList.find(m => m.orderId === orderId);
   if (!entry) return;
   if (entry.isCluster) {
-    entry.marker.setIcon(entry.clusterIcon);
-    entry.marker.setZIndex(15);
+    entry.contentEl.style.background = '#1e293b';
+    entry.contentEl.style.width = entry.contentEl.style.height = `${entry.clusterSize * 2}px`;
+    entry.marker.zIndex = 15;
   } else {
     const highlight = _mapProductFilter
       ? (entry.order.products ?? []).some(p => p.product?.name === _mapProductFilter)
       : false;
     const dim  = !!_mapProductFilter && !highlight;
-    entry.marker.setIcon(_makeMarkerIcon(_mapColor(entry.order.status, highlight), _markerScale(entry.order), _markerOpacity(entry.order)));
-    entry.marker.setZIndex(highlight ? 10 : dim ? 1 : 5);
+    _applyMarkerEl(entry.contentEl, _mapColor(entry.order.status, highlight), _markerScale(entry.order), _markerOpacity(entry.order));
+    entry.marker.zIndex = highlight ? 10 : dim ? 1 : 5;
   }
 }
 </script>

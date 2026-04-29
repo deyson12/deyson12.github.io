@@ -32,7 +32,7 @@ const API_BASE = _API_URLS[API_ENV] || _API_URLS.local;
 
 const MAPS_ENABLED   = true;          // <── true | false
 const MAPS_PROVIDER  = 'google';     // <── 'leaflet' | 'google'
-const DELIVERY_CITY  = 'Medellín';    // <── ciudad principal de entrega
+let   DELIVERY_CITY  = 'Medellín';    // <── ciudad principal de entrega (se auto-detecta por IP al cargar)
 const GOOGLE_MAPS_KEY = 'AIzaSyCZDKgSFqjayBMohK8lawKi2KPf8HLWdnM';           // <── API key de Google (si usas 'google')
 
 // ── Wompi — pagos en línea (tarjeta / PSE) ──────────────────
