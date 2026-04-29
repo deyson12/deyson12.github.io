@@ -1,11 +1,11 @@
 {
-  "id": "popup-nino-abril-2026",
+  "id": "popup-madre-mayo-2026",
   "type": "banner",
-  "badge": "🎉 Día del Niño · 25 de Abril",
-  "title": "¡Los mejores regalos para los peques!",
-  "subtitle": "Juguetes, ropa y sorpresas — entregamos a tu puerta",
-  "image": "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=600&auto=format",
-  "cta": "Ver juguetes 🎁",
+  "badge": "💐 Día de la Madre · 10 de Mayo",
+  "title": "¡Regálale lo mejor a mamá!",
+  "subtitle": "Los detalles más especiales para la persona más importante — entregamos a tu puerta",
+  "image": "https://images.unsplash.com/photo-1607344645866-009c320b63e0?w=600&auto=format",
+  "cta": "Ver regalos para mamá 💐",
   "ctaAction": "1f82f739-eb58-41fa-8016-219fe52a4d09",
   "idProduct": "promo-003"
 }

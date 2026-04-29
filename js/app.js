@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (rc.ok) COUPONS = await rc.json();
   } catch (_) {}
   try {
-    const rb = await fetch('promoted/banners.json');
+    const rb = await fetch(API_BASE + '/api/banners/visible');
     if (rb.ok) renderSbnrBanners(await rb.json());
   } catch (_) {}
   try {
@@ -554,7 +554,7 @@ function resetMapState() {
   if (mapEl) mapEl.style.display = 'none';
 }
 
-// ===== SBNR BANNERS (from promoted/banners.json) =====
+// ===== SBNR BANNERS =====
 function renderSbnrBanners(banners) {
   const container = document.getElementById('sbnrContainer');
   if (!container) return;
@@ -920,7 +920,7 @@ function hamFilterCategory(cat, btn) {
   closeHamDrawer();
   document.getElementById('gridSectionHeader').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
-function openHamDrawer()  { document.getElementById('hamDrawer').classList.add('open'); document.getElementById('hamOverlay').classList.add('open'); document.body.style.overflow = 'hidden'; }
+function openHamDrawer()  { document.getElementById('hamDrawer').classList.add('open'); document.getElementById('hamOverlay').classList.add('open'); document.body.style.overflow = 'hidden'; _updateUserGreeting(); }
 
 // ===== CATEGORIES =====
 async function initCategories() {
@@ -1204,6 +1204,7 @@ function openOrderPopup() {
 function closeOrderPopup() {
   buyNowProduct = null;
   repeatOrderItems = null;
+  _orderLoading(false);
   document.getElementById('orderOverlay').classList.remove('open');
   document.body.style.overflow = '';
   resetMapState();
@@ -1340,6 +1341,14 @@ async function postOrderToApi({ fullItems, address, paymentType }) {
   }
 }
 
+function _orderLoading(show) {
+  const el = document.getElementById('orderLoadingOverlay');
+  if (!el) return;
+  el.style.display = show ? 'flex' : 'none';
+  const btn = document.getElementById('btnSendOrder');
+  if (btn) btn.disabled = show;
+}
+
 async function sendWhatsappOrder() {
   const dir    = document.getElementById('inputDireccion').value.trim();
   const nom    = document.getElementById('inputNombre').value.trim();
@@ -1355,26 +1364,41 @@ async function sendWhatsappOrder() {
 
   setCyUser({ dir, name: nom, phone });
 
+  _orderLoading(true);
+
   // ── Guest checkout: register if first time ──────────────
   try {
     await ensureGuestUser(nom, phone);
   } catch (e) {
+    _orderLoading(false);
     openRegisterError(nom, phone);
     return;
   }
 
   // ── Auto-confirm map if user didn't do it manually ───────
-  if (!_mapConfirmed && _mapMarker) {
-    const pos = _mapMarker.getLatLng();
-    _deliveryLat  = pos.lat;
-    _deliveryLng  = pos.lng;
-    _mapConfirmed = true;
-    setCyUser({ lat: _deliveryLat, lng: _deliveryLng });
-    document.getElementById('mapConfirmBtns').style.display = 'none';
-    document.getElementById('mapConfirmHint').classList.remove('visible');
-    document.getElementById('btnMapConfirm').classList.remove('visible');
-    document.getElementById('mapConfirmedBadge').classList.add('visible');
-    document.getElementById('mapQuestion').textContent = '';
+  if (!_mapConfirmed) {
+    const useGoogle = (typeof MAPS_PROVIDER !== 'undefined' && MAPS_PROVIDER === 'google');
+    if (useGoogle && _googleMarker) {
+      const pos     = _googleMarker.getPosition();
+      _deliveryLat  = pos.lat();
+      _deliveryLng  = pos.lng();
+      _googleMarker.setDraggable(false);
+    } else if (!useGoogle && _mapMarker) {
+      const pos     = _mapMarker.getLatLng();
+      _deliveryLat  = pos.lat;
+      _deliveryLng  = pos.lng;
+      _mapMarker.dragging.disable();
+    }
+    // Even if there's no marker, keep whatever _deliveryLat/_deliveryLng was geocoded
+    if (_deliveryLat && _deliveryLng) {
+      _mapConfirmed = true;
+      setCyUser({ lat: _deliveryLat, lng: _deliveryLng });
+      document.getElementById('mapConfirmBtns').style.display = 'none';
+      document.getElementById('mapConfirmHint').classList.remove('visible');
+      document.getElementById('btnMapConfirm').classList.remove('visible');
+      document.getElementById('mapConfirmedBadge').classList.add('visible');
+      document.getElementById('mapQuestion').textContent = '';
+    }
   }
 
   // ── Compute totals and build item blocks ─────────────────
@@ -1727,7 +1751,15 @@ function initModalZoom() {
     const img     = document.querySelector('.modal-main-img');
     if (!gallery || !img) { console.warn('[zoom] elementos no encontrados, abortando'); return; }
     const SCALE = 2.5;
-    let moveCount = 0;
+    // Warm-up: instant zoom-in + zoom-out off-screen to force GPU rasterization at full res
+    img.style.willChange = 'transform';
+    img.style.transition = 'none';
+    img.style.transform = `scale(${SCALE})`;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        img.style.transform = 'scale(1)';
+      });
+    });
     gallery.addEventListener('mouseenter', () => {
       gallery.classList.add('zooming');
     });
@@ -1830,13 +1862,39 @@ function toggleOrdCard(el) {
 }
 
 function renderOrdersHistory() {
-  let hist = [];
-  try { hist = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]'); } catch (e) {}
+  // Shows loading state; actual data fetched in openOrdersHistory
+}
+
+async function _fetchAndRenderOrders() {
   const body     = document.getElementById('ordersBody');
   const pill     = document.getElementById('ordersCountPill');
   const clearBtn = document.getElementById('btnClearOrders');
-  if (pill)     pill.textContent      = hist.length;
-  if (clearBtn) clearBtn.style.display = hist.length ? 'flex' : 'none';
+  if (clearBtn) clearBtn.style.display = 'none';
+
+  const cu = getCyUser();
+  const buyerId = cu?.id;
+  if (!buyerId) {
+    if (pill) pill.textContent = '0';
+    body.innerHTML = `<div class="orders-empty">
+      <div class="orders-empty-icon">📋</div>
+      <p style="font-weight:600;font-family:var(--font-head)">Sin pedidos aún</p>
+      <p style="font-size:11px;text-align:center;max-width:240px;line-height:1.6">Cuando hagas tu primer pedido, aparecerá aquí con todos los detalles.</p>
+    </div>`;
+    return;
+  }
+
+  body.innerHTML = `<div class="orders-empty"><div class="orders-empty-icon" style="font-size:28px">⏳</div><p style="font-weight:600">Cargando pedidos…</p></div>`;
+
+  let hist = [];
+  try {
+    const res = await fetch(`${API_BASE}/api/orders/buyer/${buyerId}`);
+    if (res.ok) hist = await res.json();
+  } catch (e) {
+    // fall through to empty state
+  }
+
+  if (pill) pill.textContent = hist.length;
+
   if (!hist.length) {
     body.innerHTML = `<div class="orders-empty">
       <div class="orders-empty-icon">📋</div>
@@ -1845,23 +1903,33 @@ function renderOrdersHistory() {
     </div>`;
     return;
   }
+
+  const statusChip = (s) => {
+    const map = {
+      CONFIRMADO:              `<span class="ord-status-chip osc-approved">✅ CONFIRMADO</span>`,
+      PENDIENTE:               `<span class="ord-status-chip osc-pending">⏳ PENDIENTE</span>`,
+      CANCELADO:               `<span class="ord-status-chip osc-declined">❌ CANCELADO</span>`,
+      CANCELADO_AUTOMATICAMENTE: `<span class="ord-status-chip osc-declined">❌ CANCELADO</span>`,
+      ENVIADO:                 `<span class="ord-status-chip osc-approved">🚚 ENVIADO</span>`,
+      RECIBIDO:                `<span class="ord-status-chip osc-approved">📦 RECIBIDO</span>`
+    };
+    return map[s] ?? `<span class="ord-status-chip osc-pending">${s}</span>`;
+  };
+
   body.innerHTML = hist.map((ord, idx) => {
-    const items    = ord.items || [];
+    const items     = ord.products ?? [];
+    const total     = items.reduce((s, p) => s + (p.unitPrice != null ? Number(p.unitPrice) : (p.product?.price ?? 0)) * (p.quantity ?? 1), 0);
     const itemsHtml = items.length
-      ? items.map(it => `<div class="ord-item-row"><span class="ord-item-name">${it.name} ×${it.qty}</span><span class="ord-item-price">$${(it.price * it.qty).toLocaleString('es-CO')}</span></div>`).join('')
-      : `<div style="font-size:12px;color:var(--text-muted)">${(ord.summaryHtml || 'Detalle no disponible').replace(/<[^>]*>/g, ' ')}</div>`;
-    const wompiExtra = (ord.type === 'wompi' || ord.pago === 'Wompi') ? `
-      ${ord.wompiRef ? `<div class="ord-info-row"><span class="ord-info-icon">🧾</span><span>Ref: <span class="ord-info-mono">${ord.wompiRef}</span></span></div>` : ''}
-      ${ord.wompiId  ? `<div class="ord-info-row"><span class="ord-info-icon">🔢</span><span>ID Trans: <span class="ord-info-mono">${ord.wompiId}</span></span></div>` : ''}
-    ` : '';
-    const displayRef = ord.wompiRef || ord.id;
+      ? items.map(p => `<div class="ord-item-row"><span class="ord-item-name">${p.product?.name ?? '—'} ×${p.quantity}</span><span class="ord-item-price">$${((p.unitPrice != null ? Number(p.unitPrice) : (p.product?.price ?? 0)) * p.quantity).toLocaleString('es-CO')}</span></div>`).join('')
+      : `<div style="font-size:12px;color:var(--text-muted)">Sin detalle</div>`;
+    const displayRef = 'Ref: ' + (ord.id ?? '').substring(0, 8) + ': ';
     return `<div class="ord-card">
       <div class="ord-card-head" onclick="toggleOrdCard(this)">
         <div style="flex:1;min-width:0">
-          <div class="ord-card-ref">${displayRef}</div>
-          <div class="ord-card-date">${fmtDateOrder(ord.date)}</div>
+          <div class="ord-card-ref">${displayRef} <span style="font-weight:800;color:var(--primary)">$${total.toLocaleString('es-CO')}</span></div>
+          <div class="ord-card-date">${fmtDateOrder(ord.createdAt)}</div>
         </div>
-        ${ordStatusChip(ord)}
+        ${statusChip(ord.status)}
         <button class="ord-toggle-btn" onclick="toggleOrdCard(this)" title="Ver / ocultar detalles">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
@@ -1869,16 +1937,15 @@ function renderOrdersHistory() {
       <div class="ord-card-collapsible">
         <div class="ord-card-items">
           ${itemsHtml}
-          <div class="ord-total-row"><span>Total</span><span>${ord.totalFmt}</span></div>
+          <div class="ord-total-row"><span>Total</span><span>$${total.toLocaleString('es-CO')}</span></div>
         </div>
         <div class="ord-card-info">
-          <div class="ord-info-row"><span class="ord-info-icon">👤</span><span>${ord.nombre}</span></div>
-          <div class="ord-info-row"><span class="ord-info-icon">📍</span><span>${ord.direccion}</span></div>
-          <div class="ord-info-row"><span class="ord-info-icon">💳</span><span>${ord.pago}</span></div>
-          ${wompiExtra}
+          <div class="ord-info-row"><span class="ord-info-icon">👤</span><span>${ord.buyer?.name ?? '—'}</span></div>
+          <div class="ord-info-row"><span class="ord-info-icon">📍</span><span>${ord.address ?? '—'}</span></div>
+          <div class="ord-info-row"><span class="ord-info-icon">💳</span><span>${ord.paymentType ?? '—'}</span></div>
         </div>
         <div class="ord-card-actions">
-          <button class="btn-repeat-order" onclick="repeatOrder(${idx})">
+          <button class="btn-repeat-order" onclick="repeatOrderFromApi(${idx})">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
             Repetir pedido
           </button>
@@ -1886,41 +1953,43 @@ function renderOrdersHistory() {
       </div>
     </div>`;
   }).join('');
+
+  // Store for repeatOrderFromApi lookup
+  window._apiOrdersHistory = hist;
 }
 
 function openOrdersHistory() {
-  renderOrdersHistory();
   document.getElementById('ordersOverlay').classList.add('open');
   document.getElementById('ordersPanel').classList.add('open');
   document.body.style.overflow = 'hidden';
+  _fetchAndRenderOrders();
 }
 
-function repeatOrder(idx) {
-  let hist = [];
-  try { hist = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]'); } catch (e) {}
-  const ord = hist[idx];
+function repeatOrderFromApi(idx) {
+  const hist = window._apiOrdersHistory || [];
+  const ord  = hist[idx];
   if (!ord) return;
 
-  // Build items from current PRODUCTS catalog (use current prices)
-  const items = (ord.items || []).reduce((acc, it) => {
-    const product = PRODUCTS.find(p => p.id === it.id);
-    if (product) acc.push({ product, qty: it.qty });
+  const items = (ord.products ?? []).reduce((acc, p) => {
+    const product = PRODUCTS.find(x => x.id === p.product?.id);
+    if (product) acc.push({ product, qty: p.quantity ?? 1 });
     return acc;
   }, []);
 
   if (!items.length) { showToast('Los productos de este pedido ya no están disponibles', '⚠️'); return; }
 
-  repeatOrderItems = items; // bypass cart entirely
-
+  repeatOrderItems = items;
   closeOrdersHistory();
   setTimeout(() => {
     openOrderPopup();
     setTimeout(() => {
-      if (ord.direccion) document.getElementById('inputDireccion').value = ord.direccion;
-      if (ord.nombre)    document.getElementById('inputNombre').value    = ord.nombre;
+      if (ord.address) document.getElementById('inputDireccion').value = ord.address;
+      if (ord.buyer?.name) document.getElementById('inputNombre').value = ord.buyer.name;
     }, 150);
   }, 300);
 }
+
+function repeatOrder(idx) { repeatOrderFromApi(idx); }
 
 function closeOrdersHistory() {
   document.getElementById('ordersOverlay').classList.remove('open');
@@ -1928,10 +1997,7 @@ function closeOrdersHistory() {
   document.body.style.overflow = '';
 }
 function clearOrdersHistory() {
-  if (!confirm('¿Borrar todo el historial de pedidos? Esta acción no se puede deshacer.')) return;
-  localStorage.removeItem(ORDERS_KEY);
-  renderOrdersHistory();
-  showToast('Historial borrado', '🗑️');
+  // Orders are now stored in the backend — nothing to clear locally
 }
 
 // ===== THEME =====
@@ -1978,11 +2044,26 @@ function handleBnrPopupClick(e) { if (e.target === document.getElementById('bnrP
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeCart(); closeOrderPopup(); closeBannerPopup(); closeSearchDropdown(); closeMoreMenu(); closePromoPopup(); } });
 
 // ===== MORE MENU =====
+function _updateUserGreeting() {
+  const cu   = getCyUser();
+  const name = cu?.name;
+  const hasId = !!cu?.id;
+  ['moreMenuUserGreeting', 'hamUserGreeting'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (name) { el.textContent = '\uD83D\uDC4B Hola, ' + name.split(' ')[0] + '!'; el.style.display = 'block'; }
+    else el.style.display = 'none';
+  });
+  const showPedidos = d => { const el = document.getElementById(d); if (el) el.style.display = hasId ? '' : 'none'; };
+  showPedidos('btnMoreMisPedidos');
+  showPedidos('btnHamMisPedidos');
+}
+
 function toggleMoreMenu() {
   const dd = document.getElementById('moreMenuDropdown');
   const open = dd.classList.toggle('open');
   document.getElementById('moreMenuBtn').classList.toggle('active', open);
-  if (open) setTimeout(() => document.addEventListener('click', _moreMenuOutside, { once: true }), 0);
+  if (open) { _updateUserGreeting(); setTimeout(() => document.addEventListener('click', _moreMenuOutside, { once: true }), 0); }
 }
 function closeMoreMenu() {
   document.getElementById('moreMenuDropdown')?.classList.remove('open');

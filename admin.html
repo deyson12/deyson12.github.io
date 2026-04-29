@@ -29,6 +29,8 @@
     --status-confirmado-bg: #f0fdf4; --status-confirmado-color: #15803d; --status-confirmado-border: #bbf7d0;
     --status-cancelado-bg: #fef2f2; --status-cancelado-color: #b91c1c; --status-cancelado-border: #fecaca;
     --status-cancelado_automaticamente-bg: #f5f3ff; --status-cancelado_automaticamente-color: #6d28d9; --status-cancelado_automaticamente-border: #ddd6fe;
+    --status-enviado-bg: #eff6ff; --status-enviado-color: #1d4ed8; --status-enviado-border: #bfdbfe;
+    --status-recibido-bg: #f0fdfa; --status-recibido-color: #0f766e; --status-recibido-border: #99f6e4;
   }
   body { font-family: var(--font); background: var(--bg); color: var(--text-primary); min-height: 100vh; }
 
@@ -104,6 +106,8 @@
   .badge-CONFIRMADO { background: var(--status-confirmado-bg); color: var(--status-confirmado-color); border-color: var(--status-confirmado-border); }
   .badge-CANCELADO { background: var(--status-cancelado-bg); color: var(--status-cancelado-color); border-color: var(--status-cancelado-border); }
   .badge-CANCELADO_AUTOMATICAMENTE { background: var(--status-cancelado_automaticamente-bg); color: var(--status-cancelado_automaticamente-color); border-color: var(--status-cancelado_automaticamente-border); }
+  .badge-ENVIADO { background: var(--status-enviado-bg); color: var(--status-enviado-color); border-color: var(--status-enviado-border); }
+  .badge-RECIBIDO { background: var(--status-recibido-bg); color: var(--status-recibido-color); border-color: var(--status-recibido-border); }
   .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 
   /* Payment chip */
@@ -171,6 +175,22 @@
   .btn-confirm:hover { background: #15803d; }
   .btn-cancel-order { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 11px 16px; background: #dc2626; border: none; border-radius: var(--radius-sm); font-family: var(--font); font-size: 13px; font-weight: 700; color: #fff; cursor: pointer; transition: background .2s; }
   .btn-cancel-order:hover { background: #b91c1c; }
+
+  /* ── STATUS STEPPER ── */
+  .sp-pipeline { display: flex; align-items: flex-start; gap: 0; padding: 12px 0 4px; }
+  .sp-step { display: flex; flex-direction: column; align-items: center; min-width: 52px; cursor: default; user-select: none; }
+  .sp-step.clickable { cursor: pointer; }
+  .sp-connector { flex: 1; height: 2px; background: #e5e7eb; margin-top: 11px; min-width: 6px; }
+  .sp-connector.done { background: #22c55e; }
+  .sp-dot { width: 24px; height: 24px; border-radius: 50%; background: #e5e7eb; border: 2px solid #d1d5db; display: flex; align-items: center; justify-content: center; transition: transform .15s; }
+  .sp-step.done .sp-dot { background: #22c55e; border-color: #16a34a; color: #fff; }
+  .sp-step.active .sp-dot { background: #fff; border-color: #3b82f6; border-width: 3px; box-shadow: 0 0 0 4px #dbeafe; }
+  .sp-step.clickable:hover .sp-dot { transform: scale(1.15); }
+  .sp-step-label { font-size: 10px; font-weight: 600; color: #9ca3af; margin-top: 5px; text-align: center; line-height: 1.2; }
+  .sp-step.done .sp-step-label { color: #16a34a; }
+  .sp-step.active .sp-step-label { color: #2563eb; }
+  .btn-cancel-sm { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 16px; background: transparent; border: 1.5px solid #fca5a5; border-radius: var(--radius-sm); font-family: var(--font); font-size: 12px; font-weight: 600; color: #dc2626; cursor: pointer; transition: all .15s; width: 100%; box-sizing: border-box; }
+  .btn-cancel-sm:hover { background: #fef2f2; border-color: #dc2626; }
 
   /* ── MOBILE TABLE CARDS ── */
   @media(max-width: 767px) {
@@ -316,13 +336,70 @@
   .prod-price-val.orange { color: var(--primary); }
   .prod-tag-promo { display: inline-flex; align-items: center; font-size: 10px; font-weight: 700; background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; padding: 1px 6px; border-radius: var(--radius-full); margin-left: 4px; vertical-align: middle; }
 
-  /* Product edit modal form */
+  /* ── BANNERS SECTION ── */
+  .bnn-grid { display: flex; flex-direction: column; gap: 0; }
+  .bnn-row { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--border); background: var(--bg-card); transition: background .15s; }
+  .bnn-row:last-child { border-bottom: none; }
+  .bnn-row.bnn-off { opacity: .55; }
+  .bnn-preview { width: 52px; height: 52px; border-radius: 10px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 22px; border: 1px solid rgba(0,0,0,.07); }
+  .bnn-info { flex: 1; min-width: 0; }
+  .bnn-id { font-size: 11px; font-weight: 700; font-family: monospace; color: var(--text-muted); margin-bottom: 2px; text-transform: uppercase; }
+  .bnn-title-row { font-size: 13px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bnn-label-row { font-size: 11px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bnn-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .bnn-toggle { padding: 5px 12px; border-radius: var(--radius-full); font-family: var(--font); font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid; transition: all .18s; white-space: nowrap; }
+  .bnn-toggle-on  { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+  .bnn-toggle-on:hover  { background: #15803d; color: #fff; border-color: #15803d; }
+  .bnn-toggle-off { background: #f3f4f6; color: var(--text-muted); border-color: var(--border); }
+  .bnn-toggle-off:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .bnn-edit-btn { padding: 5px 10px; border-radius: var(--radius-full); font-family: var(--font); font-size: 12px; font-weight: 600; cursor: pointer; border: 1.5px solid var(--border); background: var(--bg-card); color: var(--text-secondary); transition: all .18s; }
+  .bnn-edit-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .bnn-del-btn { padding: 5px 8px; border-radius: var(--radius-full); font-family: var(--font); font-size: 12px; cursor: pointer; border: 1.5px solid var(--border); background: var(--bg-card); color: var(--text-muted); transition: all .18s; }
+  .bnn-del-btn:hover { border-color: #b91c1c; color: #b91c1c; background: #fef2f2; }
+  .bnn-order-btn { padding: 4px 6px; border: 1.5px solid var(--border); border-radius: 6px; background: var(--bg-card); color: var(--text-muted); cursor: pointer; font-size: 10px; font-weight: 700; transition: all .15s; line-height: 1; }
+  .bnn-order-btn:hover:not([disabled]) { border-color: var(--primary); color: var(--primary); }
+  .bnn-order-btn[disabled] { opacity: .3; cursor: not-allowed; }
+  /* Banner form */
+  .bnn-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .bnn-color-row { display: flex; align-items: center; gap: 8px; }
+  .bnn-color-row input[type=color] { width: 36px; height: 36px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; background: none; padding: 2px; flex-shrink: 0; }
+  .bnn-color-row input[type=text] { flex: 1; }
+  .bnn-live-preview { margin-top: 4px; padding: 12px 16px; border-radius: var(--radius-sm); min-height: 56px; display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 700; }
+
+  /* ── FORM FIELDS (shared by products & banners modals) ── */
   .pf-form-field { display: flex; flex-direction: column; gap: 5px; }
   .pf-form-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
   .pf-form-input { padding: 9px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: var(--font); font-size: 13px; outline: none; background: var(--bg-card); color: var(--text-primary); transition: border-color .18s; width: 100%; }
   .pf-form-input:focus { border-color: var(--primary); }
   .pf-clear-btn { padding: 8px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: var(--font); font-size: 12px; font-weight: 600; color: var(--text-secondary); background: var(--bg-card); cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all .18s; }
   .pf-clear-btn:hover { border-color: #b91c1c; color: #b91c1c; }
+
+  /* ── ORDERS MAP ─────────────────────────────────────── */
+  .map-toggle-btn { display: flex; align-items: center; gap: 6px; padding: 7px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-full); font-size: 12px; font-weight: 600; font-family: var(--font); background: var(--bg-card); cursor: pointer; transition: background .15s, border-color .15s, color .15s; color: var(--text-secondary); white-space: nowrap; flex-shrink: 0; }
+  .map-toggle-btn:hover { background: #fff3ec; border-color: var(--primary); color: var(--primary); }
+  .map-toggle-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .map-panel { background: var(--bg-card); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 16px; display: none; }
+  .map-panel.open { display: block; }
+  #ordersMapEl { height: 420px; width: 100%; background: #e5e7eb; border-bottom-left-radius: var(--radius); border-bottom-right-radius: var(--radius); }
+  .map-controls-bar { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .map-controls-bar label { font-size: 12px; font-weight: 600; color: var(--text-secondary); white-space: nowrap; flex-shrink: 0; }
+  .map-prod-select { flex: 1; min-width: 180px; max-width: 280px; padding: 5px 10px; border: 1.5px solid var(--border); border-radius: var(--radius-full); font-size: 12px; font-family: var(--font); background: var(--bg); outline: none; cursor: pointer; }
+  .map-prod-select:focus { border-color: var(--primary); }
+  .map-legend { display: flex; align-items: center; gap: 12px; }
+  .map-legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; color: var(--text-secondary); }
+  .map-legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .map-loc-count { font-size: 11px; color: var(--text-muted); white-space: nowrap; margin-left: auto; }
+
+  .gm-style .gm-style-iw-c { border-radius: 10px !important; padding: 0 !important; box-shadow: 0 4px 20px rgba(0,0,0,.15) !important; }
+  .gm-style .gm-style-iw-d { overflow: hidden !important; }
+  .gm-style .gm-style-iw-t::after { display: none; }
+  .omap-popup-buyer { font-weight: 700; font-size: 13px; margin-bottom: 3px; color: #111827; }
+  .omap-popup-addr { font-size: 11px; color: #6b7280; margin-bottom: 4px; }
+  .omap-popup-prods { font-size: 11px; color: #374151; margin-bottom: 4px; }
+  .omap-popup-total { font-size: 13px; font-weight: 800; color: #F15200; }
+  .omap-popup-badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 700; margin-top: 4px; }
+  .omap-popup-open { display: inline-block; margin-top: 6px; padding: 4px 10px; background: var(--primary); color: #fff; border-radius: 99px; font-size: 11px; font-weight: 700; cursor: pointer; border: none; font-family: var(--font); }
+  .omap-popup-open:hover { background: var(--primary-dark); }
 </style>
 </head>
 <body>
@@ -379,6 +456,10 @@
       <span class="nav-item-icon">📦</span>
       Productos
     </button>
+    <button class="nav-item" id="navBanners" onclick="showSection('banners');closeNavDrawer()">
+      <span class="nav-item-icon">🎨</span>
+      Banners
+    </button>
   </div>
   <div class="nav-drawer-footer">
     <button class="nav-item nav-item-logout" onclick="doLogout()">
@@ -430,10 +511,32 @@
       <button class="filter-btn" data-status="CONFIRMADO" onclick="setStatus('CONFIRMADO',this)">Confirmados</button>
       <button class="filter-btn" data-status="CANCELADO" onclick="setStatus('CANCELADO',this)">Cancelados</button>
       <button class="filter-btn" data-status="CANCELADO_AUTOMATICAMENTE" onclick="setStatus('CANCELADO_AUTOMATICAMENTE',this)">Cancelado auto.</button>
+      <button class="filter-btn" data-status="ENVIADO" onclick="setStatus('ENVIADO',this)">Enviado</button>
+      <button class="filter-btn" data-status="RECIBIDO" onclick="setStatus('RECIBIDO',this)">Recibido</button>
     </div>
+    <button class="map-toggle-btn" id="mapToggleBtn" onclick="toggleOrdersMap()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>
+      Ver mapa
+    </button>
   </div>
 
-  <!-- Table -->
+  <!-- Orders Map -->
+  <div class="map-panel" id="ordersMapPanel">
+    <div class="map-controls-bar">
+      <label>🏷️ Filtrar por producto:</label>
+      <select class="map-prod-select" id="mapProdSelect" onchange="setMapProductFilter(this.value)">
+        <option value="">Todos los productos</option>
+      </select>
+      <div class="map-legend">
+        <div class="map-legend-item"><div class="map-legend-dot" style="background:#f59e0b"></div>Pendiente</div>
+        <div class="map-legend-item"><div class="map-legend-dot" style="background:#22c55e"></div>Confirmado</div>
+        <div class="map-legend-item"><div class="map-legend-dot" style="background:#ef4444"></div>Cancelado</div>
+        <div class="map-legend-item"><div class="map-legend-dot" style="background:#3b82f6"></div>Producto sel.</div>
+      </div>
+      <span class="map-loc-count" id="mapLocCount"></span>
+    </div>
+    <div id="ordersMapEl"></div>
+  </div>
   <div class="table-wrap">
     <div class="table-count" id="tableCount"></div>
     <div id="tableBody"></div>
@@ -583,7 +686,33 @@
   <div id="prodGrid"></div>
 </div>
 
-<!-- DETAIL MODAL -->
+<!-- BANNERS SECTION -->
+<div class="content" id="bannersSection" style="display:none">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+    <h2 style="font-size:18px;font-weight:800;flex:1">Banners promocionales</h2>
+    <button class="btn-confirm" style="flex:none;padding:8px 16px;font-size:13px" onclick="openBannerCreateModal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M12 5v14M5 12h14"/></svg>
+      Nuevo banner
+    </button>
+  </div>
+  <div class="table-wrap">
+    <div class="table-count" id="bnnCount"></div>
+    <div id="bnnGrid"></div>
+  </div>
+</div>
+
+<!-- BANNER EDIT/CREATE MODAL -->
+<div class="modal-overlay" id="bannerModal" onclick="handleBannerModalClick(event)">
+  <div class="modal-box" style="max-width:560px">
+    <div class="modal-head">
+      <div class="modal-head-title" id="bannerModalTitle">Banner</div>
+      <button class="modal-close" onclick="closeBannerModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="bannerModalBody" style="display:flex;flex-direction:column;gap:14px;max-height:75vh;overflow-y:auto"></div>
+  </div>
+</div>
 <div class="modal-overlay" id="detailModal" onclick="handleModalClick(event)">
   <div class="modal-box">
     <div class="modal-head">
@@ -634,16 +763,19 @@ function showSection(section) {
   document.getElementById('dashSection').style.display       = section === 'pedidos'   ? 'block' : 'none';
   document.getElementById('analyticsSection').style.display  = section === 'analytics' ? 'block' : 'none';
   document.getElementById('productosSection').style.display  = section === 'productos' ? 'block' : 'none';
+  document.getElementById('bannersSection').style.display    = section === 'banners'   ? 'block' : 'none';
   document.getElementById('navPedidos').classList.toggle('active',   section === 'pedidos');
   document.getElementById('navAnalytics').classList.toggle('active', section === 'analytics');
   document.getElementById('navProductos').classList.toggle('active', section === 'productos');
-  const sectionLabels = { pedidos: 'Pedidos', analytics: 'Analytics', productos: 'Productos' };
+  document.getElementById('navBanners').classList.toggle('active',   section === 'banners');
+  const sectionLabels = { pedidos: 'Pedidos', analytics: 'Analytics', productos: 'Productos', banners: 'Banners' };
   const labelEl = document.getElementById('topbarSectionLabel');
   if (labelEl) labelEl.textContent = sectionLabels[section] ?? section;
   history.replaceState(null, '', '#' + section);
   if (section === 'analytics') loadAnalytics();
   if (section === 'productos' && !allProducts.length) loadProducts();
   if (section === 'pedidos') loadOrders();
+  if (section === 'banners') loadBanners();
 }
 
 function onRefresh() {
@@ -681,7 +813,7 @@ async function doLogin() {
   if (!email || !pwd) { errEl.textContent = 'Completa todos los campos.'; errEl.style.display = 'block'; return; }
 
   try {
-    const res = await fetch(`${API_BASE}/api/auth/login`, {
+    const res = await fetch(`${API_BASE}/api/auth/admin/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password: pwd })
@@ -707,7 +839,7 @@ function showDashboard() {
   const picker = document.getElementById('monthPicker');
   if (picker) picker.value = currentMonth;
   // Restore section from URL hash if present
-  const validSections = ['pedidos', 'analytics', 'productos'];
+  const validSections = ['pedidos', 'analytics', 'productos', 'banners'];
   const hashSection = location.hash.replace('#', '');
   if (validSections.includes(hashSection)) {
     showSection(hashSection);
@@ -738,6 +870,8 @@ async function loadOrders() {
     allOrders = await res.json();
     updateStats();
     applyFilters();
+    // Auto-open map on first load
+    if (!_mapOpen) toggleOrdersMap();
   } catch (e) {
     showToast('Error al cargar pedidos: ' + e.message);
     renderError();
@@ -805,7 +939,9 @@ function statusBadge(s) {
     PENDIENTE: 'Pendiente',
     CONFIRMADO: 'Confirmado',
     CANCELADO: 'Cancelado',
-    CANCELADO_AUTOMATICAMENTE: 'Cancelado auto.'
+    CANCELADO_AUTOMATICAMENTE: 'Cancelado auto.',
+    ENVIADO: 'Enviado',
+    RECIBIDO: 'Recibido'
   };
   return `<span class="badge badge-${s}"><span class="badge-dot"></span>${labels[s] ?? s}</span>`;
 }
@@ -835,7 +971,7 @@ function renderTable(list) {
       `<div class="prod-item"><strong>${p.quantity}×</strong> ${p.product?.name ?? '—'}</div>`
     ).join('') + (o.products?.length > 2 ? `<div class="prod-item" style="color:var(--text-muted)">+${o.products.length - 2} más</div>` : '');
 
-    return `<tr>
+    return `<tr data-order-id="${o.id}" onmouseenter="mapFocusOrder('${o.id}')" onmouseleave="mapUnfocusOrder('${o.id}')">
       <td data-label="ID" class="td-id">${(o.id ?? '').substring(0,8)}…</td>
       <td data-label="Fecha">${fmtDate(o.createdAt)}</td>
       <td data-label="Cliente" class="td-bold">${buyer}</td>
@@ -856,6 +992,8 @@ function renderTable(list) {
     </tr></thead>
     <tbody>${rows}</tbody>
   </table>`;
+
+  updateOrdersMap(list);
 }
 
 function renderError() {
@@ -943,24 +1081,14 @@ function openDetail(order) {
       <div class="detail-section-title">Productos (${order.products?.length ?? 0})</div>
       <div class="detail-products">${prods}</div>
     </div>
-    ${order.status === 'PENDIENTE' ? `
-    <div class="modal-actions">
-      <button class="btn-confirm" onclick="confirmOrder('${order.id}','${order.seller?.id ?? ''}')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M20 6 9 17l-5-5"/></svg>
-        Confirmar pedido
-      </button>
-      <button class="btn-cancel-order" onclick="cancelOrder('${order.id}','${order.seller?.id ?? ''}')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M18 6 6 18M6 6l12 12"/></svg>
-        Cancelar pedido
-      </button>
-    </div>` : ''}` ;
+    ${orderStatusActions(order)}` ;
 
   document.getElementById('detailModal').classList.add('open');
 }
 
 function closeModal() { document.getElementById('detailModal').classList.remove('open'); }
 function handleModalClick(e) { if (e.target === document.getElementById('detailModal')) closeModal(); }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeNavDrawer(); closeModal(); closeProdEditModal(); } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeNavDrawer(); closeModal(); closeProdEditModal(); closeBannerModal(); } });
 
 // ── ORDER ACTIONS ────────────────────────────────────────
 async function confirmOrder(orderId, sellerId) {
@@ -996,6 +1124,76 @@ async function cancelOrder(orderId, sellerId) {
     loadOrders();
   } catch(e) {
     showToast('Error al cancelar: ' + e.message);
+  }
+}
+
+async function markStatus(orderId, status) {
+  const labels = { ENVIADO: 'enviado', RECIBIDO: 'recibido' };
+  if (!confirm(`¿Marcar este pedido como ${labels[status] ?? status}?`)) return;
+  try {
+    const res = await fetch(`${API_BASE}/api/orders/${orderId}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+      body: JSON.stringify({ status })
+    });
+    if (!res.ok) throw new Error(res.statusText);
+    showToast(`Pedido marcado como ${labels[status] ?? status}.`);
+    closeModal();
+    loadOrders();
+  } catch(e) {
+    showToast('Error al actualizar estado: ' + e.message);
+  }
+}
+
+function orderStatusActions(order) {
+  const steps = ['PENDIENTE', 'CONFIRMADO', 'ENVIADO', 'RECIBIDO'];
+  const stepLabels = { PENDIENTE: 'Pendiente', CONFIRMADO: 'Confirmado', ENVIADO: 'Enviado', RECIBIDO: 'Recibido' };
+  const isCancelled = order.status === 'CANCELADO' || order.status === 'CANCELADO_AUTOMATICAMENTE';
+  const currentIdx = steps.indexOf(order.status);
+  const checkSVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="11" height="11"><path d="M20 6 9 17l-5-5"/></svg>';
+
+  const stepsHTML = steps.map((s, i) => {
+    const isDone      = !isCancelled && i < currentIdx;
+    const isActive    = !isCancelled && i === currentIdx;
+    const isClickable = !isCancelled && i !== currentIdx;
+    const cls = 'sp-step' + (isDone ? ' done' : isActive ? ' active' : '') + (isClickable ? ' clickable' : '');
+    const inner = isDone ? checkSVG : isActive ? '<span style="width:8px;height:8px;border-radius:50%;background:#3b82f6;display:inline-block"></span>' : '';
+    const clickAttr = isClickable ? `onclick="advanceToStatus('${order.id}','${s}')" title="Cambiar a ${stepLabels[s]}"` : '';
+    const connector = i < steps.length - 1 ? `<div class="sp-connector${isDone ? ' done' : ''}"></div>` : '';
+    return `<div class="${cls}" ${clickAttr}><div class="sp-dot">${inner}</div><div class="sp-step-label">${stepLabels[s]}</div></div>${connector}`;
+  }).join('');
+
+  const cancelledNote = isCancelled
+    ? `<div style="font-size:11px;color:#b91c1c;font-weight:600;margin-top:4px">✕ Pedido ${order.status === 'CANCELADO_AUTOMATICAMENTE' ? 'cancelado automáticamente' : 'cancelado'}${order.reason ? ` — ${order.reason}` : ''}</div>`
+    : '';
+
+  const cancelBtn = !isCancelled
+    ? `<button class="btn-cancel-sm" onclick="cancelOrder('${order.id}','${order.seller?.id ?? ''}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><path d="M18 6 6 18M6 6l12 12"/></svg>Cancelar pedido</button>`
+    : '';
+
+  return `<div style="padding-top:10px;border-top:1px solid var(--border);margin-top:12px">
+    <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em">Estado</div>
+    <div class="sp-pipeline">${stepsHTML}</div>
+    ${cancelledNote}
+    ${cancelBtn}
+  </div>`;
+}
+
+async function advanceToStatus(orderId, status) {
+  const labels = { PENDIENTE: 'pendiente', CONFIRMADO: 'confirmado', ENVIADO: 'enviado', RECIBIDO: 'recibido' };
+  if (!confirm(`¿Cambiar estado a "${labels[status] ?? status}"?`)) return;
+  try {
+    const res = await fetch(`${API_BASE}/api/orders/${orderId}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+      body: JSON.stringify({ status })
+    });
+    if (!res.ok) throw new Error(res.statusText);
+    showToast(`Estado actualizado a ${labels[status] ?? status}.`);
+    closeModal();
+    loadOrders();
+  } catch(e) {
+    showToast('Error al actualizar estado: ' + e.message);
   }
 }
 
@@ -1571,7 +1769,360 @@ function closeProdEditModal() {
   document.getElementById('prodEditModal').classList.remove('open');
 }
 
-// ── CACHE ──────────────────────────────────────────────────
+// ── BANNERS ────────────────────────────────────────────────
+let _allBanners = [];
+let _editingBannerId = null; // null = create mode
+
+async function loadBanners() {
+  const btn = document.getElementById('btnRefresh');
+  btn.classList.add('spinning');
+  document.getElementById('bnnGrid').innerHTML = '<div class="state-box"><div class="state-sub">Cargando banners…</div></div>';
+  try {
+    const res = await fetch(`${API_BASE}/api/banners`, {
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+    if (res.status === 401 || res.status === 403) { sessionStorage.removeItem(AUTH_KEY); location.reload(); return; }
+    if (!res.ok) throw new Error(res.statusText);
+    _allBanners = await res.json();
+    renderBanners();
+  } catch (e) {
+    showToast('Error al cargar banners: ' + e.message);
+    document.getElementById('bnnGrid').innerHTML = `<div class="state-box"><div class="state-icon">⚠️</div><div class="state-title">Error</div><div class="state-sub">${e.message}</div></div>`;
+  } finally {
+    btn.classList.remove('spinning');
+  }
+}
+
+function renderBanners() {
+  const countEl = document.getElementById('bnnCount');
+  const gridEl  = document.getElementById('bnnGrid');
+  const visible = _allBanners.filter(b => b.visible).length;
+  countEl.textContent = `${_allBanners.length} banner${_allBanners.length !== 1 ? 's' : ''} · ${visible} visible${visible !== 1 ? 's' : ''}`;
+
+  if (!_allBanners.length) {
+    gridEl.innerHTML = '<div class="state-box"><div class="state-icon">🎨</div><div class="state-title">Sin banners</div><div class="state-sub">Crea tu primer banner con el botón de arriba.</div></div>';
+    return;
+  }
+
+  gridEl.innerHTML = `<div class="bnn-grid">${_allBanners.map((b, idx) => {
+    const isOn = b.visible;
+    return `<div class="bnn-row${isOn ? '' : ' bnn-off'}">
+      <div class="bnn-preview" style="background:${b.bg || '#eee'}">${b.deco || '🖼️'}</div>
+      <div class="bnn-info">
+        <div class="bnn-id">${b.id}</div>
+        <div class="bnn-title-row">${b.title || ''} <em style="font-style:normal;color:${b.accentColor || 'inherit'}">${b.titleEm || ''}</em></div>
+        <div class="bnn-label-row">${b.label || '—'}</div>
+      </div>
+      <div class="bnn-actions">
+        <div style="display:flex;flex-direction:column;gap:3px">
+          <button class="bnn-order-btn" onclick="moveBanner(${idx},-1)" ${idx === 0 ? 'disabled' : ''} title="Subir">▲</button>
+          <button class="bnn-order-btn" onclick="moveBanner(${idx},1)"  ${idx === _allBanners.length - 1 ? 'disabled' : ''} title="Bajar">▼</button>
+        </div>
+        <button class="bnn-toggle ${isOn ? 'bnn-toggle-on' : 'bnn-toggle-off'}" onclick="toggleBanner('${b.id}')">
+          ${isOn ? '● Visible' : '○ Oculto'}
+        </button>
+        <button class="bnn-edit-btn" onclick="openBannerEditModal('${b.id}')">✏️ Editar</button>
+        <button class="bnn-del-btn" onclick="deleteBanner('${b.id}')" title="Eliminar">🗑</button>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+async function toggleBanner(id) {
+  try {
+    const res = await fetch(`${API_BASE}/api/banners/${id}/visible`, {
+      method: 'PATCH',
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+    if (!res.ok) throw new Error(res.statusText);
+    const updated = await res.json();
+    const idx = _allBanners.findIndex(b => b.id === id);
+    if (idx !== -1) _allBanners[idx] = updated;
+    renderBanners();
+    showToast(`Banner "${id}" ${updated.visible ? 'activado' : 'desactivado'}.`);
+  } catch (e) {
+    showToast('Error: ' + e.message);
+  }
+}
+
+async function moveBanner(idx, dir) {
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= _allBanners.length) return;
+  // Swap sort_order values locally then save both
+  const a = { ..._allBanners[idx] };
+  const b = { ..._allBanners[newIdx] };
+  const tmpOrder = a.sortOrder;
+  a.sortOrder = b.sortOrder;
+  b.sortOrder = tmpOrder;
+  try {
+    await Promise.all([
+      fetch(`${API_BASE}/api/banners/${a.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify(a) }),
+      fetch(`${API_BASE}/api/banners/${b.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify(b) }),
+    ]);
+    _allBanners[idx] = a;
+    _allBanners[newIdx] = b;
+    _allBanners.sort((x, y) => (x.sortOrder ?? 99) - (y.sortOrder ?? 99));
+    renderBanners();
+  } catch (e) {
+    showToast('Error al reordenar: ' + e.message);
+  }
+}
+
+async function deleteBanner(id) {
+  if (!confirm(`¿Eliminar el banner "${id}"? Esta acción no se puede deshacer.`)) return;
+  try {
+    const res = await fetch(`${API_BASE}/api/banners/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+    if (!res.ok) throw new Error(res.statusText);
+    _allBanners = _allBanners.filter(b => b.id !== id);
+    renderBanners();
+    showToast(`Banner "${id}" eliminado.`);
+  } catch (e) {
+    showToast('Error al eliminar: ' + e.message);
+  }
+}
+
+function _renderBannerForm(b) {
+  // b can be a full banner object (edit) or just defaults (create)
+  const v = b || {};
+  const bgVal   = v.bg       || '#F15200';
+  const lcVal   = v.labelColor  || '#fff';
+  const acVal   = v.accentColor || '#fff';
+  const bbgVal  = v.btnBg    || '#333';
+  const bcVal   = v.btnColor || '#fff';
+
+  document.getElementById('bannerModalBody').innerHTML = `
+    <div class="bnn-live-preview" id="bnnPreview" style="background:${bgVal}">
+      <span id="bnnPrevDeco" style="font-size:24px">${v.deco || '🎉'}</span>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:${lcVal}" id="bnnPrevLabel">${v.label || 'Etiqueta'}</div>
+        <div style="font-size:15px;font-weight:800;color:#fff" id="bnnPrevTitle">${v.title || 'Título'} <em style="color:${acVal}" id="bnnPrevTitleEm">${v.titleEm || 'destacado'}</em></div>
+      </div>
+    </div>
+    <div class="bnn-form-grid">
+      <div class="pf-form-field">
+        <label class="pf-form-label">ID (slug único) *</label>
+        <input class="pf-form-input" id="bfId" placeholder="madre, navidad…" value="${v.id || ''}" ${v.id ? 'readonly style=background:#f3f4f6' : ''} oninput="updateBnnPreview()">
+      </div>
+      <div class="pf-form-field">
+        <label class="pf-form-label">Orden</label>
+        <input class="pf-form-input" id="bfOrder" type="number" min="1" value="${v.sortOrder ?? (_allBanners.length + 1)}" oninput="updateBnnPreview()">
+      </div>
+    </div>
+    <div class="pf-form-field">
+      <label class="pf-form-label">Etiqueta</label>
+      <input class="pf-form-input" id="bfLabel" placeholder="💐 Día de la Madre · Mayo" value="${v.label || ''}" oninput="updateBnnPreview()">
+    </div>
+    <div class="bnn-form-grid">
+      <div class="pf-form-field">
+        <label class="pf-form-label">Título</label>
+        <input class="pf-form-input" id="bfTitle" value="${v.title || ''}" oninput="updateBnnPreview()">
+      </div>
+      <div class="pf-form-field">
+        <label class="pf-form-label">Título (parte resaltada)</label>
+        <input class="pf-form-input" id="bfTitleEm" value="${v.titleEm || ''}" oninput="updateBnnPreview()">
+      </div>
+    </div>
+    <div class="pf-form-field">
+      <label class="pf-form-label">Subtítulo</label>
+      <input class="pf-form-input" id="bfSub" value="${v.sub || ''}" oninput="updateBnnPreview()">
+    </div>
+    <div class="bnn-form-grid">
+      <div class="pf-form-field">
+        <label class="pf-form-label">Emoji decorativo 1</label>
+        <input class="pf-form-input" id="bfDeco" value="${v.deco || ''}" maxlength="10" oninput="updateBnnPreview()">
+      </div>
+      <div class="pf-form-field">
+        <label class="pf-form-label">Emoji decorativo 2</label>
+        <input class="pf-form-input" id="bfDeco2" value="${v.deco2 || ''}" maxlength="10">
+      </div>
+    </div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-top:4px">🎨 Colores</div>
+    <div class="bnn-form-grid">
+      <div class="pf-form-field">
+        <label class="pf-form-label">Fondo (CSS background)</label>
+        <div class="bnn-color-row">
+          <input type="color" id="bfBgColor" value="${bgVal.startsWith('#') ? bgVal : '#F15200'}" oninput="document.getElementById('bfBg').value=this.value;updateBnnPreview()">
+          <input class="pf-form-input" type="text" id="bfBg" value="${bgVal}" placeholder="linear-gradient(…) o #hex" oninput="updateBnnPreview()">
+        </div>
+      </div>
+      <div class="pf-form-field">
+        <label class="pf-form-label">Color etiqueta</label>
+        <div class="bnn-color-row">
+          <input type="color" id="bfLcColor" value="${lcVal}" oninput="document.getElementById('bfLc').value=this.value;updateBnnPreview()">
+          <input class="pf-form-input" type="text" id="bfLc" value="${lcVal}" oninput="updateBnnPreview()">
+        </div>
+      </div>
+      <div class="pf-form-field">
+        <label class="pf-form-label">Color acento (título em)</label>
+        <div class="bnn-color-row">
+          <input type="color" id="bfAcColor" value="${acVal}" oninput="document.getElementById('bfAc').value=this.value;updateBnnPreview()">
+          <input class="pf-form-input" type="text" id="bfAc" value="${acVal}" oninput="updateBnnPreview()">
+        </div>
+      </div>
+      <div class="pf-form-field">
+        <label class="pf-form-label">Fondo botón primario</label>
+        <div class="bnn-color-row">
+          <input type="color" id="bfBbgColor" value="${bbgVal.startsWith('#') ? bbgVal : '#333'}" oninput="document.getElementById('bfBbg').value=this.value">
+          <input class="pf-form-input" type="text" id="bfBbg" value="${bbgVal}">
+        </div>
+      </div>
+      <div class="pf-form-field">
+        <label class="pf-form-label">Color texto botón primario</label>
+        <div class="bnn-color-row">
+          <input type="color" id="bfBcColor" value="${bcVal}" oninput="document.getElementById('bfBc').value=this.value">
+          <input class="pf-form-input" type="text" id="bfBc" value="${bcVal}">
+        </div>
+      </div>
+    </div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-top:4px">🔘 Botones</div>
+    <div class="bnn-form-grid">
+      <div class="pf-form-field">
+        <label class="pf-form-label">Botón 1 — texto</label>
+        <input class="pf-form-input" id="bfBtn1Text" value="${v.btn1?.text || ''}">
+      </div>
+      <div class="pf-form-field">
+        <label class="pf-form-label">Botón 1 — acción</label>
+        <select class="pf-form-input" id="bfBtn1Action">
+          <option value="filterCategory" ${(v.btn1?.action||'filterCategory')==='filterCategory'?'selected':''}>filterCategory</option>
+          <option value="openBannerPopup" ${v.btn1?.action==='openBannerPopup'?'selected':''}>openBannerPopup</option>
+        </select>
+      </div>
+      <div class="pf-form-field" style="grid-column:span 2">
+        <label class="pf-form-label">Botón 1 — args (JSON array, ej: ["all",null])</label>
+        <input class="pf-form-input" id="bfBtn1Args" value="${v.btn1?.args ? JSON.stringify(v.btn1.args) : '["all",null]'}">
+      </div>
+      <div class="pf-form-field">
+        <label class="pf-form-label">Botón 2 — texto</label>
+        <input class="pf-form-input" id="bfBtn2Text" value="${v.btn2?.text || ''}">
+      </div>
+      <div class="pf-form-field">
+        <label class="pf-form-label">Botón 2 — acción</label>
+        <select class="pf-form-input" id="bfBtn2Action">
+          <option value="filterCategory" ${v.btn2?.action==='filterCategory'?'selected':''}>filterCategory</option>
+          <option value="openBannerPopup" ${(v.btn2?.action||'openBannerPopup')==='openBannerPopup'?'selected':''}>openBannerPopup</option>
+        </select>
+      </div>
+      <div class="pf-form-field" style="grid-column:span 2">
+        <label class="pf-form-label">Botón 2 — args (JSON array)</label>
+        <input class="pf-form-input" id="bfBtn2Args" value="${v.btn2?.args ? JSON.stringify(v.btn2.args) : '["offer","Ofertas del día"]'}">
+      </div>
+    </div>
+    <div class="pf-form-field">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text-primary)">
+        <input type="checkbox" id="bfVisible" ${v.visible !== false ? 'checked' : ''} style="width:16px;height:16px;accent-color:var(--primary)">
+        Visible en la tienda
+      </label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-confirm" onclick="saveBanner()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M20 6 9 17l-5-5"/></svg>
+        Guardar
+      </button>
+      <button style="flex:1;padding:11px;border:1.5px solid var(--border);background:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;color:var(--text-secondary);transition:background .15s" onclick="closeBannerModal()">Cancelar</button>
+    </div>`;
+}
+
+function updateBnnPreview() {
+  const bg    = document.getElementById('bfBg')?.value || '#eee';
+  const lc    = document.getElementById('bfLc')?.value || '#fff';
+  const ac    = document.getElementById('bfAc')?.value || '#fff';
+  const deco  = document.getElementById('bfDeco')?.value || '🎉';
+  const label = document.getElementById('bfLabel')?.value || '';
+  const title = document.getElementById('bfTitle')?.value || '';
+  const em    = document.getElementById('bfTitleEm')?.value || '';
+  const prev  = document.getElementById('bnnPreview');
+  if (!prev) return;
+  prev.style.background = bg;
+  document.getElementById('bnnPrevDeco').textContent = deco;
+  document.getElementById('bnnPrevLabel').style.color = lc;
+  document.getElementById('bnnPrevLabel').textContent = label;
+  document.getElementById('bnnPrevTitle').childNodes[0].textContent = title + ' ';
+  const emEl = document.getElementById('bnnPrevTitleEm');
+  emEl.style.color = ac;
+  emEl.textContent = em;
+}
+
+function openBannerCreateModal() {
+  _editingBannerId = null;
+  document.getElementById('bannerModalTitle').textContent = 'Nuevo banner';
+  _renderBannerForm(null);
+  document.getElementById('bannerModal').classList.add('open');
+}
+
+function openBannerEditModal(id) {
+  const b = _allBanners.find(x => x.id === id);
+  if (!b) return;
+  _editingBannerId = id;
+  document.getElementById('bannerModalTitle').textContent = 'Editar banner — ' + id;
+  _renderBannerForm(b);
+  document.getElementById('bannerModal').classList.add('open');
+}
+
+async function saveBanner() {
+  const id = (document.getElementById('bfId')?.value || '').trim();
+  if (!id) { showToast('El ID del banner es obligatorio.'); return; }
+
+  let btn1Args, btn2Args;
+  try { btn1Args = JSON.parse(document.getElementById('bfBtn1Args').value); } catch (_) { showToast('Args botón 1: JSON inválido.'); return; }
+  try { btn2Args = JSON.parse(document.getElementById('bfBtn2Args').value); } catch (_) { showToast('Args botón 2: JSON inválido.'); return; }
+
+  const dto = {
+    id,
+    visible:     document.getElementById('bfVisible').checked,
+    sortOrder:   parseInt(document.getElementById('bfOrder').value) || 99,
+    bg:          document.getElementById('bfBg').value.trim(),
+    labelColor:  document.getElementById('bfLc').value.trim(),
+    accentColor: document.getElementById('bfAc').value.trim(),
+    btnBg:       document.getElementById('bfBbg').value.trim(),
+    btnColor:    document.getElementById('bfBc').value.trim(),
+    deco:        document.getElementById('bfDeco').value.trim(),
+    deco2:       document.getElementById('bfDeco2').value.trim(),
+    label:       document.getElementById('bfLabel').value.trim(),
+    title:       document.getElementById('bfTitle').value.trim(),
+    titleEm:     document.getElementById('bfTitleEm').value.trim(),
+    sub:         document.getElementById('bfSub').value.trim(),
+    btn1: { text: document.getElementById('bfBtn1Text').value.trim(), action: document.getElementById('bfBtn1Action').value, args: btn1Args },
+    btn2: { text: document.getElementById('bfBtn2Text').value.trim(), action: document.getElementById('bfBtn2Action').value, args: btn2Args },
+  };
+
+  try {
+    const isEdit = _editingBannerId !== null;
+    const url    = isEdit ? `${API_BASE}/api/banners/${id}` : `${API_BASE}/api/banners`;
+    const method = isEdit ? 'PUT' : 'POST';
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+      body: JSON.stringify(dto)
+    });
+    if (!res.ok) {
+      const err = await res.text().catch(() => res.statusText);
+      throw new Error(err);
+    }
+    const saved = await res.json();
+    if (isEdit) {
+      const idx = _allBanners.findIndex(b => b.id === id);
+      if (idx !== -1) _allBanners[idx] = saved; else _allBanners.push(saved);
+    } else {
+      _allBanners.push(saved);
+    }
+    _allBanners.sort((a, b) => (a.sortOrder ?? 99) - (b.sortOrder ?? 99));
+    renderBanners();
+    closeBannerModal();
+    showToast(`Banner "${id}" guardado correctamente.`);
+  } catch (e) {
+    showToast('Error al guardar: ' + e.message);
+  }
+}
+
+function closeBannerModal() {
+  document.getElementById('bannerModal').classList.remove('open');
+  _editingBannerId = null;
+}
+function handleBannerModalClick(e) { if (e.target === document.getElementById('bannerModal')) closeBannerModal(); }
+
 async function clearCache() {
   if (!confirm('\u00bfLimpiar cach\u00e9 del servidor? Esto forzar\u00e1 a recargar los datos en la pr\u00f3xima visita.')) return;
   const btn = document.getElementById('btnCache');
@@ -1583,11 +2134,360 @@ async function clearCache() {
     });
     if (res.status === 401 || res.status === 403) { sessionStorage.removeItem(AUTH_KEY); location.reload(); return; }
     if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-    showToast('Cach\u00e9 limpiada correctamente.');
+    showToast('Caché limpiada correctamente.');
   } catch (e) {
-    showToast('Error al limpiar cach\u00e9: ' + e.message);
+    showToast('Error al limpiar caché: ' + e.message);
   } finally {
     btn.classList.remove('clearing');
+  }
+}
+
+// ── ORDERS MAP ────────────────────────────────────────────
+// ── ORDERS MAP (Google Maps) ──────────────────────────────
+let _ordersMap        = null;   // google.maps.Map instance
+let _mapInfoWindow    = null;   // single shared InfoWindow
+let _mapMarkersList   = [];     // [{ orderId, marker, order }]
+let _mapOpen          = false;
+let _mapProductFilter = '';
+let _lastMapList      = [];
+let _gmapAdminLoaded  = false;
+
+const _MAP_STATUS_COLOR = {
+  CONFIRMADO: '#22c55e',
+  PENDIENTE:  '#f59e0b',
+  CANCELADO:  '#ef4444',
+  CANCELADO_AUTOMATICAMENTE: '#ef4444',
+  ENVIADO:    '#3b82f6',
+  RECIBIDO:   '#0d9488'
+};
+function _mapColor(status, highlight) {
+  return highlight ? '#3b82f6' : (_MAP_STATUS_COLOR[status] ?? '#9ca3af');
+}
+function _markerScale(order) {
+  const hasProduct = _mapProductFilter
+    ? (order.products ?? []).some(p => p.product?.name === _mapProductFilter)
+    : false;
+  const dim = !!_mapProductFilter && !hasProduct;
+  return dim ? 6 : hasProduct ? 14 : 10;
+}
+function _markerOpacity(order) {
+  if (!_mapProductFilter) return 1;
+  const has = (order.products ?? []).some(p => p.product?.name === _mapProductFilter);
+  return has ? 1 : 0.25;
+}
+
+function _gmLoadAdmin() {
+  if (_gmapAdminLoaded && typeof google !== 'undefined' && google.maps) return Promise.resolve();
+  if (document.getElementById('gm-admin-js')) {
+    return new Promise(resolve => { window._gmAdminReady = () => { _gmapAdminLoaded = true; resolve(); }; });
+  }
+  return new Promise((resolve, reject) => {
+    window._gmAdminReady = () => { _gmapAdminLoaded = true; resolve(); };
+    const s  = document.createElement('script');
+    s.id     = 'gm-admin-js';
+    s.src    = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&callback=_gmAdminReady`;
+    s.async  = true;
+    s.defer  = true;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+const _MAP_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>';
+
+async function toggleOrdersMap() {
+  _mapOpen = !_mapOpen;
+  const panel = document.getElementById('ordersMapPanel');
+  const btn   = document.getElementById('mapToggleBtn');
+
+  if (!_mapOpen) {
+    panel.classList.remove('open');
+    btn.classList.remove('active');
+    btn.innerHTML = `${_MAP_SVG} Ver mapa`;
+    return;
+  }
+
+  // Show panel first so the container has real dimensions
+  panel.classList.add('open');
+  btn.classList.add('active');
+  btn.innerHTML = `${_MAP_SVG} Cargando…`;
+
+  try {
+    await _gmLoadAdmin();
+  } catch(e) {
+    showToast('Error al cargar Google Maps.');
+    panel.classList.remove('open');
+    btn.classList.remove('active');
+    btn.innerHTML = `${_MAP_SVG} Ver mapa`;
+    _mapOpen = false;
+    return;
+  }
+
+  btn.innerHTML = `${_MAP_SVG} Ocultar mapa`;
+
+  if (!_ordersMap) {
+    _ordersMap = new google.maps.Map(document.getElementById('ordersMapEl'), {
+      zoom: 12,
+      center: { lat: 4.7110, lng: -74.0721 },
+      mapTypeControl: false,
+      streetViewControl: false,
+      fullscreenControl: true,
+      gestureHandling: 'cooperative'
+    });
+    _mapInfoWindow = new google.maps.InfoWindow({ maxWidth: 280 });
+    _drawMapMarkers(_lastMapList);
+  } else {
+    google.maps.event.trigger(_ordersMap, 'resize');
+    _drawMapMarkers(_lastMapList);
+  }
+}
+
+function _markerPopupHtml(order) {
+  const buyer    = order.buyer?.name ?? order.buyer?.businessName ?? 'Sin nombre';
+  const prodList = (order.products ?? []).slice(0, 3)
+    .map(p => `${p.quantity}× ${p.product?.name ?? '—'}`).join('<br>');
+  const more  = (order.products?.length ?? 0) > 3
+    ? `<br><span style="color:#9ca3af">+${order.products.length - 3} más</span>` : '';
+  const total = order.products
+    ? order.products.reduce((s, p) => s + (p.unitPrice != null ? Number(p.unitPrice) : (p.product?.price ?? 0)) * (p.quantity ?? 1), 0)
+    : null;
+  const badgeColors = {
+    PENDIENTE: 'background:#fff7ed;color:#c2410c',
+    CONFIRMADO: 'background:#f0fdf4;color:#15803d',
+    CANCELADO: 'background:#fef2f2;color:#b91c1c',
+    CANCELADO_AUTOMATICAMENTE: 'background:#fef2f2;color:#b91c1c',
+    ENVIADO: 'background:#eff6ff;color:#1d4ed8',
+    RECIBIDO: 'background:#f0fdfa;color:#0f766e'
+  };
+  const badgeStyle = badgeColors[order.status] ?? 'background:#f3f4f6;color:#374151';
+  const labels = { PENDIENTE:'Pendiente', CONFIRMADO:'Confirmado', CANCELADO:'Cancelado', CANCELADO_AUTOMATICAMENTE:'Cancelado auto.', ENVIADO:'Enviado', RECIBIDO:'Recibido' };
+  const safeId = (order.id ?? '').replace(/-/g, '');
+  return `<div style="padding:12px 14px;min-width:190px;max-width:260px;font-family:'Plus Jakarta Sans',sans-serif">
+    <div class="omap-popup-buyer">${buyer}</div>
+    <div class="omap-popup-addr">${order.address ?? ''}</div>
+    <div class="omap-popup-prods">${prodList}${more}</div>
+    ${total != null ? `<div class="omap-popup-total">$${Number(total).toLocaleString('es-CO')}</div>` : ''}
+    <span class="omap-popup-badge" style="${badgeStyle}">${labels[order.status] ?? order.status}</span><br>
+    <button class="omap-popup-open" onclick="_openMapOrder('${safeId}')">Ver pedido</button>
+  </div>`;
+}
+
+function _openMapOrder(safeId) {
+  const entry = _mapMarkersList.find(m => (m.orderId ?? '').replace(/-/g, '') === safeId);
+  if (entry) openDetail(entry.order);
+}
+
+function _clusterPopupHtml(orders) {
+  const badgeColors = {
+    PENDIENTE: 'background:#fff7ed;color:#c2410c',
+    CONFIRMADO: 'background:#f0fdf4;color:#15803d',
+    CANCELADO: 'background:#fef2f2;color:#b91c1c',
+    CANCELADO_AUTOMATICAMENTE: 'background:#fef2f2;color:#b91c1c',
+    ENVIADO: 'background:#eff6ff;color:#1d4ed8',
+    RECIBIDO: 'background:#f0fdfa;color:#0f766e'
+  };
+  const labels = { PENDIENTE:'Pendiente', CONFIRMADO:'Confirmado', CANCELADO:'Cancelado', CANCELADO_AUTOMATICAMENTE:'Cancelado auto.', ENVIADO:'Enviado', RECIBIDO:'Recibido' };
+  const items = orders.slice(0, 7).map(o => {
+    const buyer = o.buyer?.name ?? o.buyer?.businessName ?? 'Sin nombre';
+    const badgeStyle = badgeColors[o.status] ?? 'background:#f3f4f6;color:#374151';
+    const safeId = (o.id ?? '').replace(/-/g, '');
+    return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px solid #f3f4f6">
+      <div>
+        <div style="font-weight:600;font-size:12px;color:#111827;line-height:1.3">${buyer}</div>
+        <span style="font-size:10px;padding:1px 6px;border-radius:99px;font-weight:600;${badgeStyle}">${labels[o.status] ?? o.status}</span>
+      </div>
+      <button class="omap-popup-open" style="flex-shrink:0;padding:4px 10px;font-size:11px" onclick="_openMapOrder('${safeId}')">Ver</button>
+    </div>`;
+  }).join('');
+  const more = orders.length > 7 ? `<div style="font-size:11px;color:#6b7280;padding-top:5px">+${orders.length - 7} más pedidos</div>` : '';
+  return `<div style="padding:12px 14px;min-width:210px;max-width:290px;font-family:'Plus Jakarta Sans',sans-serif">
+    <div style="font-weight:700;font-size:12px;color:#374151;margin-bottom:6px">📍 ${orders.length} pedidos en este punto</div>
+    ${items}${more}
+  </div>`;
+}
+
+function _makeMarkerIcon(color, scale, opacity) {
+  return {
+    path: google.maps.SymbolPath.CIRCLE,
+    fillColor: color,
+    fillOpacity: opacity,
+    strokeColor: '#ffffff',
+    strokeWeight: 2,
+    scale
+  };
+}
+
+function _drawMapMarkers(list) {
+  if (!_ordersMap) return;
+
+  // Clear existing markers
+  _mapMarkersList.forEach(({ marker }) => marker.setMap(null));
+  _mapMarkersList = [];
+  if (_mapInfoWindow) _mapInfoWindow.close();
+
+  const located = list.filter(o =>
+    Array.isArray(o.location) && o.location.length === 2 &&
+    !(o.location[0] === 0 && o.location[1] === 0)
+  );
+
+  const countEl = document.getElementById('mapLocCount');
+  if (countEl) countEl.textContent = `${located.length} de ${list.length} con ubicación`;
+
+  // Rebuild product dropdown
+  const prodSel = document.getElementById('mapProdSelect');
+  if (prodSel) {
+    const allProdNames = new Set();
+    list.forEach(o => (o.products ?? []).forEach(p => { if (p.product?.name) allProdNames.add(p.product.name); }));
+    const prevVal = _mapProductFilter;
+    prodSel.innerHTML = '<option value="">Todos los productos</option>' +
+      [...allProdNames].sort().map(n => `<option value="${n}"${n === prevVal ? ' selected' : ''}>${n}</option>`).join('');
+    if (![...allProdNames].includes(_mapProductFilter)) _mapProductFilter = '';
+    prodSel.value = _mapProductFilter;
+  }
+
+  if (!located.length) return;
+
+  // Group by rounded position (5 dp ≈ 1.1 m precision) to detect overlaps
+  const posGroups = new Map();
+  located.forEach(o => {
+    const key = `${(+o.location[0]).toFixed(5)},${(+o.location[1]).toFixed(5)}`;
+    if (!posGroups.has(key)) posGroups.set(key, []);
+    posGroups.get(key).push(o);
+  });
+
+  const bounds = new google.maps.LatLngBounds();
+
+  posGroups.forEach((orders) => {
+    const lat = +orders[0].location[0];
+    const lng = +orders[0].location[1];
+    const pos = { lat, lng };
+    bounds.extend(pos);
+
+    if (orders.length > 1) {
+      // ── CLUSTER MARKER: dark circle with count badge ──────────
+      const anyMatch = _mapProductFilter
+        ? orders.some(o => (o.products ?? []).some(p => p.product?.name === _mapProductFilter))
+        : true;
+      const opacity = _mapProductFilter ? (anyMatch ? 1 : 0.2) : 1;
+      const scale   = orders.length > 9 ? 16 : 14;
+      const icon = {
+        path: google.maps.SymbolPath.CIRCLE,
+        fillColor: '#1e293b',
+        fillOpacity: opacity,
+        strokeColor: '#ffffff',
+        strokeWeight: 2.5,
+        scale,
+        labelOrigin: new google.maps.Point(0, 0)
+      };
+      const marker = new google.maps.Marker({
+        position: pos,
+        map: _ordersMap,
+        icon,
+        label: {
+          text: String(orders.length),
+          color: '#ffffff',
+          fontWeight: '700',
+          fontSize: orders.length > 9 ? '10px' : '11px',
+          fontFamily: "'Plus Jakarta Sans', sans-serif"
+        },
+        zIndex: 15,
+        title: `${orders.length} pedidos en esta ubicación`
+      });
+      marker.addListener('click', () => {
+        _mapInfoWindow.setContent(_clusterPopupHtml(orders));
+        _mapInfoWindow.open(_ordersMap, marker);
+      });
+      marker.addListener('mouseover', () => {
+        marker.setIcon({ ...icon, fillColor: '#F15200', scale: scale + 3 });
+        marker.setZIndex(20);
+      });
+      marker.addListener('mouseout', () => {
+        marker.setIcon(icon);
+        marker.setZIndex(15);
+      });
+      orders.forEach(o => _mapMarkersList.push({ orderId: o.id, marker, order: o, isCluster: true, clusterIcon: icon }));
+
+    } else {
+      // ── SINGLE MARKER ────────────────────────────────────────
+      const o = orders[0];
+      const highlight = _mapProductFilter
+        ? (o.products ?? []).some(p => p.product?.name === _mapProductFilter)
+        : false;
+      const dim     = !!_mapProductFilter && !highlight;
+      const color   = _mapColor(o.status, highlight);
+      const scale   = _markerScale(o);
+      const opacity = _markerOpacity(o);
+      const marker = new google.maps.Marker({
+        position: pos,
+        map: _ordersMap,
+        icon: _makeMarkerIcon(color, scale, opacity),
+        zIndex: highlight ? 10 : dim ? 1 : 5,
+        title: o.buyer?.name ?? o.address ?? ''
+      });
+      marker.addListener('click', () => {
+        _mapInfoWindow.setContent(_markerPopupHtml(o));
+        _mapInfoWindow.open(_ordersMap, marker);
+      });
+      marker.addListener('mouseover', () => {
+        marker.setIcon(_makeMarkerIcon('#F15200', scale + 4, 1));
+        marker.setZIndex(20);
+        _mapInfoWindow.setContent(_markerPopupHtml(o));
+        _mapInfoWindow.open(_ordersMap, marker);
+      });
+      marker.addListener('mouseout', () => {
+        marker.setIcon(_makeMarkerIcon(color, scale, opacity));
+        marker.setZIndex(highlight ? 10 : dim ? 1 : 5);
+      });
+      _mapMarkersList.push({ orderId: o.id, marker, order: o });
+    }
+  });
+
+  if (located.length === 1) {
+    _ordersMap.setCenter({ lat: located[0].location[0], lng: located[0].location[1] });
+    _ordersMap.setZoom(15);
+  } else {
+    _ordersMap.fitBounds(bounds, { top: 40, right: 40, bottom: 40, left: 40 });
+  }
+}
+
+function updateOrdersMap(list) {
+  _lastMapList = list;
+  if (_ordersMap) _drawMapMarkers(list);
+}
+
+function setMapProductFilter(val) {
+  _mapProductFilter = val;
+  _drawMapMarkers(_lastMapList);
+}
+
+// Called from table row hover — pulse the matching marker orange
+function mapFocusOrder(orderId) {
+  const entry = _mapMarkersList.find(m => m.orderId === orderId);
+  if (!entry) return;
+  if (entry.isCluster) {
+    const ci = entry.clusterIcon;
+    entry.marker.setIcon({ ...ci, fillColor: '#F15200', scale: ci.scale + 3 });
+    entry.marker.setZIndex(30);
+  } else {
+    const s = _markerScale(entry.order);
+    entry.marker.setIcon(_makeMarkerIcon('#F15200', s + 5, 1));
+    entry.marker.setZIndex(30);
+  }
+}
+
+function mapUnfocusOrder(orderId) {
+  const entry = _mapMarkersList.find(m => m.orderId === orderId);
+  if (!entry) return;
+  if (entry.isCluster) {
+    entry.marker.setIcon(entry.clusterIcon);
+    entry.marker.setZIndex(15);
+  } else {
+    const highlight = _mapProductFilter
+      ? (entry.order.products ?? []).some(p => p.product?.name === _mapProductFilter)
+      : false;
+    const dim  = !!_mapProductFilter && !highlight;
+    entry.marker.setIcon(_makeMarkerIcon(_mapColor(entry.order.status, highlight), _markerScale(entry.order), _markerOpacity(entry.order)));
+    entry.marker.setZIndex(highlight ? 10 : dim ? 1 : 5);
   }
 }
 </script>
