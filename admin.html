@@ -54,7 +54,10 @@
   @keyframes spin { to { transform: rotate(360deg); } }
 
   /* ── CONTENT ── */
-  .content { max-width: 1300px; margin: 0 auto; padding: 24px 16px 60px; }
+  .content { max-width: 1300px; margin: 0 auto; padding: 24px 16px 60px; position: relative; }
+  .section-loader { position: absolute; inset: 0; background: var(--bg); z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; min-height: 240px; }
+  .section-loader .spinner { margin: 0; }
+  .section-loader-label { font-size: 13px; font-weight: 600; color: var(--text-muted); }
 
   /* ── LOGIN WALL ── */
   .login-wall { max-width: 360px; margin: 80px auto; background: var(--bg-card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 32px 28px; }
@@ -171,6 +174,13 @@
 
   /* Modal action buttons */
   .modal-actions { display: flex; gap: 10px; padding-top: 4px; }
+
+  /* Month navigator */
+  .month-nav { display: flex; align-items: center; gap: 4px; }
+  .month-nav-btn { width: 30px; height: 30px; border: 1.5px solid var(--border); border-radius: var(--radius-full); background: var(--bg-card); color: var(--text-primary); font-size: 16px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s, border-color .15s; flex-shrink: 0; }
+  .month-nav-btn:hover:not(:disabled) { background: var(--bg); border-color: var(--text-muted); }
+  .month-nav-btn:disabled { opacity: .35; cursor: default; }
+  .month-nav-label { font-size: 13px; font-weight: 700; color: var(--text-primary); min-width: 104px; text-align: center; white-space: nowrap; }
   .btn-confirm { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 11px 16px; background: #16a34a; border: none; border-radius: var(--radius-sm); font-family: var(--font); font-size: 13px; font-weight: 700; color: #fff; cursor: pointer; transition: background .2s; }
   .btn-confirm:hover { background: #15803d; }
   .btn-cancel-order { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 11px 16px; background: #dc2626; border: none; border-radius: var(--radius-sm); font-family: var(--font); font-size: 13px; font-weight: 700; color: #fff; cursor: pointer; transition: background .2s; }
@@ -416,17 +426,9 @@
   <div class="topbar-sep"></div>
   <span class="topbar-section-label" id="topbarSectionLabel">Pedidos</span>
   <div class="topbar-right">
-    <button class="btn-cache" id="btnCache" onclick="clearCache()" title="Limpiar caché del servidor">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-      <span class="btn-refresh-text">Limpiar caché</span>
-    </button>
     <button class="btn-refresh" id="btnRefresh" onclick="onRefresh()" title="Actualizar">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
       <span class="btn-refresh-text">Actualizar</span>
-    </button>
-    <button class="btn-logout" onclick="doLogout()" title="Cerrar sesión">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      <span class="btn-refresh-text">Salir</span>
     </button>
   </div>
 </div>
@@ -462,6 +464,10 @@
     </button>
   </div>
   <div class="nav-drawer-footer">
+    <button class="nav-item" onclick="clearCache();closeNavDrawer()">
+      <span class="nav-item-icon">🗑️</span>
+      Limpiar caché
+    </button>
     <button class="nav-item nav-item-logout" onclick="doLogout()">
       <span class="nav-item-icon">🚪</span>
       Cerrar sesión
@@ -489,6 +495,7 @@
 
 <!-- DASHBOARD -->
 <div class="content" id="dashSection" style="display:none">
+  <div class="section-loader" id="ordersLoader"><div class="spinner"></div><div class="section-loader-label">Cargando pedidos…</div></div>
 
   <!-- Stats -->
   <div class="stats-row" id="statsRow">
@@ -504,7 +511,11 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       <input type="text" id="searchInput" placeholder="Buscar por cliente, dirección, ID…" oninput="applyFilters()">
     </div>
-    <input type="date" id="monthPicker" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:var(--radius-full);font-family:var(--font);font-size:13px;outline:none;background:var(--bg-card);cursor:pointer;" onchange="onMonthChange(this.value)">
+    <div class="month-nav">
+      <button class="month-nav-btn" onclick="shiftMonth(-1)" title="Mes anterior">‹</button>
+      <span class="month-nav-label" id="monthNavLabel">—</span>
+      <button class="month-nav-btn" onclick="shiftMonth(1)" id="monthNavNext" title="Mes siguiente">›</button>
+    </div>
     <div class="filter-group" id="filterGroup">
       <button class="filter-btn active" data-status="ALL" onclick="setStatus('ALL',this)">Todos</button>
       <button class="filter-btn" data-status="PENDIENTE" onclick="setStatus('PENDIENTE',this)">Pendientes</button>
@@ -545,9 +556,19 @@
 
 <!-- ANALYTICS SECTION -->
 <div class="content" id="analyticsSection" style="display:none">
+  <div class="section-loader" id="analyticsLoader" style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:200"><div class="spinner"></div><div class="section-loader-label">Cargando analytics…</div></div>
+
+  <!-- Month navigator -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+    <div class="month-nav">
+      <button class="month-nav-btn" onclick="shiftMonth(-1)" title="Mes anterior">‹</button>
+      <span class="month-nav-label" id="monthNavLabelAnalytics">—</span>
+      <button class="month-nav-btn" onclick="shiftMonth(1)" id="monthNavNextAnalytics" title="Mes siguiente">›</button>
+    </div>
+  </div>
 
   <!-- KPIs principales -->
-  <div class="an-section-label">💰 KPIs principales (mes actual)</div>
+  <div class="an-section-label">💰 KPIs del mes: <span id="anMonthKpiLabel" style="font-weight:800;text-transform:capitalize"></span></div>
   <div class="an-kpis-grid">
     <div class="an-stat good">
       <span class="an-tip" data-tip="Total facturado de pedidos CONFIRMADOS en el mes actual. No incluye pendientes ni cancelados.">?</span>
@@ -773,7 +794,7 @@ function showSection(section) {
   if (labelEl) labelEl.textContent = sectionLabels[section] ?? section;
   history.replaceState(null, '', '#' + section);
   if (section === 'analytics') loadAnalytics();
-  if (section === 'productos' && !allProducts.length) loadProducts();
+  if (section === 'productos') loadProducts();
   if (section === 'pedidos') loadOrders();
   if (section === 'banners') loadBanners();
 }
@@ -836,8 +857,7 @@ function showDashboard() {
   document.getElementById('navOverlay').style.removeProperty('display');
   document.getElementById('navDrawer').style.removeProperty('display');
   document.getElementById('dashSection').style.display  = 'block';
-  const picker = document.getElementById('monthPicker');
-  if (picker) picker.value = currentMonth;
+  _updateMonthNavs();
   // Restore section from URL hash if present
   const validSections = ['pedidos', 'analytics', 'productos', 'banners'];
   const hashSection = location.hash.replace('#', '');
@@ -852,14 +872,51 @@ function showDashboard() {
 if (getToken()) showDashboard();
 
 // ── LOAD ORDERS ────────────────────────────────────────────
+function _monthLabel(dateStr) {
+  const [y, m] = dateStr.split('-').map(Number);
+  const str = new Date(y, m - 1, 1).toLocaleDateString('es-CO', { month: 'long', year: 'numeric' });
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function _updateMonthNavs() {
+  const label = _monthLabel(currentMonth);
+  const [y, m] = currentMonth.split('-').map(Number);
+  const now = new Date();
+  const isCurrent = y === now.getFullYear() && m === now.getMonth() + 1;
+  ['monthNavLabel', 'monthNavLabelAnalytics'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = label;
+  });
+  ['monthNavNext', 'monthNavNextAnalytics'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = isCurrent;
+  });
+  const kpiLbl = document.getElementById('anMonthKpiLabel');
+  if (kpiLbl) kpiLbl.textContent = label;
+}
+
+function shiftMonth(delta) {
+  const [y, m] = currentMonth.split('-').map(Number);
+  const d = new Date(y, m - 1 + delta, 1);
+  const now = new Date();
+  if (d > new Date(now.getFullYear(), now.getMonth(), 1)) return;
+  currentMonth = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`;
+  _updateMonthNavs();
+  if (_activeSection === 'analytics') loadAnalytics();
+  else loadOrders();
+}
+
 function onMonthChange(val) {
   currentMonth = val;
+  _updateMonthNavs();
   loadOrders();
 }
 
 async function loadOrders() {
   const btn = document.getElementById('btnRefresh');
   btn.classList.add('spinning');
+  const loader = document.getElementById('ordersLoader');
+  if (loader) loader.style.display = 'flex';
 
   try {
     const res = await fetch(`${API_BASE}/api/orders/seller/${_FIXED_SELLER_ID}/month/${currentMonth}`, {
@@ -877,6 +934,8 @@ async function loadOrders() {
     renderError();
   } finally {
     btn.classList.remove('spinning');
+    const loader = document.getElementById('ordersLoader');
+    if (loader) loader.style.display = 'none';
   }
 }
 
@@ -1201,6 +1260,8 @@ async function advanceToStatus(orderId, status) {
 async function loadAnalytics() {
   const btn = document.getElementById('btnRefresh');
   btn.classList.add('spinning');
+  const loader = document.getElementById('analyticsLoader');
+  if (loader) loader.style.display = 'flex';
   try {
     // Ensure categories are loaded
     if (!allCategories.length) {
@@ -1222,15 +1283,13 @@ async function loadAnalytics() {
       } catch (_) {}
     }
 
-    // Ensure orders are loaded (for KPIs)
-    if (!allOrders.length) {
-      try {
-        const ro = await fetch(`${API_BASE}/api/orders/seller/${_FIXED_SELLER_ID}/month/${currentMonth}`, {
-          headers: { 'Authorization': `Bearer ${getToken()}` }
-        });
-        if (ro.ok) allOrders = await ro.json();
-      } catch (_) {}
-    }
+    // Always fetch orders fresh for the selected month
+    try {
+      const ro = await fetch(`${API_BASE}/api/orders/seller/${_FIXED_SELLER_ID}/month/${currentMonth}`, {
+        headers: { 'Authorization': `Bearer ${getToken()}` }
+      });
+      if (ro.ok) allOrders = await ro.json();
+    } catch (_) {}
 
     const res = await fetch(`${API_BASE}/api/analytics/stats`, {
       headers: { 'Authorization': `Bearer ${getToken()}` }
@@ -1243,6 +1302,8 @@ async function loadAnalytics() {
     showToast('Error al cargar analytics: ' + e.message);
   } finally {
     btn.classList.remove('spinning');
+    const loader = document.getElementById('analyticsLoader');
+    if (loader) loader.style.display = 'none';
   }
 }
 
@@ -2124,9 +2185,7 @@ function closeBannerModal() {
 function handleBannerModalClick(e) { if (e.target === document.getElementById('bannerModal')) closeBannerModal(); }
 
 async function clearCache() {
-  if (!confirm('\u00bfLimpiar cach\u00e9 del servidor? Esto forzar\u00e1 a recargar los datos en la pr\u00f3xima visita.')) return;
-  const btn = document.getElementById('btnCache');
-  btn.classList.add('clearing');
+  if (!confirm('¿Limpiar caché del servidor? Esto forzará a recargar los datos en la próxima visita.')) return;
   try {
     const res = await fetch(`${API_BASE}/api/cache`, {
       method: 'DELETE',
@@ -2137,8 +2196,6 @@ async function clearCache() {
     showToast('Caché limpiada correctamente.');
   } catch (e) {
     showToast('Error al limpiar caché: ' + e.message);
-  } finally {
-    btn.classList.remove('clearing');
   }
 }
 
