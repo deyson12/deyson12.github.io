@@ -2461,10 +2461,11 @@ function _drawMapMarkers(list) {
         ? (o.products ?? []).some(p => p.product?.name === _mapProductFilter)
         : false;
       const dim     = !!_mapProductFilter && !highlight;
-      const color   = _mapColor(o.status, highlight);
-      const scale   = _markerScale(o);
       const opacity = _markerOpacity(o);
-      const mEl = _makeMarkerEl(color, scale, opacity);
+      const size    = 14;
+      const mEl = document.createElement('div');
+      mEl.style.cssText = `width:${size*2}px;height:${size*2}px;border-radius:50%;background:#1e293b;border:2.5px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:11px;opacity:${opacity};box-sizing:border-box;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;`;
+      mEl.textContent = '1';
       const marker = new google.maps.marker.AdvancedMarkerElement({
         position: pos,
         map: _ordersMap,
@@ -2477,16 +2478,18 @@ function _drawMapMarkers(list) {
         _mapInfoWindow.open(_ordersMap, marker);
       });
       marker.addListener('mouseover', () => {
-        _applyMarkerEl(mEl, '#F15200', scale + 4, 1);
+        mEl.style.background = '#F15200';
+        mEl.style.width = mEl.style.height = `${(size + 3) * 2}px`;
         marker.zIndex = 20;
         _mapInfoWindow.setContent(_markerPopupHtml(o));
         _mapInfoWindow.open(_ordersMap, marker);
       });
       marker.addListener('mouseout', () => {
-        _applyMarkerEl(mEl, color, scale, opacity);
+        mEl.style.background = '#1e293b';
+        mEl.style.width = mEl.style.height = `${size * 2}px`;
         marker.zIndex = highlight ? 10 : dim ? 1 : 5;
       });
-      _mapMarkersList.push({ orderId: o.id, marker, order: o, contentEl: mEl });
+      _mapMarkersList.push({ orderId: o.id, marker, order: o, contentEl: mEl, clusterSize: size });
     }
   });
 
@@ -2512,30 +2515,17 @@ function setMapProductFilter(val) {
 function mapFocusOrder(orderId) {
   const entry = _mapMarkersList.find(m => m.orderId === orderId);
   if (!entry) return;
-  if (entry.isCluster) {
-    entry.contentEl.style.background = '#F15200';
-    entry.contentEl.style.width = entry.contentEl.style.height = `${(entry.clusterSize + 3) * 2}px`;
-  } else {
-    _applyMarkerEl(entry.contentEl, '#F15200', _markerScale(entry.order) + 5, 1);
-  }
+  entry.contentEl.style.background = '#F15200';
+  entry.contentEl.style.width = entry.contentEl.style.height = `${(entry.clusterSize + 3) * 2}px`;
   entry.marker.zIndex = 30;
 }
 
 function mapUnfocusOrder(orderId) {
   const entry = _mapMarkersList.find(m => m.orderId === orderId);
   if (!entry) return;
-  if (entry.isCluster) {
-    entry.contentEl.style.background = '#1e293b';
-    entry.contentEl.style.width = entry.contentEl.style.height = `${entry.clusterSize * 2}px`;
-    entry.marker.zIndex = 15;
-  } else {
-    const highlight = _mapProductFilter
-      ? (entry.order.products ?? []).some(p => p.product?.name === _mapProductFilter)
-      : false;
-    const dim  = !!_mapProductFilter && !highlight;
-    _applyMarkerEl(entry.contentEl, _mapColor(entry.order.status, highlight), _markerScale(entry.order), _markerOpacity(entry.order));
-    entry.marker.zIndex = highlight ? 10 : dim ? 1 : 5;
-  }
+  entry.contentEl.style.background = '#1e293b';
+  entry.contentEl.style.width = entry.contentEl.style.height = `${entry.clusterSize * 2}px`;
+  entry.marker.zIndex = entry.isCluster ? 15 : 5;
 }
 </script>
 </body>
