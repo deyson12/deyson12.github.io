@@ -7,6 +7,13 @@ const WA_PHONE   = '573213421697';
 const STORE_NAME = 'PideFacil';
 const ORDERS_KEY = 'cy_orders_history';
 
+// ── Datos de la tienda (factura / tirilla) ────────────────
+const STORE_LOGO      = '';                   // <── URL del logo (dejar vacío para omitir)
+const STORE_PHONE_DISPLAY = '321 342 1697';   // <── teléfono legible en la factura
+const STORE_INSTAGRAM = '@pidefacil';         // <── handle de Instagram (o '')
+const STORE_EMAIL     = '';                   // <── correo de contacto (o '')
+const STORE_ADDRESS_DISPLAY = '';             // <── dirección física (o '')
+
 // ── Mapa de entrega ───────────────────────────────────────
 // MAPS_ENABLED:    true  = muestra mapa de confirmación al pedir
 //                 false = desactiva el mapa (solo texto de dirección)
