@@ -199,6 +199,7 @@
   /* the receipt itself – keeps styles self-contained for print/download */
   .tirilla { font-family:'Courier New',Courier,monospace;font-size:12px;color:#111;width:100%;line-height:1.55; }
   .tirilla-logo { text-align:center;font-size:18px;font-weight:700;letter-spacing:2px;margin-bottom:2px; }
+  .tirilla-logo-black { background:#000;color:#fff;text-align:center;font-size:20px;font-weight:900;letter-spacing:3px;padding:10px 0;margin-bottom:6px; }
   .tirilla-sub  { text-align:center;font-size:11px;color:#444;margin-bottom:8px; }
   .tirilla-sep  { border:none;border-top:1px dashed #aaa;margin:8px 0; }
   .tirilla-row  { display:flex;justify-content:space-between;gap:4px; }
@@ -211,8 +212,8 @@
   .tirilla-total-row { display:flex;justify-content:space-between;font-weight:700;font-size:14px;margin-top:4px; }
   .tirilla-footer { text-align:center;font-size:11px;color:#666;margin-top:8px; }
   .tirilla-logo-img { display:block;max-width:90px;max-height:54px;margin:0 auto 6px;object-fit:contain; }
-  .tirilla-contact { text-align:center;font-size:11px;color:#555;line-height:1.8;margin-top:4px; }
-  .tirilla-contact span { display:block; }
+  .tirilla-social { text-align:center;font-size:11px;color:#444;line-height:1.9;margin-top:6px; }
+  .tirilla-social-title { font-weight:700;margin-bottom:2px; }
   .sp-pipeline { display: flex; align-items: flex-start; gap: 0; padding: 12px 0 4px; }
   .sp-step { display: flex; flex-direction: column; align-items: center; min-width: 52px; cursor: default; user-select: none; }
   .sp-step.clickable { cursor: pointer; }
@@ -774,7 +775,7 @@
     <div class="invoice-actions">
       <button class="btn-invoice-dl" onclick="downloadInvoice()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Descargar HTML
+        Guardar PDF
       </button>
     </div>
   </div>
@@ -1126,6 +1127,8 @@ function fmtDMS(deg, isLat) {
 // ── DETAIL MODAL ───────────────────────────────────────────
 function openDetail(order) {
   _currentInvoiceOrder = order;
+  const _cancelled = ['CANCELADO', 'CANCELADO_AUTOMATICAMENTE'].includes(order.status);
+  document.getElementById('btnInvoice').style.display = _cancelled ? 'none' : '';
   const buyer  = order.buyer?.name ?? order.buyer?.businessName ?? '—';
   const seller = order.seller?.name ?? order.seller?.businessName ?? '—';
   const total  = order.products
@@ -1206,19 +1209,22 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeNavDr
 let _currentInvoiceOrder = null;
 
 function _buildTirillaHtml(order) {
-  const storeName   = order.seller?.businessName ?? order.seller?.name ?? (typeof STORE_NAME !== 'undefined' ? STORE_NAME : 'Tienda');
-  const buyerName   = order.buyer?.name ?? order.buyer?.businessName ?? 'Cliente';
-  const buyerPhone  = order.buyer?.phone ?? '';
-  const date        = fmtDate(order.createdAt);
-  const orderId     = (order.id ?? '').substring(0, 8).toUpperCase();
-  const payLabel    = { EFECTIVO: 'Efectivo', TRANSFERENCIA: 'Transferencia' }[order.paymentType] ?? order.paymentType ?? '—';
-  const statusLabel = { PENDIENTE:'Pendiente', CONFIRMADO:'Confirmado', CANCELADO:'Cancelado', CANCELADO_AUTOMATICAMENTE:'Cancelado auto.', ENVIADO:'Enviado', RECIBIDO:'Recibido' }[order.status] ?? order.status;
+  const storeName  = order.seller?.businessName ?? order.seller?.name ?? (typeof STORE_NAME !== 'undefined' ? STORE_NAME : 'Tienda');
+  const buyerName  = order.buyer?.name ?? order.buyer?.businessName ?? 'Cliente';
+  const buyerPhone = order.buyer?.phone ?? '';
+  const orderId    = (order.id ?? '').substring(0, 8).toUpperCase();
+  const payLabel   = { EFECTIVO: 'Efectivo', TRANSFERENCIA: 'Transferencia' }[order.paymentType] ?? order.paymentType ?? '—';
 
-  const logoUrl   = (typeof STORE_LOGO !== 'undefined' && STORE_LOGO) ? STORE_LOGO : null;
-  const storePhone = (typeof STORE_PHONE_DISPLAY !== 'undefined' && STORE_PHONE_DISPLAY) ? STORE_PHONE_DISPLAY : null;
-  const instagram  = (typeof STORE_INSTAGRAM !== 'undefined' && STORE_INSTAGRAM) ? STORE_INSTAGRAM : null;
-  const email      = (typeof STORE_EMAIL !== 'undefined' && STORE_EMAIL) ? STORE_EMAIL : null;
-  const storeAddr  = (typeof STORE_ADDRESS_DISPLAY !== 'undefined' && STORE_ADDRESS_DISPLAY) ? STORE_ADDRESS_DISPLAY : null;
+  // Fecha corta: 01/05/2026 8:00 am
+  const _d = order.createdAt ? new Date(order.createdAt) : new Date();
+  const _pad = n => String(n).padStart(2, '0');
+  let _h = _d.getHours(); const _ampm = _h >= 12 ? 'pm' : 'am';
+  _h = _h % 12 || 12;
+  const dateShort = _pad(_d.getDate()) + '/' + _pad(_d.getMonth()+1) + '/' + _d.getFullYear() + ' ' + _h + ':' + _pad(_d.getMinutes()) + ' ' + _ampm;
+
+  const instagram = (typeof STORE_INSTAGRAM !== 'undefined' && STORE_INSTAGRAM) ? STORE_INSTAGRAM : null;
+  const website   = (typeof STORE_WEBSITE   !== 'undefined' && STORE_WEBSITE)   ? STORE_WEBSITE   : null;
+  const waDisplay = (typeof STORE_PHONE_DISPLAY !== 'undefined' && STORE_PHONE_DISPLAY) ? STORE_PHONE_DISPLAY : null;
 
   const rows = (order.products ?? []).map(p => {
     const name  = p.product?.name ?? '—';
@@ -1238,23 +1244,20 @@ function _buildTirillaHtml(order) {
   const changeFrom   = order.changeFrom ? Number(order.changeFrom) : null;
   const changeBack   = changeFrom != null ? changeFrom - total : null;
 
-  const contactHtml = (storePhone || instagram || email || storeAddr) ? `
-    <div class="tirilla-contact">
-      ${storePhone  ? `<span>📞 ${storePhone}</span>` : ''}
-      ${instagram   ? `<span>📸 ${instagram}</span>` : ''}
-      ${email       ? `<span>✉ ${email}</span>` : ''}
-      ${storeAddr   ? `<span>📍 ${storeAddr}</span>` : ''}
+  const socialHtml = (instagram || waDisplay || website) ? `
+    <div class="tirilla-social">
+      <div class="tirilla-social-title">Siguenos en:</div>
+      ${instagram ? `<div>📸 ${instagram}</div>` : ''}
+      ${waDisplay ? `<div>💬 ${waDisplay}</div>` : ''}
+      ${website   ? `<div>🌐 ${website}</div>` : ''}
     </div>` : '';
 
   return `
-    ${logoUrl ? `<img class="tirilla-logo-img" src="${logoUrl}" alt="${storeName}">` : ''}
-    <div class="tirilla-logo">${storeName.toUpperCase()}</div>
+    <div class="tirilla-logo-black">${storeName.toUpperCase()}</div>
     <div class="tirilla-sub">Pedido a domicilio</div>
-    ${contactHtml}
     <hr class="tirilla-sep">
     <div class="tirilla-row"><span class="lbl"># Pedido:</span><span class="val">${orderId}</span></div>
-    <div class="tirilla-row"><span class="lbl">Fecha:</span><span class="val">${date}</span></div>
-    <div class="tirilla-row"><span class="lbl">Estado:</span><span class="val">${statusLabel}</span></div>
+    <div class="tirilla-row"><span class="lbl">Fecha:</span><span class="val">${dateShort}</span></div>
     <hr class="tirilla-sep">
     <div class="tirilla-row"><span class="lbl">Cliente:</span><span class="val">${buyerName}</span></div>
     ${buyerPhone ? `<div class="tirilla-row"><span class="lbl">Tel:</span><span class="val">${buyerPhone}</span></div>` : ''}
@@ -1273,8 +1276,8 @@ function _buildTirillaHtml(order) {
     ${changeFrom != null ? `<div class="tirilla-row"><span class="lbl">Paga con:</span><span class="val">${fmtPrice(changeFrom)}</span></div>` : ''}
     ${changeBack != null && changeBack > 0 ? `<div class="tirilla-row"><span class="lbl">Cambio:</span><span class="val">${fmtPrice(changeBack)}</span></div>` : ''}
     <hr class="tirilla-sep">
-    <div class="tirilla-footer">¡Gracias por su pedido!<br>${storeName}</div>
-    ${contactHtml}
+    <div class="tirilla-footer">Gracias por tu compra!</div>
+    ${socialHtml}
   `;
 }
 
@@ -1297,8 +1300,10 @@ function downloadInvoice() {
   const orderId = (_currentInvoiceOrder.id ?? 'pedido').substring(0, 8).toUpperCase();
   const tirilla = _buildTirillaHtml(_currentInvoiceOrder);
   const css = [
-    "body{font-family:'Courier New',Courier,monospace;font-size:12px;color:#111;max-width:320px;margin:24px auto;padding:0 12px}",
-    ".tirilla-logo{text-align:center;font-size:18px;font-weight:700;letter-spacing:2px;margin-bottom:2px}",
+    "@page{size:80mm auto;margin:6mm}",
+    "@media print{html,body{width:80mm}}",
+    "body{font-family:'Courier New',Courier,monospace;font-size:12px;color:#111;max-width:72mm;margin:0 auto;padding:0}",
+    ".tirilla-logo-black{background:#000;color:#fff;text-align:center;font-size:20px;font-weight:900;letter-spacing:3px;padding:10px 0;margin-bottom:6px}",
     ".tirilla-sub{text-align:center;font-size:11px;color:#444;margin-bottom:8px}",
     "hr{border:none;border-top:1px dashed #aaa;margin:8px 0}",
     ".tirilla-row{display:flex;justify-content:space-between;gap:4px;line-height:1.55}",
@@ -1310,23 +1315,22 @@ function downloadInvoice() {
     "td{padding:2px 0;vertical-align:top}",
     ".tirilla-total-row{display:flex;justify-content:space-between;font-weight:700;font-size:14px;margin-top:4px}",
     ".tirilla-footer{text-align:center;font-size:11px;color:#666;margin-top:8px}",
-    ".tirilla-logo-img{display:block;max-width:90px;max-height:54px;margin:0 auto 6px;object-fit:contain}",
-    ".tirilla-contact{text-align:center;font-size:11px;color:#555;line-height:1.8;margin-top:4px}",
-    ".tirilla-contact span{display:block}"
+    ".tirilla-social{text-align:center;font-size:11px;color:#444;line-height:1.9;margin-top:6px}",
+    ".tirilla-social-title{font-weight:700;margin-bottom:2px}"
   ].join('');
-  // Split closing tags so the browser HTML parser doesn't exit the <script> block early
-  const c = '</', o = '>';
+  const c = '</';
+  const sc = '<' + 'script';
   const html = '<!DOCTYPE html>' +
     '<html lang="es">' +
     '<head><meta charset="UTF-8"><title>Factura ' + orderId + c + 'title>' +
     '<style>' + css + c + 'style>' +
     c + 'head>' +
-    '<body>' + tirilla + c + 'body>' +
+    '<body>' + tirilla +
+    sc + '>window.onload=function(){window.print();}' + c + 'script>' +
+    c + 'body>' +
     c + 'html>';
-  const blob = new Blob([html], { type: 'text/html' });
-  const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: 'factura-' + orderId + '.html' });
-  a.click();
-  URL.revokeObjectURL(a.href);
+  const w = window.open('', '_blank', 'width=420,height=720');
+  if (w) { w.document.write(html); w.document.close(); }
 }
 
 // ── ORDER ACTIONS ────────────────────────────────────────
