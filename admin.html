@@ -1218,9 +1218,11 @@ function renderTable(list) {
   const rows = list.map(o => {
     const buyer = o.buyer?.name ?? o.buyer?.businessName ?? '—';
     const seller = o.seller?.name ?? o.seller?.businessName ?? '—';
-    const total = o.products
+    const _subtotalRow = o.products
       ? o.products.reduce((s, p) => s + (p.unitPrice != null ? Number(p.unitPrice) : (p.product?.price ?? 0)) * (p.quantity ?? 1), 0)
       : null;
+    const _discountRow = o.discountAmount ? Number(o.discountAmount) : 0;
+    const total = _subtotalRow != null ? _subtotalRow - _discountRow : null;
     const prods = (o.products ?? []).slice(0, 2).map(p =>
       `<div class="prod-item"><strong>${p.quantity}×</strong> ${p.product?.name ?? '—'}</div>`
     ).join('') + (o.products?.length > 2 ? `<div class="prod-item" style="color:var(--text-muted)">+${o.products.length - 2} más</div>` : '');
@@ -1273,9 +1275,11 @@ function openDetail(order) {
   document.getElementById('btnInvoice').style.display = _cancelled ? 'none' : '';
   const buyer  = order.buyer?.name ?? order.buyer?.businessName ?? '—';
   const seller = order.seller?.name ?? order.seller?.businessName ?? '—';
-  const total  = order.products
+  const _subtotal = order.products
     ? order.products.reduce((s, p) => s + (p.unitPrice != null ? Number(p.unitPrice) : (p.product?.price ?? 0)) * (p.quantity ?? 1), 0)
     : null;
+  const _discount = order.discountAmount ? Number(order.discountAmount) : 0;
+  const total  = _subtotal != null ? _subtotal - _discount : null;
   const dropTotal = order.products
     ? order.products.reduce((s, p) => s + (p.product?.dropshippingPrice != null ? Number(p.product.dropshippingPrice) * (p.quantity ?? 1) : 0), 0)
     : 0;
@@ -1311,6 +1315,7 @@ function openDetail(order) {
         <div class="detail-field"><span class="detail-label">Pago</span><span class="detail-value">${payChip(order.paymentType)}</span></div>
         <div class="detail-field"><span class="detail-label">Cambio de</span><span class="detail-value">${order.changeFrom ? fmtPrice(order.changeFrom) : '—'}</span></div>
         <div class="detail-field"><span class="detail-label">Domicilio</span><span class="detail-value">${order.deliveryPrice ? fmtPrice(order.deliveryPrice) : '—'}</span></div>
+        ${order.couponCode ? `<div class="detail-field"><span class="detail-label">Cupón</span><span class="detail-value" style="color:#059669;font-weight:600">${order.couponCode} &nbsp;−&nbsp;${fmtPrice(_discount)}</span></div>` : ''}
         <div class="detail-field"><span class="detail-label">Total estimado</span><span class="detail-value" style="color:var(--primary);font-weight:800">${total != null ? fmtPrice(total) : '—'}</span></div>
         ${earnings != null ? `<div class="detail-field" style="grid-column:span 2;background:#f0fdf4;border-radius:8px;padding:8px 12px"><span class="detail-label" style="color:#15803d">Ganancia estimada</span><span class="detail-value" style="color:#15803d;font-weight:800;font-size:16px">💰 ${fmtPrice(earnings)}</span></div>` : ''}
       </div>
@@ -1381,7 +1386,8 @@ function _buildTirillaHtml(order) {
 
   const subtotal   = (order.products ?? []).reduce((s, p) => s + (p.unitPrice != null ? Number(p.unitPrice) : (p.product?.price ?? 0)) * (p.quantity ?? 1), 0);
   const delivery   = order.deliveryPrice ? Number(order.deliveryPrice) : 0;
-  const total      = subtotal + delivery;
+  const discount   = order.discountAmount ? Number(order.discountAmount) : 0;
+  const total      = subtotal + delivery - discount;
   const changeFrom = order.changeFrom ? Number(order.changeFrom) : null;
   const changeBack = changeFrom != null ? changeFrom - total : null;
 
@@ -1441,8 +1447,9 @@ function _buildTirillaHtml(order) {
       </table>
 
       <div class="t-subtotals">
-        ${delivery ? `<div class="t-row"><span class="t-lbl">Subtotal</span><span class="t-val">${fmtPrice(subtotal)}</span></div>` : ''}
+        ${(delivery || discount) ? `<div class="t-row"><span class="t-lbl">Subtotal</span><span class="t-val">${fmtPrice(subtotal)}</span></div>` : ''}
         ${delivery ? `<div class="t-row"><span class="t-lbl">Domicilio</span><span class="t-val">${fmtPrice(delivery)}</span></div>` : ''}
+        ${discount ? `<div class="t-row"><span class="t-lbl" style="color:#059669">Descuento ${order.couponCode ? '(' + order.couponCode + ')' : ''}</span><span class="t-val" style="color:#059669">−${fmtPrice(discount)}</span></div>` : ''}
       </div>
 
       <div class="t-total-block">

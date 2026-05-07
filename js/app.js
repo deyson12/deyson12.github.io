@@ -1036,9 +1036,9 @@ async function initCategories() {
     const cats = (await res.json()).sort((a, b) => a.order - b.order);
 
     const makeNavBtn = c =>
-      `<button class="cat-btn" data-cat="${c.code}" onclick="filterCategory('${c.id}',this)">${c.name}</button>`;
+      `<button class="cat-btn" data-cat="${c.id}" onclick="filterCategory('${c.id}',this)">${c.name}</button>`;
     const makeHamBtn = c =>
-      `<button class="ham-cat-btn" data-cat="${c.code}" onclick="hamFilterCategory('${c.id}',this)">${c.name}</button>`;
+      `<button class="ham-cat-btn" data-cat="${c.id}" onclick="hamFilterCategory('${c.id}',this)">${c.name}</button>`;
 
     if (navInner)    navInner.innerHTML    = todoBtnNav + cats.map(makeNavBtn).join('');
     if (hamContainer) hamContainer.innerHTML = todoBtnHam + cats.map(makeHamBtn).join('');
@@ -1125,7 +1125,6 @@ function addToCart(id) {
   else { cart.push({ ...p, qty: 1 }); checkedItems.add(id); }
   saveCart(); updateCartUI(); updateAllBtns(); bumpBadge();
   showToast(ex ? `+1 ${p.name.split(' ')[0]}` : `Agregado: ${p.name.split(' ').slice(0, 3).join(' ')}`, ex ? '🛒' : '✅');
-  trackRecent(id);
   trackEvent('CART_ADD', { productId: p?.id, name: p?.name, price: p?.price, qty: ex ? ex.qty : 1 });
 }
 
@@ -1400,26 +1399,28 @@ function _toApiProduct(p) {
  * pero no bloquean el flujo de WhatsApp/Wompi.
  * @param {{ fullItems: Array<{product, qty}>, address: string, paymentType: string }} opts
  */
-async function postOrderToApi({ fullItems, address, paymentType }) {
+async function postOrderToApi({ fullItems, address, paymentType, couponCode, discountAmount }) {
   const _cu   = getCyUser();
   const lat    = parseFloat(_cu.lat) || 0;
   const lng    = parseFloat(_cu.lng) || 0;
   const userId = _cu.id || _FIXED_SELLER_ID;
   const body = {
-    id:            crypto.randomUUID(),
-    sellerId:      _FIXED_SELLER_ID,
-    buyerId:       userId,
-    products:      fullItems.map(i => ({
+    id:             crypto.randomUUID(),
+    sellerId:       _FIXED_SELLER_ID,
+    buyerId:        userId,
+    products:       fullItems.map(i => ({
       product:         _toApiProduct(i.product),
       quantity:        i.qty,
       selectedOptions: {},
     })),
-    status:        'PENDIENTE',
+    status:         'PENDIENTE',
     address,
     paymentType,
-    changeFrom:    0,
-    location:      [lat, lng],
-    deliveryPrice: 0,
+    changeFrom:     0,
+    location:       [lat, lng],
+    deliveryPrice:  0,
+    couponCode:     couponCode || null,
+    discountAmount: discountAmount || null,
   };
   try {
     const res = await fetch(`${API_BASE}/api/orders`, {
@@ -1467,14 +1468,14 @@ async function sendWhatsappOrder() {
     return;
   }
 
-  // ── Auto-confirm map if user didn't do it manually ───────
+  try {
   if (!_mapConfirmed) {
     const useGoogle = (typeof MAPS_PROVIDER !== 'undefined' && MAPS_PROVIDER === 'google');
     if (useGoogle && _googleMarker) {
-      const pos     = _googleMarker.getPosition();
-      _deliveryLat  = pos.lat();
-      _deliveryLng  = pos.lng();
-      _googleMarker.setDraggable(false);
+      const pos     = _googleMarker.position;
+      _deliveryLat  = typeof pos.lat === 'function' ? pos.lat() : pos.lat;
+      _deliveryLng  = typeof pos.lng === 'function' ? pos.lng() : pos.lng;
+      _googleMarker.gmpDraggable = false;
     } else if (!useGoogle && _mapMarker) {
       const pos     = _mapMarker.getLatLng();
       _deliveryLat  = pos.lat;
@@ -1528,7 +1529,7 @@ async function sendWhatsappOrder() {
 
   // ── WOMPI ──────────────────────────────────────────────
   if (pago === 'Wompi') {
-    submitWithWompi({ dir, nom, totalAmount: finalTotal, totalFmt: fmtPrice(finalTotal), itemsBlock, summaryHtml, selectedIds, bpId, items: orderItems, fullItems });
+    await submitWithWompi({ dir, nom, totalAmount: finalTotal, totalFmt: fmtPrice(finalTotal), itemsBlock, summaryHtml, selectedIds, bpId, items: orderItems, fullItems, couponCode: _appliedCoupon?.code || null, discountAmount: cuponDisc || null });
     return;
   }
 
@@ -1545,7 +1546,7 @@ async function sendWhatsappOrder() {
     wompiRef: null, wompiId: null, wompiStatus: null,
   });
 
-  postOrderToApi({ fullItems, address: dir, paymentType: 'TRANSFERENCIA' });
+  postOrderToApi({ fullItems, address: dir, paymentType: 'TRANSFERENCIA', couponCode: _appliedCoupon?.code || null, discountAmount: cuponDisc || null });
 
   // Record coupon use (fire-and-forget)
   if (_appliedCoupon?.code) {
@@ -1556,6 +1557,12 @@ async function sendWhatsappOrder() {
   repeatOrderItems = null;
   closeOrderPopup();
   window.open(`https://wa.me/${WA_PHONE}?text=${encodeURIComponent(msg)}`, '_blank');
+
+  } catch (err) {
+    console.error('[PideFacil] Error al procesar pedido:', err);
+    _orderLoading(false);
+    showToast('Ocurrió un error al enviar el pedido. Intenta de nuevo.', '❌');
+  }
 }
 
 // ===== WOMPI =====
@@ -1626,7 +1633,7 @@ function confirmWompiPayment() {
 
   localStorage.removeItem('cy_wompi_pending');
 
-  postOrderToApi({ fullItems: od.fullItems || [], address: od.dir, paymentType: 'WOMPI' });
+  postOrderToApi({ fullItems: od.fullItems || [], address: od.dir, paymentType: 'WOMPI', couponCode: od.couponCode || null, discountAmount: od.discountAmount || null });
 
   const statusLabel = pending.wompiStatus ? pending.wompiStatus.toUpperCase() : null;
   const savedLat = parseFloat(getCyUser().lat) || null;
@@ -1777,7 +1784,6 @@ function renderWishPanel() {
 // ===== WISHLIST =====
 function toggleWish(e, id) {
   e.stopPropagation();
-  trackRecent(id);
   const i = wishlist.indexOf(id);
   if (i > -1) { wishlist.splice(i, 1); showToast('Eliminado de favoritos', '💔'); }
   else         { wishlist.push(id);     showToast('Guardado en favoritos',   '❤️'); }
@@ -1804,16 +1810,16 @@ function toggleWish(e, id) {
 
 // ===== PRODUCT MODAL =====
 function _handleProductDeepLink() {
-  const id = new URLSearchParams(location.search).get('product');
+  const id = new URLSearchParams(location.search).get('p');
   if (!id) return;
-  const p = PRODUCTS.find(x => x.id === id);
-  if (p) openProduct(id);
+  const p = PRODUCTS.find(x => x.id === id || x.id.startsWith(id));
+  if (p) openProduct(p.id);
 }
 
 function openProduct(id) {
   closeBannerPopup();
   trackRecent(id);
-  history.replaceState(null, '', '?product=' + id);
+  history.replaceState(null, '', '?p=' + id);
   const p      = PRODUCTS.find(x => x.id === id);
   trackEvent('PRODUCT_VIEW', { productId: p?.id, name: p?.name, category: p?.categoryId, price: p?.price });
   const inWish = wishlist.includes(id);
@@ -1835,18 +1841,20 @@ function openProduct(id) {
         <p class="modal-ref">REF: ${p.id.substring(0, 8).toUpperCase()}</p>
         <div class="modal-actions">
           <button class="btn btn-cart" style="width:100%;padding:12px;font-size:14px" onclick="addToCart('${p.id}');closeModal()">Agregar al carrito</button>
-          <button class="btn btn-wish ${inWish ? 'active' : ''}" id="modalWishBtn" style="width:100%;padding:12px;font-size:14px" onclick="toggleWish(event,'${p.id}')">
-            <svg viewBox="0 0 24 24" stroke="${inWish ? '#fff' : 'var(--primary)'}" stroke-width="2" fill="${inWish ? '#fff' : 'none'}"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-            <span id="modalWishText">${inWish ? 'En favoritos' : 'Guardar en favoritos'}</span>
-          </button>
           <button class="btn btn-wa" style="width:100%;padding:12px;font-size:14px" onclick="buyNow('${p.id}')">
             <svg viewBox="0 0 24 24" style="width:18px;height:18px"><path fill="#25D366" d="M12 0C5.373 0 0 5.373 0 12c0 2.025.507 3.967 1.399 5.671L.1 23.9l6.499-1.699A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/><path fill="#fff" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/></svg>
             Comprar por WhatsApp
           </button>
-          <button class="btn btn-share" style="width:100%;padding:12px;font-size:14px;background:var(--surface);border:1.5px solid var(--border);color:var(--text)" onclick="shareProduct('${p.id}')">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-            Compartir producto
-          </button>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:2px">
+            <button class="btn btn-wish ${inWish ? 'active' : ''}" id="modalWishBtn" style="padding:9px 8px;font-size:12.5px;justify-content:center;gap:6px" onclick="toggleWish(event,'${p.id}')">
+              <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="${inWish ? 'currentColor' : 'none'}"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <span id="modalWishText">${inWish ? 'En favoritos' : 'Favoritos'}</span>
+            </button>
+            <button style="display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 8px;font-size:12.5px;font-family:inherit;font-weight:600;background:var(--bg);border:1.5px solid var(--border);color:var(--text-secondary);border-radius:var(--radius-md);cursor:pointer" onclick="shareProduct('${p.id}')">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              Compartir
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -1920,7 +1928,7 @@ function shareProduct(id) {
   const p = PRODUCTS.find(x => x.id === id);
   if (!p) return;
   const base = window.location.origin + window.location.pathname;
-  const link = base + '?product=' + id;
+  const link = base + '?p=' + id.substring(0, 8);
   const text = `¡Mira este producto en PideFacil! 🛍️\n*${p.name}* — ${fmtPrice(p.price)}\n${link}`;
   if (navigator.share) {
     navigator.share({ title: p.name, text: `${p.name} — ${fmtPrice(p.price)}`, url: link }).catch(() => {});
@@ -2179,28 +2187,32 @@ function _updateUserGreeting() {
   // More-menu dropdown greeting
   const mmWrap = document.getElementById('moreMenuUserGreeting');
   if (mmWrap) {
+    const nameEl   = document.getElementById('moreMenuGreetName');
+    const avatarEl = document.getElementById('moreMenuGreetAvatar');
     if (firstName) {
-      const nameEl   = document.getElementById('moreMenuGreetName');
-      const avatarEl = document.getElementById('moreMenuGreetAvatar');
       if (nameEl)   nameEl.textContent   = 'Hola, ' + firstName + '!';
-      if (avatarEl) avatarEl.textContent = firstName[0].toUpperCase();
+      if (avatarEl) { avatarEl.textContent = firstName[0].toUpperCase(); avatarEl.style.display = 'flex'; }
       mmWrap.style.display = 'block';
     } else {
-      mmWrap.style.display = 'none';
+      if (nameEl)   nameEl.textContent   = '';
+      if (avatarEl) avatarEl.style.display = 'none';
+      // wrapper visibility decided by _updateCityGreeting
     }
   }
 
   // Ham drawer greeting
   const hamWrap = document.getElementById('hamUserGreeting');
   if (hamWrap) {
+    const nameEl   = document.getElementById('hamGreetName');
+    const avatarEl = document.getElementById('hamGreetAvatar');
     if (firstName) {
-      const nameEl   = document.getElementById('hamGreetName');
-      const avatarEl = document.getElementById('hamGreetAvatar');
       if (nameEl)   nameEl.textContent   = 'Hola, ' + firstName + '!';
-      if (avatarEl) avatarEl.textContent = firstName[0].toUpperCase();
+      if (avatarEl) { avatarEl.textContent = firstName[0].toUpperCase(); avatarEl.style.display = 'flex'; }
       hamWrap.style.display = 'block';
     } else {
-      hamWrap.style.display = 'none';
+      if (nameEl)   nameEl.textContent   = '';
+      if (avatarEl) avatarEl.style.display = 'none';
+      // wrapper visibility decided by _updateCityGreeting
     }
   }
 
@@ -2213,12 +2225,16 @@ function _updateUserGreeting() {
 
 function _updateCityGreeting() {
   if (!DELIVERY_CITY) return;
+  const cu        = getCyUser();
+  const hasName   = !!(cu?.name);
   // More-menu city
   const mmCityWrap = document.getElementById('moreMenuGreetCity');
   const mmCityText = document.getElementById('moreMenuGreetCityText');
   const mmWrap     = document.getElementById('moreMenuUserGreeting');
   if (mmCityWrap && mmCityText) {
-    mmCityText.textContent = DELIVERY_CITY;
+    mmCityText.textContent  = DELIVERY_CITY;
+    mmCityText.style.fontSize = hasName ? '11px' : '13px';
+    mmCityText.style.fontWeight = hasName ? '600' : '700';
     mmCityWrap.style.display = 'flex';
     if (mmWrap) mmWrap.style.display = 'block';
   }
@@ -2227,7 +2243,9 @@ function _updateCityGreeting() {
   const hamCityText = document.getElementById('hamGreetCityText');
   const hamWrap     = document.getElementById('hamUserGreeting');
   if (hamCityWrap && hamCityText) {
-    hamCityText.textContent = DELIVERY_CITY;
+    hamCityText.textContent   = DELIVERY_CITY;
+    hamCityText.style.fontSize = hasName ? '12px' : '15px';
+    hamCityText.style.fontWeight = hasName ? '600' : '700';
     hamCityWrap.style.display = 'flex';
     if (hamWrap) hamWrap.style.display = 'block';
   }
