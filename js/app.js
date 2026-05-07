@@ -83,7 +83,7 @@ let _promoPopAction = null;
 const POPUP_DISMISSED_KEY = 'cy_popup_id'; // single key; value = last dismissed popup id
 
 // ===== COUPONS =====
-let COUPONS = [];
+// Coupons are now validated against the API — no local array needed.
 let _appliedCoupon    = null;
 let _currentOrderTotal = 0;
 function _setSummaryTotal(val) {
@@ -154,31 +154,73 @@ function _showCountryBlock(countryName) {
 }
 
 async function _detectCity() {
-  try {
-    const res = await fetch('https://ipapi.co/json/', { cache: 'force-cache' });
-    if (!res.ok) return;
-    const data = await res.json();
-    if (data.error) return;
-    console.groupCollapsed('%c📍 IP Geolocation', 'color:#3b82f6;font-weight:700');
-    console.log('IP:          ', data.ip);
-    console.log('País:        ', data.country_name, `(${data.country_code})`);
-    console.log('Departamento:', data.region);
-    console.log('Ciudad:      ', data.city);
-    console.log('CP:          ', data.postal || '—');
-    console.log('Coords:      ', `${data.latitude}, ${data.longitude}`);
-    console.log('Org:         ', data.org || '—');
-    console.groupEnd();
-    if (data.country_code !== 'CO') {
-      _showCountryBlock(data.country_name ?? 'otro país');
+  const services = [
+    {
+      url: 'https://ipapi.co/json/',
+      parse: d => ({
+        ip:           d.ip,
+        country_name: d.country_name,
+        country_code: d.country_code,
+        region:       d.region,
+        city:         d.city,
+        postal:       d.postal,
+        latitude:     d.latitude,
+        longitude:    d.longitude,
+        org:          d.org || '',
+        ok:           !d.error && !!d.country_code,
+      }),
+    },
+    {
+      url: 'https://ipinfo.io/json',
+      parse: d => ({
+        ip:           d.ip,
+        country_name: d.country,
+        country_code: d.country,
+        region:       d.region,
+        city:         d.city,
+        postal:       d.postal,
+        latitude:     d.loc ? d.loc.split(',')[0] : null,
+        longitude:    d.loc ? d.loc.split(',')[1] : null,
+        org:          d.org || '',
+        ok:           !!d.country,
+      }),
+    },
+  ];
+
+  for (const svc of services) {
+    try {
+      const res = await fetch(svc.url, { cache: 'force-cache' });
+      if (!res.ok) continue;
+      const raw  = await res.json();
+      const data = svc.parse(raw);
+      if (!data.ok) continue;
+
+      console.groupCollapsed('%c📍 IP Geolocation', 'color:#3b82f6;font-weight:700');
+      console.log('Fuente:      ', svc.url);
+      console.log('IP:          ', data.ip);
+      console.log('País:        ', data.country_name, `(${data.country_code})`);
+      console.log('Departamento:', data.region);
+      console.log('Ciudad:      ', data.city);
+      console.log('CP:          ', data.postal || '—');
+      console.log('Coords:      ', `${data.latitude}, ${data.longitude}`);
+      console.log('Org:         ', data.org || '—');
+      console.groupEnd();
+
+      if (data.country_code !== 'CO') {
+        _showCountryBlock(data.country_name ?? 'otro país');
+        return;
+      }
+      if (data.city) {
+        DELIVERY_CITY = data.city;
+        console.log('%c📍 DELIVERY_CITY →', 'color:#3b82f6;font-weight:700', DELIVERY_CITY);
+        _updateCityGreeting();
+      }
       return;
+    } catch (_) {
+      // try next service
     }
-    if (data.city) {
-      DELIVERY_CITY = data.city;
-      console.log('%c📍 DELIVERY_CITY →', 'color:#3b82f6;font-weight:700', DELIVERY_CITY);
-    }
-  } catch (e) {
-    console.warn('📍 IP Geolocation: error →', e.message, '— usando ciudad por defecto →', DELIVERY_CITY);
   }
+  console.warn('📍 IP Geolocation: todos los servicios fallaron — usando ciudad por defecto →', DELIVERY_CITY);
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -199,10 +241,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const rp = await fetch('promoted/products.json');
     if (rp.ok) PROMOTED = await rp.json();
   } catch (_) { /* sin productos promocionados */ }
-  try {
-    const rc = await fetch('promoted/coupons.json');
-    if (rc.ok) COUPONS = await rc.json();
-  } catch (_) {}
+  // Coupons validated on-demand via API — nothing to preload.
   try {
     const rb = await fetch(API_BASE + '/api/banners/visible');
     if (rb.ok) renderSbnrBanners(await rb.json());
@@ -238,6 +277,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initCategories();
   renderRecentlyViewed();
   if (POPUP_AD) showPromoPopup();
+  _handleProductDeepLink();
   // Track page view (once per session)
   if (!sessionStorage.getItem('pf_pv')) {
     sessionStorage.setItem('pf_pv', '1');
@@ -1507,6 +1547,11 @@ async function sendWhatsappOrder() {
 
   postOrderToApi({ fullItems, address: dir, paymentType: 'TRANSFERENCIA' });
 
+  // Record coupon use (fire-and-forget)
+  if (_appliedCoupon?.code) {
+    fetch(`${API_BASE}/api/coupons/use/${encodeURIComponent(_appliedCoupon.code)}`, { method: 'POST' }).catch(() => {});
+  }
+
   buyNowProduct = null;
   repeatOrderItems = null;
   closeOrderPopup();
@@ -1595,6 +1640,10 @@ function confirmWompiPayment() {
   if (!od.bpId && od.selectedIds?.length) {
     od.selectedIds.forEach(id => { cart = cart.filter(c => c.id !== id); checkedItems.delete(id); });
     saveCart(); updateCartUI(); renderCartPanel();
+  }
+  // Record coupon use (fire-and-forget)
+  if (_appliedCoupon?.code) {
+    fetch(`${API_BASE}/api/coupons/use/${encodeURIComponent(_appliedCoupon.code)}`, { method: 'POST' }).catch(() => {});
   }
   closeWompiResult();
   window.open(`https://wa.me/${WA_PHONE}?text=${encodeURIComponent(msg)}`, '_blank');
@@ -1754,9 +1803,17 @@ function toggleWish(e, id) {
 }
 
 // ===== PRODUCT MODAL =====
+function _handleProductDeepLink() {
+  const id = new URLSearchParams(location.search).get('product');
+  if (!id) return;
+  const p = PRODUCTS.find(x => x.id === id);
+  if (p) openProduct(id);
+}
+
 function openProduct(id) {
   closeBannerPopup();
   trackRecent(id);
+  history.replaceState(null, '', '?product=' + id);
   const p      = PRODUCTS.find(x => x.id === id);
   trackEvent('PRODUCT_VIEW', { productId: p?.id, name: p?.name, category: p?.categoryId, price: p?.price });
   const inWish = wishlist.includes(id);
@@ -1785,6 +1842,10 @@ function openProduct(id) {
           <button class="btn btn-wa" style="width:100%;padding:12px;font-size:14px" onclick="buyNow('${p.id}')">
             <svg viewBox="0 0 24 24" style="width:18px;height:18px"><path fill="#25D366" d="M12 0C5.373 0 0 5.373 0 12c0 2.025.507 3.967 1.399 5.671L.1 23.9l6.499-1.699A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/><path fill="#fff" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/></svg>
             Comprar por WhatsApp
+          </button>
+          <button class="btn btn-share" style="width:100%;padding:12px;font-size:14px;background:var(--surface);border:1.5px solid var(--border);color:var(--text)" onclick="shareProduct('${p.id}')">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            Compartir producto
           </button>
         </div>
       </div>
@@ -1853,7 +1914,20 @@ function switchThumb(el, src) {
   img.style.opacity = '0';
   setTimeout(() => { img.src = src; img.style.opacity = '1'; }, 180);
 }
-function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); document.body.style.overflow = ''; }
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); document.body.style.overflow = ''; history.replaceState(null, '', location.pathname); }
+
+function shareProduct(id) {
+  const p = PRODUCTS.find(x => x.id === id);
+  if (!p) return;
+  const base = window.location.origin + window.location.pathname;
+  const link = base + '?product=' + id;
+  const text = `¡Mira este producto en PideFacil! 🛍️\n*${p.name}* — ${fmtPrice(p.price)}\n${link}`;
+  if (navigator.share) {
+    navigator.share({ title: p.name, text: `${p.name} — ${fmtPrice(p.price)}`, url: link }).catch(() => {});
+  } else {
+    window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+  }
+}
 function handleModalClick(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
 
 // ===== REQUEST PRODUCT =====
@@ -2100,15 +2174,63 @@ function _updateUserGreeting() {
   const cu   = getCyUser();
   const name = cu?.name;
   const hasId = !!cu?.id;
-  ['moreMenuUserGreeting', 'hamUserGreeting'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    if (name) { el.textContent = '\uD83D\uDC4B Hola, ' + name.split(' ')[0] + '!'; el.style.display = 'block'; }
-    else el.style.display = 'none';
-  });
+  const firstName = name ? name.split(' ')[0] : null;
+
+  // More-menu dropdown greeting
+  const mmWrap = document.getElementById('moreMenuUserGreeting');
+  if (mmWrap) {
+    if (firstName) {
+      const nameEl   = document.getElementById('moreMenuGreetName');
+      const avatarEl = document.getElementById('moreMenuGreetAvatar');
+      if (nameEl)   nameEl.textContent   = 'Hola, ' + firstName + '!';
+      if (avatarEl) avatarEl.textContent = firstName[0].toUpperCase();
+      mmWrap.style.display = 'block';
+    } else {
+      mmWrap.style.display = 'none';
+    }
+  }
+
+  // Ham drawer greeting
+  const hamWrap = document.getElementById('hamUserGreeting');
+  if (hamWrap) {
+    if (firstName) {
+      const nameEl   = document.getElementById('hamGreetName');
+      const avatarEl = document.getElementById('hamGreetAvatar');
+      if (nameEl)   nameEl.textContent   = 'Hola, ' + firstName + '!';
+      if (avatarEl) avatarEl.textContent = firstName[0].toUpperCase();
+      hamWrap.style.display = 'block';
+    } else {
+      hamWrap.style.display = 'none';
+    }
+  }
+
+  // City pill — shown regardless of login state
+  _updateCityGreeting();
   const showPedidos = d => { const el = document.getElementById(d); if (el) el.style.display = hasId ? '' : 'none'; };
   showPedidos('btnMoreMisPedidos');
   showPedidos('btnHamMisPedidos');
+}
+
+function _updateCityGreeting() {
+  if (!DELIVERY_CITY) return;
+  // More-menu city
+  const mmCityWrap = document.getElementById('moreMenuGreetCity');
+  const mmCityText = document.getElementById('moreMenuGreetCityText');
+  const mmWrap     = document.getElementById('moreMenuUserGreeting');
+  if (mmCityWrap && mmCityText) {
+    mmCityText.textContent = DELIVERY_CITY;
+    mmCityWrap.style.display = 'flex';
+    if (mmWrap) mmWrap.style.display = 'block';
+  }
+  // Ham drawer city
+  const hamCityWrap = document.getElementById('hamGreetCity');
+  const hamCityText = document.getElementById('hamGreetCityText');
+  const hamWrap     = document.getElementById('hamUserGreeting');
+  if (hamCityWrap && hamCityText) {
+    hamCityText.textContent = DELIVERY_CITY;
+    hamCityWrap.style.display = 'flex';
+    if (hamWrap) hamWrap.style.display = 'block';
+  }
 }
 
 function toggleMoreMenu() {
@@ -2255,26 +2377,54 @@ function clearRecentlyViewed() {
 }
 
 // ===== COUPONS =====
-function applyCupon() {
-  const raw  = (document.getElementById('inputCupon').value || '').trim().toUpperCase();
-  const fb   = document.getElementById('cuponFeedback');
-  if (!raw) { fb.textContent = ''; fb.className = 'cupon-feedback'; _appliedCoupon = null; _refreshSummaryDiscount(); return; }
-  const found = COUPONS.find(c => c.code.toUpperCase() === raw);
-  if (!found) {
-    fb.textContent = 'Cup\u00f3n no v\u00e1lido';
+async function applyCupon() {
+  const raw = (document.getElementById('inputCupon').value || '').trim().toUpperCase();
+  const fb  = document.getElementById('cuponFeedback');
+  const btn = document.querySelector('.btn-apply-cupon');
+
+  if (!raw) {
+    fb.textContent = ''; fb.className = 'cupon-feedback';
+    _appliedCoupon = null; _refreshSummaryDiscount(); return;
+  }
+
+  fb.textContent = 'Verificando\u2026'; fb.className = 'cupon-feedback';
+  if (btn) btn.disabled = true;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/coupons/validate/${encodeURIComponent(raw)}`);
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.message || (res.status === 404 ? 'C\u00f3digo no v\u00e1lido' : 'Error al validar'));
+    }
+    const coupon = await res.json();
+
+    // Check minOrder against current cart total
+    if (coupon.minOrder && _currentOrderTotal < coupon.minOrder) {
+      throw new Error(`Pedido m\u00ednimo $${Number(coupon.minOrder).toLocaleString('es-CO')} para usar este c\u00f3digo`);
+    }
+
+    _appliedCoupon = {
+      code:  coupon.code,
+      type:  coupon.discType,     // 'PERCENT' | 'FIXED'
+      value: Number(coupon.discValue),
+      label: coupon.label,
+      id:    coupon.id
+    };
+    fb.textContent = '\u2705 ' + coupon.label + ' aplicado';
+    fb.className   = 'cupon-feedback ok';
+  } catch (e) {
+    fb.textContent = e.message;
     fb.className   = 'cupon-feedback err';
     _appliedCoupon = null;
-  } else {
-    fb.textContent = '\u2705 ' + found.label + ' aplicado';
-    fb.className   = 'cupon-feedback ok';
-    _appliedCoupon = found;
+  } finally {
+    if (btn) btn.disabled = false;
   }
   _refreshSummaryDiscount();
 }
 function calcCouponDiscount(total) {
   if (!_appliedCoupon) return 0;
-  if (_appliedCoupon.type === 'percent') return Math.round(total * _appliedCoupon.value / 100);
-  if (_appliedCoupon.type === 'fixed')   return Math.min(_appliedCoupon.value, total);
+  if (_appliedCoupon.type === 'PERCENT') return Math.round(total * _appliedCoupon.value / 100);
+  if (_appliedCoupon.type === 'FIXED')   return Math.min(_appliedCoupon.value, total);
   return 0;
 }
 function _refreshSummaryDiscount() {

@@ -187,33 +187,47 @@
   .btn-cancel-order:hover { background: #b91c1c; }
 
   /* ── INVOICE POPUP ── */
-  #invoiceOverlay { position:fixed;inset:0;z-index:2000;background:rgba(15,23,42,.7);display:none;align-items:center;justify-content:center;padding:16px; }
+  #invoiceOverlay { position:fixed;inset:0;z-index:2000;background:rgba(2,6,23,.75);display:none;align-items:center;justify-content:center;padding:16px; }
   #invoiceOverlay.open { display:flex; }
-  .invoice-box { background:#fff;border-radius:10px;max-height:92vh;display:flex;flex-direction:column;width:360px;max-width:100%;box-shadow:0 20px 60px rgba(0,0,0,.4); }
-  .invoice-box-head { display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #e5e7eb;flex-shrink:0; }
-  .invoice-box-head span { font-size:14px;font-weight:700;color:#111827; }
+  .invoice-box { background:#f1f5f9;border-radius:18px;max-height:92vh;display:flex;flex-direction:column;width:400px;max-width:100%;box-shadow:0 28px 80px rgba(0,0,0,.45); }
+  .invoice-box-head { display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #e2e8f0;flex-shrink:0;background:#fff;border-radius:18px 18px 0 0; }
+  .invoice-box-head span { font-size:13px;font-weight:700;color:#0f172a;letter-spacing:.3px; }
   .invoice-scroll { overflow-y:auto;flex:1;padding:16px; }
-  .invoice-actions { display:flex;gap:8px;padding:12px 16px;border-top:1px solid #e5e7eb;flex-shrink:0; }
-  .btn-invoice-dl { flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;background:#1e293b;border:none;border-radius:8px;color:#fff;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;transition:background .15s; }
-  .btn-invoice-dl:hover { background:#0f172a; }
-  /* the receipt itself – keeps styles self-contained for print/download */
-  .tirilla { font-family:'Courier New',Courier,monospace;font-size:12px;color:#111;width:100%;line-height:1.55; }
-  .tirilla-logo { text-align:center;font-size:18px;font-weight:700;letter-spacing:2px;margin-bottom:2px; }
-  .tirilla-logo-black { background:#000;color:#fff;text-align:center;font-size:20px;font-weight:900;letter-spacing:3px;padding:10px 0;margin-bottom:6px; }
-  .tirilla-sub  { text-align:center;font-size:11px;color:#444;margin-bottom:8px; }
-  .tirilla-sep  { border:none;border-top:1px dashed #aaa;margin:8px 0; }
-  .tirilla-row  { display:flex;justify-content:space-between;gap:4px; }
-  .tirilla-row .lbl { color:#555;flex-shrink:0; }
-  .tirilla-row .val { text-align:right;word-break:break-all; }
-  .tirilla-items { width:100%;border-collapse:collapse;margin:6px 0; }
-  .tirilla-items th { text-align:left;font-size:11px;border-bottom:1px solid #ccc;padding-bottom:3px; }
-  .tirilla-items th:last-child,.tirilla-items td:last-child { text-align:right; }
-  .tirilla-items td { padding:2px 0;vertical-align:top; }
-  .tirilla-total-row { display:flex;justify-content:space-between;font-weight:700;font-size:14px;margin-top:4px; }
-  .tirilla-footer { text-align:center;font-size:11px;color:#666;margin-top:8px; }
-  .tirilla-logo-img { display:block;max-width:90px;max-height:54px;margin:0 auto 6px;object-fit:contain; }
-  .tirilla-social { text-align:center;font-size:11px;color:#444;line-height:1.9;margin-top:6px; }
-  .tirilla-social-title { font-weight:700;margin-bottom:2px; }
+  .invoice-actions { padding:14px 18px;border-top:1px solid #e2e8f0;flex-shrink:0;background:#fff;border-radius:0 0 18px 18px; }
+  .btn-invoice-dl { width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:#0f172a;border:none;border-radius:10px;color:#fff;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.4px;transition:background .15s; }
+  .btn-invoice-dl:hover { background:#1e293b; }
+  /* ── Receipt card ── */
+  .tirilla { font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:12.5px;color:#1e293b;width:100%;border-radius:12px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.1); }
+  .t-header { background:#0f172a;padding:22px 16px 18px;text-align:center; }
+  .t-logo-img { width:52px;height:52px;object-fit:contain;border-radius:10px;display:block;margin:0 auto 10px;filter:brightness(0) invert(1); }
+  .t-store-name { color:#fff;font-size:17px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase; }
+  .t-store-sub { color:#dbdbdb;font-size:10px;margin-top:5px;letter-spacing:1px;text-transform:uppercase; }
+  .t-body { padding:16px;background:#fff; }
+  .t-section-label { font-size:9px;font-weight:800;color:#94a3b8;letter-spacing:2px;text-transform:uppercase;margin:16px 0 7px; }
+  .t-section-label:first-child { margin-top:0; }
+  .t-row { display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:3px 0; }
+  .t-lbl { color:#64748b;font-size:11.5px;flex-shrink:0; }
+  .t-val { color:#0f172a;font-size:11.5px;font-weight:600;text-align:right;word-break:break-word; }
+  .t-divider { border:none;border-top:1px solid #f1f5f9;margin:12px 0; }
+  .t-product-table { width:100%;border-collapse:collapse; }
+  .t-product-table th { font-size:9px;font-weight:800;color:#94a3b8;letter-spacing:1.5px;text-transform:uppercase;padding-bottom:7px;border-bottom:1px solid #e2e8f0; }
+  .t-product-table th:last-child { text-align:right; }
+  .t-product-table td { padding:7px 0;border-bottom:1px solid #f8fafc;vertical-align:top;font-size:12px;color:#0f172a; }
+  .t-product-table td.t-pd-name { font-weight:500; }
+  .t-product-table td.t-pd-qty { color:#64748b;font-size:11px;padding-left:6px;white-space:nowrap; }
+  .t-product-table td:last-child { text-align:right;font-weight:700;white-space:nowrap; }
+  .t-subtotals { padding-top:10px; }
+  .t-total-block { background:#0f172a;border-radius:10px;padding:13px 16px;margin:14px 0 4px;display:flex;justify-content:space-between;align-items:center; }
+  .t-total-block .t-lbl { color:#dbdbdb;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase; }
+  .t-total-block .t-val { color:#fff;font-size:20px;font-weight:800;letter-spacing:-.5px; }
+  .t-footer { background:#f8fafc;border-top:1px solid #e2e8f0;padding:18px 16px 16px;text-align:center; }
+  .t-footer-thanks { font-size:13px;font-weight:700;color:#0f172a;margin-bottom:12px;letter-spacing:.2px; }
+  .t-footer-find { font-size:10px;font-weight:700;color:#94a3b8;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px; }
+  .t-social { display:flex;justify-content:center;align-items:center;gap:10px;margin-bottom:12px; }
+  .t-social-icon { width:30px;height:30px;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+  .t-social-icon svg { display:block; }
+  .t-contact { display:flex;flex-direction:column;gap:3px;align-items:center; }
+  .t-contact-item { font-size:11px;font-weight:600;color:#475569; }
   .sp-pipeline { display: flex; align-items: flex-start; gap: 0; padding: 12px 0 4px; }
   .sp-step { display: flex; flex-direction: column; align-items: center; min-width: 52px; cursor: default; user-select: none; }
   .sp-step.clickable { cursor: pointer; }
@@ -396,6 +410,30 @@
   .bnn-order-btn { padding: 4px 6px; border: 1.5px solid var(--border); border-radius: 6px; background: var(--bg-card); color: var(--text-muted); cursor: pointer; font-size: 10px; font-weight: 700; transition: all .15s; line-height: 1; }
   .bnn-order-btn:hover:not([disabled]) { border-color: var(--primary); color: var(--primary); }
   .bnn-order-btn[disabled] { opacity: .3; cursor: not-allowed; }
+
+  /* ── CUPONES ─────────────────────────────────────────── */
+  .filter-chip-adm { padding: 6px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-full); font-family: var(--font); font-size: 12px; font-weight: 600; color: var(--text-secondary); background: var(--bg-card); cursor: pointer; transition: all .15s; }
+  .filter-chip-adm.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .pf-form-row { display: flex; flex-direction: column; gap: 5px; }
+  .cpn-table { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); }
+  .cpn-thead { display: grid; grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr 2fr 1.5fr 1.5fr; gap: 8px; padding: 10px 14px; background: var(--bg); font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .07em; }
+  .cpn-row { display: grid; grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr 2fr 1.5fr 1.5fr; gap: 8px; align-items: center; padding: 12px 14px; border-top: 1px solid var(--border); background: var(--bg-card); font-size: 12.5px; transition: background .15s; }
+  .cpn-row.cpn-row-off { opacity: .55; }
+  .cpn-code { font-family: monospace; font-weight: 800; font-size: 13px; color: var(--text-primary); letter-spacing: .5px; }
+  .cpn-badge { display: inline-block; padding: 2px 8px; border-radius: var(--radius-full); font-size: 11px; font-weight: 700; }
+  .cpn-on  { background: #f0fdf4; color: #15803d; }
+  .cpn-off { background: #f3f4f6; color: #6b7280; }
+  .cpn-exp { background: #fef2f2; color: #b91c1c; }
+  .cpn-future { background: #fffbeb; color: #b45309; }
+  .cpn-toggle { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid; cursor: pointer; font-size: 14px; line-height: 1; display: flex; align-items: center; justify-content: center; font-weight: 700; transition: all .15s; }
+  .cpn-toggle-on  { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+  .cpn-toggle-on:hover  { background: #15803d; color: #fff; border-color: #15803d; }
+  .cpn-toggle-off { background: #f3f4f6; color: #9ca3af; border-color: var(--border); }
+  .cpn-toggle-off:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+  @media (max-width: 900px) {
+    .cpn-thead { display: none; }
+    .cpn-row { grid-template-columns: 1fr 1fr; }
+  }
   /* Banner form */
   .bnn-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .bnn-color-row { display: flex; align-items: center; gap: 8px; }
@@ -489,6 +527,10 @@
       <span class="nav-item-icon">🎨</span>
       Banners
     </button>
+    <button class="nav-item" id="navCupones" onclick="showSection('cupones');closeNavDrawer()">
+      <span class="nav-item-icon">🎟️</span>
+      Cupones & Gift Cards
+    </button>
   </div>
   <div class="nav-drawer-footer">
     <button class="nav-item" onclick="clearCache();closeNavDrawer()">
@@ -509,7 +551,7 @@
     <p>Ingresa tus credenciales para ver los pedidos.</p>
     <div class="field">
       <label for="inputEmail">Correo</label>
-      <input type="email" id="inputEmail" placeholder="admin@pidefacil.co" autocomplete="email">
+      <input type="email" id="inputEmail" placeholder="admin@pidefacil.shop" autocomplete="email">
     </div>
     <div class="field">
       <label for="inputPassword">Contraseña</label>
@@ -735,6 +777,103 @@
 </div>
 
 <!-- BANNERS SECTION -->
+<div class="content" id="cuponesSection" style="display:none">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+    <h2 style="font-size:18px;font-weight:800;flex:1">Cupones &amp; Tarjetas de Regalo</h2>
+    <button class="btn-confirm" style="flex:none;padding:8px 16px;font-size:13px" onclick="openCouponModal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M12 5v14M5 12h14"/></svg>
+      Nuevo
+    </button>
+  </div>
+  <!-- Filter tabs -->
+  <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+    <button class="filter-chip-adm active" id="cpnTabAll"   onclick="setCouponTab('all')">Todos</button>
+    <button class="filter-chip-adm"        id="cpnTabCoupon" onclick="setCouponTab('COUPON')">Cupones</button>
+    <button class="filter-chip-adm"        id="cpnTabGift"   onclick="setCouponTab('GIFT_CARD')">Tarjetas de regalo</button>
+  </div>
+  <div class="table-wrap">
+    <div class="table-count" id="cpnCount"></div>
+    <div id="cpnGrid"></div>
+  </div>
+</div>
+
+<!-- COUPON CREATE/EDIT MODAL -->
+<div class="modal-overlay" id="couponModal" onclick="handleCouponModalClick(event)">
+  <div class="modal-box" style="max-width:520px">
+    <div class="modal-head">
+      <div class="modal-head-title" id="couponModalTitle">Nuevo cupón</div>
+      <button class="modal-close" onclick="closeCouponModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;max-height:75vh;overflow-y:auto">
+      <div class="pf-form-row">
+        <label class="pf-form-label">Tipo</label>
+        <div style="display:flex;gap:8px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+            <input type="radio" name="cpnType" value="COUPON" checked onchange="onCouponTypeChange()"> Cupón de descuento
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+            <input type="radio" name="cpnType" value="GIFT_CARD" onchange="onCouponTypeChange()"> Tarjeta de regalo
+          </label>
+        </div>
+      </div>
+      <div class="pf-form-row">
+        <label class="pf-form-label">Código <span style="color:#9CA3AF;font-weight:400">(máx 20 chars, sin espacios)</span></label>
+        <div style="display:flex;gap:8px">
+          <input class="pf-form-input" id="cpnCode" type="text" maxlength="20" placeholder="Ej: BIEN10" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')" style="flex:1">
+          <button class="btn-drop" onclick="generateCouponCode()" title="Generar código aleatorio" style="white-space:nowrap;padding:0 12px">🎲 Generar</button>
+        </div>
+      </div>
+      <div class="pf-form-row">
+        <label class="pf-form-label">Tipo de descuento</label>
+        <div style="display:flex;gap:8px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+            <input type="radio" name="cpnDiscType" value="PERCENT" checked> Porcentaje (%)
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+            <input type="radio" name="cpnDiscType" value="FIXED"> Valor fijo ($)
+          </label>
+        </div>
+      </div>
+      <div class="pf-form-row">
+        <label class="pf-form-label" id="cpnDiscLabel">Descuento (%)</label>
+        <input class="pf-form-input" id="cpnDiscValue" type="number" min="0" placeholder="10">
+      </div>
+      <div class="pf-form-row">
+        <label class="pf-form-label">Pedido mínimo (COP) <span style="color:#9CA3AF;font-weight:400">opcional</span></label>
+        <input class="pf-form-input" id="cpnMinOrder" type="number" min="0" placeholder="20000">
+      </div>
+      <div class="pf-form-row">
+        <label class="pf-form-label">Máx. de usos <span style="color:#9CA3AF;font-weight:400">opcional — vacío = ilimitado</span></label>
+        <input class="pf-form-input" id="cpnMaxUses" type="number" min="1" placeholder="">
+      </div>
+      <div class="pf-form-row">
+        <label class="pf-form-label">Rango de fechas <span style="color:#9CA3AF;font-weight:400">opcional</span></label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input class="pf-form-input" id="cpnFrom" type="date" style="flex:1">
+          <span style="font-size:12px;color:#9CA3AF">hasta</span>
+          <input class="pf-form-input" id="cpnUntil" type="date" style="flex:1">
+        </div>
+      </div>
+      <div class="pf-form-row">
+        <label class="pf-form-label">Descripción interna <span style="color:#9CA3AF;font-weight:400">opcional</span></label>
+        <input class="pf-form-input" id="cpnDesc" type="text" maxlength="255" placeholder="Ej: Tarjeta boda de María">
+      </div>
+      <div class="pf-form-row">
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+          <input type="checkbox" id="cpnActive" checked style="width:16px;height:16px;accent-color:#F15200">
+          Activo al crear
+        </label>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;padding:14px 20px;border-top:1px solid var(--border)">
+      <button class="btn-confirm" style="flex:1" onclick="saveCoupon()">Guardar</button>
+      <button class="btn-drop" onclick="closeCouponModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <div class="content" id="bannersSection" style="display:none">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
     <h2 style="font-size:18px;font-weight:800;flex:1">Banners promocionales</h2>
@@ -838,11 +977,13 @@ function showSection(section) {
   document.getElementById('analyticsSection').style.display  = section === 'analytics' ? 'block' : 'none';
   document.getElementById('productosSection').style.display  = section === 'productos' ? 'block' : 'none';
   document.getElementById('bannersSection').style.display    = section === 'banners'   ? 'block' : 'none';
+  document.getElementById('cuponesSection').style.display    = section === 'cupones'   ? 'block' : 'none';
   document.getElementById('navPedidos').classList.toggle('active',   section === 'pedidos');
   document.getElementById('navAnalytics').classList.toggle('active', section === 'analytics');
   document.getElementById('navProductos').classList.toggle('active', section === 'productos');
   document.getElementById('navBanners').classList.toggle('active',   section === 'banners');
-  const sectionLabels = { pedidos: 'Pedidos', analytics: 'Analytics', productos: 'Productos', banners: 'Banners' };
+  document.getElementById('navCupones').classList.toggle('active',   section === 'cupones');
+  const sectionLabels = { pedidos: 'Pedidos', analytics: 'Analytics', productos: 'Productos', banners: 'Banners', cupones: 'Cupones & Gift Cards' };
   const labelEl = document.getElementById('topbarSectionLabel');
   if (labelEl) labelEl.textContent = sectionLabels[section] ?? section;
   history.replaceState(null, '', '#' + section);
@@ -850,6 +991,7 @@ function showSection(section) {
   if (section === 'productos') loadProducts();
   if (section === 'pedidos') loadOrders();
   if (section === 'banners') loadBanners();
+  if (section === 'cupones') loadCoupons();
 }
 
 function onRefresh() {
@@ -1215,7 +1357,6 @@ function _buildTirillaHtml(order) {
   const orderId    = (order.id ?? '').substring(0, 8).toUpperCase();
   const payLabel   = { EFECTIVO: 'Efectivo', TRANSFERENCIA: 'Transferencia' }[order.paymentType] ?? order.paymentType ?? '—';
 
-  // Fecha corta: 01/05/2026 8:00 am
   const _d = order.createdAt ? new Date(order.createdAt) : new Date();
   const _pad = n => String(n).padStart(2, '0');
   let _h = _d.getHours(); const _ampm = _h >= 12 ? 'pm' : 'am';
@@ -1232,53 +1373,93 @@ function _buildTirillaHtml(order) {
     const price = p.unitPrice != null ? Number(p.unitPrice) : (p.product?.price ?? 0);
     const sub   = price * qty;
     return `<tr>
-      <td style="padding-right:6px">${name}</td>
-      <td style="text-align:center;white-space:nowrap">${qty} x ${fmtPrice(price)}</td>
+      <td class="t-pd-name">${name}</td>
+      <td class="t-pd-qty">${qty} × ${fmtPrice(price)}</td>
       <td>${fmtPrice(sub)}</td>
     </tr>`;
   }).join('');
 
-  const subtotal     = (order.products ?? []).reduce((s, p) => s + (p.unitPrice != null ? Number(p.unitPrice) : (p.product?.price ?? 0)) * (p.quantity ?? 1), 0);
-  const delivery     = order.deliveryPrice ? Number(order.deliveryPrice) : 0;
-  const total        = subtotal + delivery;
-  const changeFrom   = order.changeFrom ? Number(order.changeFrom) : null;
-  const changeBack   = changeFrom != null ? changeFrom - total : null;
+  const subtotal   = (order.products ?? []).reduce((s, p) => s + (p.unitPrice != null ? Number(p.unitPrice) : (p.product?.price ?? 0)) * (p.quantity ?? 1), 0);
+  const delivery   = order.deliveryPrice ? Number(order.deliveryPrice) : 0;
+  const total      = subtotal + delivery;
+  const changeFrom = order.changeFrom ? Number(order.changeFrom) : null;
+  const changeBack = changeFrom != null ? changeFrom - total : null;
 
-  const socialHtml = (instagram || waDisplay || website) ? `
-    <div class="tirilla-social">
-      <div class="tirilla-social-title">Siguenos en:</div>
-      ${instagram ? `<div>📸 ${instagram}</div>` : ''}
-      ${waDisplay ? `<div>💬 ${waDisplay}</div>` : ''}
-      ${website   ? `<div>🌐 ${website}</div>` : ''}
-    </div>` : '';
+  const socialHtml = `
+    <div class="t-footer-find">Encuéntranos en</div>
+    <div class="t-social">
+      ${instagram ? `
+      <div class="t-social-icon" title="${instagram}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+          <circle cx="12" cy="12" r="4"/>
+          <circle cx="17.5" cy="6.5" r="1" fill="#0f172a" stroke="none"/>
+        </svg>
+      </div>` : ''}
+      ${website ? `
+      <div class="t-social-icon" title="${website}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="2" y1="12" x2="22" y2="12"/>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        </svg>
+      </div>` : ''}
+      ${waDisplay ? `
+      <div class="t-social-icon" title="${waDisplay}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+        </svg>
+      </div>` : ''}
+    </div>
+    <div class="t-contact">
+      ${website   ? `<span class="t-contact-item">${website}</span>` : ''}
+      ${waDisplay ? `<span class="t-contact-item">+57 ${waDisplay}</span>` : ''}
+    </div>`;
 
-  return `
-    <div class="tirilla-logo-black">${storeName.toUpperCase()}</div>
-    <div class="tirilla-sub">Pedido a domicilio</div>
-    <hr class="tirilla-sep">
-    <div class="tirilla-row"><span class="lbl"># Pedido:</span><span class="val">${orderId}</span></div>
-    <div class="tirilla-row"><span class="lbl">Fecha:</span><span class="val">${dateShort}</span></div>
-    <hr class="tirilla-sep">
-    <div class="tirilla-row"><span class="lbl">Cliente:</span><span class="val">${buyerName}</span></div>
-    ${buyerPhone ? `<div class="tirilla-row"><span class="lbl">Tel:</span><span class="val">${buyerPhone}</span></div>` : ''}
-    <div class="tirilla-row"><span class="lbl">Dirección:</span><span class="val">${order.address ?? '—'}</span></div>
-    <hr class="tirilla-sep">
-    <table class="tirilla-items">
-      <thead><tr><th>Producto</th><th style="text-align:center">Cant.</th><th>Subtotal</th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table>
-    <hr class="tirilla-sep">
-    <div class="tirilla-row"><span class="lbl">Subtotal:</span><span class="val">${fmtPrice(subtotal)}</span></div>
-    ${delivery ? `<div class="tirilla-row"><span class="lbl">Domicilio:</span><span class="val">${fmtPrice(delivery)}</span></div>` : ''}
-    <div class="tirilla-total-row"><span>TOTAL:</span><span>${fmtPrice(total)}</span></div>
-    <hr class="tirilla-sep">
-    <div class="tirilla-row"><span class="lbl">Forma de pago:</span><span class="val">${payLabel}</span></div>
-    ${changeFrom != null ? `<div class="tirilla-row"><span class="lbl">Paga con:</span><span class="val">${fmtPrice(changeFrom)}</span></div>` : ''}
-    ${changeBack != null && changeBack > 0 ? `<div class="tirilla-row"><span class="lbl">Cambio:</span><span class="val">${fmtPrice(changeBack)}</span></div>` : ''}
-    <hr class="tirilla-sep">
-    <div class="tirilla-footer">Gracias por tu compra!</div>
-    ${socialHtml}
-  `;
+  return `<div class="tirilla">
+    <div class="t-header">
+      <img class="t-logo-img" src="images/icono.png" alt="${storeName}" onerror="this.style.display='none'">
+      <div class="t-store-name">${storeName}</div>
+      <div class="t-store-sub">Pedido a domicilio</div>
+    </div>
+    <div class="t-body">
+      <div class="t-section-label">Pedido</div>
+      <div class="t-row"><span class="t-lbl">Número</span><span class="t-val">${orderId}</span></div>
+      <div class="t-row"><span class="t-lbl">Fecha</span><span class="t-val">${dateShort}</span></div>
+
+      <hr class="t-divider">
+      <div class="t-section-label">Cliente</div>
+      <div class="t-row"><span class="t-lbl">Nombre</span><span class="t-val">${buyerName}</span></div>
+      ${buyerPhone ? `<div class="t-row"><span class="t-lbl">Tel</span><span class="t-val">${buyerPhone}</span></div>` : ''}
+      <div class="t-row"><span class="t-lbl">Dirección</span><span class="t-val">${order.address ?? '—'}</span></div>
+
+      <hr class="t-divider">
+      <div class="t-section-label">Productos</div>
+      <table class="t-product-table">
+        <thead><tr><th>Producto</th><th>Cant.</th><th>Total</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+
+      <div class="t-subtotals">
+        ${delivery ? `<div class="t-row"><span class="t-lbl">Subtotal</span><span class="t-val">${fmtPrice(subtotal)}</span></div>` : ''}
+        ${delivery ? `<div class="t-row"><span class="t-lbl">Domicilio</span><span class="t-val">${fmtPrice(delivery)}</span></div>` : ''}
+      </div>
+
+      <div class="t-total-block">
+        <span class="t-lbl">Total a pagar</span>
+        <span class="t-val">${fmtPrice(total)}</span>
+      </div>
+
+      <div class="t-section-label">Pago</div>
+      <div class="t-row"><span class="t-lbl">Forma de pago</span><span class="t-val">${payLabel}</span></div>
+      ${changeFrom != null ? `<div class="t-row"><span class="t-lbl">Paga con</span><span class="t-val">${fmtPrice(changeFrom)}</span></div>` : ''}
+      ${changeBack != null && changeBack > 0 ? `<div class="t-row"><span class="t-lbl">Cambio</span><span class="t-val">${fmtPrice(changeBack)}</span></div>` : ''}
+    </div>
+    <div class="t-footer">
+      <div class="t-footer-thanks">¡Gracias por tu compra!</div>
+      ${socialHtml}
+    </div>
+  </div>`;
 }
 
 function openInvoice() {
@@ -1297,30 +1478,48 @@ function _invoiceOverlayClick(e) {
 
 function downloadInvoice() {
   if (!_currentInvoiceOrder) return;
-  const orderId = (_currentInvoiceOrder.id ?? 'pedido').substring(0, 8).toUpperCase();
-  const tirilla = _buildTirillaHtml(_currentInvoiceOrder);
-  const css = [
-    "@page{size:80mm auto;margin:6mm}",
-    "@media print{html,body{width:80mm}}",
-    "body{font-family:'Courier New',Courier,monospace;font-size:12px;color:#111;max-width:72mm;margin:0 auto;padding:0}",
-    ".tirilla-logo-black{background:#000;color:#fff;text-align:center;font-size:20px;font-weight:900;letter-spacing:3px;padding:10px 0;margin-bottom:6px}",
-    ".tirilla-sub{text-align:center;font-size:11px;color:#444;margin-bottom:8px}",
-    "hr{border:none;border-top:1px dashed #aaa;margin:8px 0}",
-    ".tirilla-row{display:flex;justify-content:space-between;gap:4px;line-height:1.55}",
-    ".tirilla-row .lbl{color:#555;flex-shrink:0}",
-    ".tirilla-row .val{text-align:right;word-break:break-all}",
-    "table{width:100%;border-collapse:collapse;margin:6px 0}",
-    "th{text-align:left;font-size:11px;border-bottom:1px solid #ccc;padding-bottom:3px}",
-    "th:last-child,td:last-child{text-align:right}",
-    "td{padding:2px 0;vertical-align:top}",
-    ".tirilla-total-row{display:flex;justify-content:space-between;font-weight:700;font-size:14px;margin-top:4px}",
-    ".tirilla-footer{text-align:center;font-size:11px;color:#666;margin-top:8px}",
-    ".tirilla-social{text-align:center;font-size:11px;color:#444;line-height:1.9;margin-top:6px}",
-    ".tirilla-social-title{font-weight:700;margin-bottom:2px}"
-  ].join('');
+  const orderId  = (_currentInvoiceOrder.id ?? 'pedido').substring(0, 8).toUpperCase();
+  const logoUrl  = new URL('images/icono.png', window.location.href).href;
+  const tirilla  = _buildTirillaHtml(_currentInvoiceOrder).replace('src="images/icono.png"', 'src="' + logoUrl + '"');
+  const css =
+    '@page{size:80mm auto;margin:8mm}' +
+    '@media print{*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}html,body{width:80mm}}' +
+    '*{box-sizing:border-box;margin:0;padding:0}' +
+    'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:12.5px;color:#1e293b;width:100%;max-width:80mm;margin:0 auto}' +
+    '.tirilla{background:#fff;overflow:hidden}' +
+    '.t-header{background:#0f172a;padding:22px 16px 18px;text-align:center}' +
+    '.t-logo-img{width:52px;height:52px;object-fit:contain;border-radius:10px;display:block;margin:0 auto 10px;filter:brightness(0) invert(1)}' +
+    '.t-store-name{color:#fff;font-size:17px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase}' +
+    '.t-store-sub{color:#dbdbdb;font-size:10px;margin-top:5px;letter-spacing:1px;text-transform:uppercase}' +
+    '.t-body{padding:16px;background:#fff}' +
+    '.t-section-label{font-size:9px;font-weight:800;color:#94a3b8;letter-spacing:2px;text-transform:uppercase;margin:16px 0 7px}' +
+    '.t-section-label:first-child{margin-top:0}' +
+    '.t-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:3px 0}' +
+    '.t-lbl{color:#64748b;font-size:11.5px;flex-shrink:0}' +
+    '.t-val{color:#0f172a;font-size:11.5px;font-weight:600;text-align:right;word-break:break-word}' +
+    '.t-divider{border:none;border-top:1px solid #f1f5f9;margin:12px 0}' +
+    '.t-product-table{width:100%;border-collapse:collapse}' +
+    '.t-product-table th{font-size:9px;font-weight:800;color:#94a3b8;letter-spacing:1.5px;text-transform:uppercase;padding-bottom:7px;border-bottom:1px solid #e2e8f0}' +
+    '.t-product-table th:last-child{text-align:right}' +
+    '.t-product-table td{padding:7px 0;border-bottom:1px solid #f8fafc;vertical-align:top;font-size:12px;color:#0f172a}' +
+    '.t-product-table td.t-pd-name{font-weight:500}' +
+    '.t-product-table td.t-pd-qty{color:#64748b;font-size:11px;padding-left:6px;white-space:nowrap}' +
+    '.t-product-table td:last-child{text-align:right;font-weight:700;white-space:nowrap}' +
+    '.t-subtotals{padding-top:10px}' +
+    '.t-total-block{background:#0f172a;border-radius:10px;padding:13px 16px;margin:14px 0 4px;display:flex;justify-content:space-between;align-items:center}' +
+    '.t-total-block .t-lbl{color:#dbdbdb;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}' +
+    '.t-total-block .t-val{color:#fff;font-size:20px;font-weight:800;letter-spacing:-.5px}' +
+    '.t-footer{background:#f8fafc;border-top:1px solid #e2e8f0;padding:18px 16px 16px;text-align:center}' +
+    '.t-footer-thanks{font-size:13px;font-weight:700;color:#0f172a;margin-bottom:12px;letter-spacing:.2px}' +
+    '.t-footer-find{font-size:10px;font-weight:700;color:#94a3b8;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px}' +
+    '.t-social{display:flex;justify-content:center;align-items:center;gap:10px;margin-bottom:12px}' +
+    '.t-social-icon{width:30px;height:30px;display:flex;align-items:center;justify-content:center}' +
+    '.t-contact{display:flex;flex-direction:column;gap:3px;align-items:center}' +
+    '.t-contact-item{font-size:11px;font-weight:600;color:#475569}';
   const c = '</';
   const sc = '<' + 'script';
-  const html = '<!DOCTYPE html>' +
+  const html =
+    '<!DOCTYPE html>' +
     '<html lang="es">' +
     '<head><meta charset="UTF-8"><title>Factura ' + orderId + c + 'title>' +
     '<style>' + css + c + 'style>' +
@@ -1329,7 +1528,7 @@ function downloadInvoice() {
     sc + '>window.onload=function(){window.print();}' + c + 'script>' +
     c + 'body>' +
     c + 'html>';
-  const w = window.open('', '_blank', 'width=420,height=720');
+  const w = window.open('', '_blank', 'width=460,height=820');
   if (w) { w.document.write(html); w.document.close(); }
 }
 
@@ -2710,6 +2909,210 @@ function mapUnfocusOrder(orderId) {
   entry.contentEl.style.background = '#1e293b';
   entry.contentEl.style.width = entry.contentEl.style.height = `${entry.clusterSize * 2}px`;
   entry.marker.zIndex = entry.isCluster ? 15 : 5;
+}
+
+// ════════════════════════════════════════════════════════════
+// ── CUPONES & TARJETAS DE REGALO ─────────────────────────
+// ════════════════════════════════════════════════════════════
+let _allCoupons = [];
+let _couponTab  = 'all';     // 'all' | 'COUPON' | 'GIFT_CARD'
+let _editingCouponId = null;
+
+// Chars usados para generar códigos (sin O, I, 0, 1 para evitar confusión)
+const _CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+function generateCouponCode() {
+  const type = document.querySelector('input[name="cpnType"]:checked')?.value || 'COUPON';
+  const prefix = type === 'GIFT_CARD' ? 'GV' : '';
+  const len = type === 'GIFT_CARD' ? 5 : 6;
+  let code = prefix;
+  for (let i = 0; i < len; i++) code += _CODE_CHARS[Math.floor(Math.random() * _CODE_CHARS.length)];
+  document.getElementById('cpnCode').value = code;
+}
+
+function setCouponTab(tab) {
+  _couponTab = tab;
+  ['All','Coupon','Gift'].forEach(t => {
+    const id = 'cpnTab' + t;
+    const el = document.getElementById(id);
+    if (!el) return;
+    const val = t === 'All' ? 'all' : t === 'Coupon' ? 'COUPON' : 'GIFT_CARD';
+    el.classList.toggle('active', val === tab);
+  });
+  renderCoupons();
+}
+
+async function loadCoupons() {
+  document.getElementById('cpnGrid').innerHTML = '<div class="state-box"><div class="state-sub">Cargando…</div></div>';
+  try {
+    const res = await fetch(`${API_BASE}/api/coupons`, {
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+    if (res.status === 401 || res.status === 403) { sessionStorage.removeItem(AUTH_KEY); location.reload(); return; }
+    if (!res.ok) throw new Error(res.statusText);
+    _allCoupons = await res.json();
+    renderCoupons();
+  } catch (e) {
+    showToast('Error al cargar cupones: ' + e.message);
+    document.getElementById('cpnGrid').innerHTML = `<div class="state-box"><div class="state-icon">⚠️</div><div class="state-title">Error</div><div class="state-sub">${e.message}</div></div>`;
+  }
+}
+
+function renderCoupons() {
+  const filtered = _couponTab === 'all' ? _allCoupons : _allCoupons.filter(c => c.type === _couponTab);
+  const countEl  = document.getElementById('cpnCount');
+  const gridEl   = document.getElementById('cpnGrid');
+
+  const active = filtered.filter(c => c.active).length;
+  countEl.textContent = `${filtered.length} registro${filtered.length !== 1 ? 's' : ''} · ${active} activo${active !== 1 ? 's' : ''}`;
+
+  if (!filtered.length) {
+    gridEl.innerHTML = '<div class="state-box"><div class="state-icon">🎟️</div><div class="state-title">Sin registros</div><div class="state-sub">Crea tu primer cupón o tarjeta con el botón de arriba.</div></div>';
+    return;
+  }
+
+  const fmtDisc = c => c.discType === 'PERCENT'
+    ? `${c.discValue}%`
+    : `$${Number(c.discValue).toLocaleString('es-CO')}`;
+
+  const fmtDate = d => d ? d.slice(0, 10) : '—';
+
+  const today = new Date().toISOString().slice(0, 10);
+  const statusBadge = c => {
+    if (!c.active) return '<span class="cpn-badge cpn-off">Inactivo</span>';
+    if (c.validUntil && c.validUntil < today) return '<span class="cpn-badge cpn-exp">Vencido</span>';
+    if (c.validFrom  && c.validFrom  > today) return '<span class="cpn-badge cpn-future">Futuro</span>';
+    if (c.maxUses && c.usesCount >= c.maxUses) return '<span class="cpn-badge cpn-exp">Agotado</span>';
+    return '<span class="cpn-badge cpn-on">Activo</span>';
+  };
+
+  gridEl.innerHTML = `
+  <div class="cpn-table">
+    <div class="cpn-thead">
+      <div>Código</div><div>Tipo</div><div>Descuento</div><div>Mín.</div><div>Usos</div><div>Vigencia</div><div>Estado</div><div>Acciones</div>
+    </div>
+    ${filtered.map(c => `
+    <div class="cpn-row${c.active ? '' : ' cpn-row-off'}">
+      <div class="cpn-code">${c.code}</div>
+      <div>${c.type === 'GIFT_CARD' ? '🎁 Gift' : '🎟 Cupón'}</div>
+      <div><strong>${fmtDisc(c)}</strong></div>
+      <div>${c.minOrder ? '$' + Number(c.minOrder).toLocaleString('es-CO') : '—'}</div>
+      <div>${c.usesCount}${c.maxUses ? ' / ' + c.maxUses : ''}</div>
+      <div style="font-size:11px">${fmtDate(c.validFrom)} → ${fmtDate(c.validUntil)}</div>
+      <div>${statusBadge(c)}</div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <button class="cpn-toggle ${c.active ? 'cpn-toggle-on' : 'cpn-toggle-off'}" onclick="toggleCoupon('${c.id}')" title="${c.active ? 'Desactivar' : 'Activar'}">
+          ${c.active ? '●' : '○'}
+        </button>
+        <button class="bnn-edit-btn" onclick="openCouponModal('${c.id}')">✏️</button>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+async function toggleCoupon(id) {
+  try {
+    const res = await fetch(`${API_BASE}/api/coupons/${id}/active`, {
+      method: 'PATCH',
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+    if (!res.ok) throw new Error(res.statusText);
+    const updated = await res.json();
+    const idx = _allCoupons.findIndex(c => c.id === id);
+    if (idx !== -1) _allCoupons[idx] = updated;
+    renderCoupons();
+    showToast(`Cupón "${updated.code}" ${updated.active ? 'activado' : 'desactivado'}.`);
+  } catch (e) { showToast('Error: ' + e.message); }
+}
+
+function openCouponModal(id) {
+  _editingCouponId = id || null;
+  const isEdit = !!id;
+  document.getElementById('couponModalTitle').textContent = isEdit ? 'Editar cupón / tarjeta' : 'Nuevo cupón / tarjeta';
+
+  // Reset
+  document.querySelectorAll('input[name="cpnType"]').forEach(r => r.checked = r.value === 'COUPON');
+  document.querySelectorAll('input[name="cpnDiscType"]').forEach(r => r.checked = r.value === 'PERCENT');
+  ['cpnCode','cpnDiscValue','cpnMinOrder','cpnMaxUses','cpnFrom','cpnUntil','cpnDesc'].forEach(id => { document.getElementById(id).value = ''; });
+  document.getElementById('cpnActive').checked = true;
+  updateDiscLabel();
+
+  if (isEdit) {
+    const c = _allCoupons.find(x => x.id === id);
+    if (!c) return;
+    document.querySelector(`input[name="cpnType"][value="${c.type}"]`).checked = true;
+    document.querySelector(`input[name="cpnDiscType"][value="${c.discType}"]`).checked = true;
+    document.getElementById('cpnCode').value      = c.code;
+    document.getElementById('cpnDiscValue').value = c.discValue;
+    document.getElementById('cpnMinOrder').value  = c.minOrder || '';
+    document.getElementById('cpnMaxUses').value   = c.maxUses  || '';
+    document.getElementById('cpnFrom').value      = c.validFrom  ? c.validFrom.slice(0,10)  : '';
+    document.getElementById('cpnUntil').value     = c.validUntil ? c.validUntil.slice(0,10) : '';
+    document.getElementById('cpnDesc').value      = c.description || '';
+    document.getElementById('cpnActive').checked  = c.active;
+    updateDiscLabel();
+  }
+
+  document.getElementById('couponModal').classList.add('open');
+}
+
+function closeCouponModal() {
+  document.getElementById('couponModal').classList.remove('open');
+  _editingCouponId = null;
+}
+function handleCouponModalClick(e) { if (e.target === document.getElementById('couponModal')) closeCouponModal(); }
+
+function onCouponTypeChange() { updateDiscLabel(); }
+function updateDiscLabel() {
+  const discType = document.querySelector('input[name="cpnDiscType"]:checked')?.value || 'PERCENT';
+  document.getElementById('cpnDiscLabel').textContent = discType === 'PERCENT' ? 'Descuento (%)' : 'Descuento ($COP)';
+}
+document.addEventListener('change', e => { if (e.target?.name === 'cpnDiscType') updateDiscLabel(); });
+
+async function saveCoupon() {
+  const code = (document.getElementById('cpnCode').value || '').trim().toUpperCase();
+  const discValue = parseFloat(document.getElementById('cpnDiscValue').value);
+  if (!code)           { showToast('El código es obligatorio'); return; }
+  if (isNaN(discValue) || discValue <= 0) { showToast('Ingresa un valor de descuento válido'); return; }
+
+  const payload = {
+    code,
+    type:      document.querySelector('input[name="cpnType"]:checked').value,
+    discType:  document.querySelector('input[name="cpnDiscType"]:checked').value,
+    discValue,
+    minOrder:  parseFloat(document.getElementById('cpnMinOrder').value)  || null,
+    maxUses:   parseInt(document.getElementById('cpnMaxUses').value, 10) || null,
+    validFrom:  document.getElementById('cpnFrom').value  || null,
+    validUntil: document.getElementById('cpnUntil').value || null,
+    description: document.getElementById('cpnDesc').value.trim() || null,
+    active: document.getElementById('cpnActive').checked
+  };
+
+  const isEdit  = !!_editingCouponId;
+  const url     = isEdit ? `${API_BASE}/api/coupons/${_editingCouponId}` : `${API_BASE}/api/coupons`;
+  const method  = isEdit ? 'PUT' : 'POST';
+
+  try {
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: res.statusText }));
+      throw new Error(err.message || res.statusText);
+    }
+    const saved = await res.json();
+    if (isEdit) {
+      const idx = _allCoupons.findIndex(c => c.id === _editingCouponId);
+      if (idx !== -1) _allCoupons[idx] = saved; else _allCoupons.unshift(saved);
+    } else {
+      _allCoupons.unshift(saved);
+    }
+    renderCoupons();
+    closeCouponModal();
+    showToast(`Cupón "${saved.code}" guardado correctamente.`);
+  } catch (e) { showToast('Error: ' + e.message); }
 }
 </script>
 </body>
