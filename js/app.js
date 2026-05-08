@@ -546,12 +546,36 @@ function loadGoogleMaps() {
  */
 async function geocodeGoogle(address) {
   const city = (typeof DELIVERY_CITY !== 'undefined' && DELIVERY_CITY) ? DELIVERY_CITY : 'Colombia';
-  const tryQ = async q => {
-    const url  = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(q)}&key=${GOOGLE_MAPS_KEY}`;
-    const res  = await fetch(url);
-    const data = await res.json();
-    return (data.status === 'OK' && data.results.length) ? data.results[0].geometry.location : null;
+
+  // fetch con timeout y reintentos para tolerar ERR_QUIC_PROTOCOL_ERROR / network idle
+  const fetchWithRetry = async (url, { timeoutMs = 8000, retries = 2 } = {}) => {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+      try {
+        const res = await fetch(url, { signal: ctrl.signal });
+        clearTimeout(timer);
+        return res;
+      } catch (err) {
+        clearTimeout(timer);
+        if (attempt === retries) throw err;
+        // pequeña espera antes del siguiente intento (500 ms, 1000 ms, …)
+        await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
+      }
+    }
   };
+
+  const tryQ = async q => {
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(q)}&key=${GOOGLE_MAPS_KEY}`;
+    try {
+      const res  = await fetchWithRetry(url);
+      const data = await res.json();
+      return (data.status === 'OK' && data.results.length) ? data.results[0].geometry.location : null;
+    } catch {
+      return null;
+    }
+  };
+
   let loc = await tryQ(`${address}, ${city}, Colombia`);
   if (loc) return { lat: loc.lat, lng: loc.lng, precision: 'address' };
   loc = await tryQ(`${city}, Colombia`);
@@ -1167,7 +1191,6 @@ function toggleCheck(id) {
   if (checkedItems.has(id)) checkedItems.delete(id); else checkedItems.add(id);
   saveCart();
   const sel = getSelectedTotal();
-  document.getElementById('cartSubtotal').textContent = fmtPrice(sel);
   document.getElementById('cartTotal').textContent    = fmtPrice(sel);
   document.getElementById('fabTotal').textContent     = fmtPrice(sel);
   renderCartPanel();
@@ -1176,7 +1199,6 @@ function updateCartUI() {
   const n = getCount(), sel = getSelectedTotal();
   document.getElementById('cartBadge').textContent     = n;
   document.getElementById('cartCountPill').textContent = n;
-  document.getElementById('cartSubtotal').textContent  = fmtPrice(sel);
   document.getElementById('cartTotal').textContent     = fmtPrice(sel);
   document.getElementById('fabTotal').textContent      = fmtPrice(sel);
   n > 0 ? document.getElementById('fabCart').classList.add('visible') : document.getElementById('fabCart').classList.remove('visible');
@@ -1210,13 +1232,7 @@ function renderCartPanel() {
   cart.forEach(i => { if (!g[i.seller]) g[i.seller] = []; g[i.seller].push(i); });
 
   body.innerHTML = Object.entries(g).map(([seller, items]) => {
-    const selSub = items.filter(i => checkedItems.has(i.id) && PRODUCTS.some(p => p.id === i.id)).reduce((s, i) => s + i.price * i.qty, 0);
     return `<div class="seller-group">
-      <div class="seller-group-header">
-        <div class="seller-avatar">${seller[0]}</div>
-        <span class="seller-name">${seller}</span>
-        <span class="seller-subtotal">${fmtPrice(selSub)}</span>
-      </div>
       ${items.map(item => {
         const isActive = PRODUCTS.some(p => p.id === item.id);
         const checked  = checkedItems.has(item.id);
@@ -1611,14 +1627,45 @@ function updateOrderBtn() {
 
 async function submitWithWompi(od) {
   const ref         = 'PF-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7).toUpperCase();
-  const amountCents = od.totalAmount * 100;
-  const hashInput   = `${ref}${amountCents}${WOMPI.currency}${WOMPI.integrityKey}`;
-  const buf         = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(hashInput));
-  const hash        = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  const amountCents = Math.round(od.totalAmount * 100); // entero exacto, sin decimales flotantes
+
+  console.log('[WOMPI-DBG] === submitWithWompi START ===');
+  console.log('[WOMPI-DBG] env:         ', WOMPI.env);
+  console.log('[WOMPI-DBG] publicKey:   ', WOMPI.publicKey);
+  console.log('[WOMPI-DBG] currency:    ', WOMPI.currency);
+  console.log('[WOMPI-DBG] ref:         ', ref);
+  console.log('[WOMPI-DBG] totalAmount: ', od.totalAmount);
+  console.log('[WOMPI-DBG] amountCents: ', amountCents);
+  console.log('[WOMPI-DBG] API_BASE:    ', API_BASE);
+
+  // El hash de integridad se genera en el backend para no exponer integrityKey en el cliente
+  let hash;
+  try {
+    const reqBody = { ref, amountCents, currency: WOMPI.currency, env: WOMPI.env };
+    console.log('[WOMPI-DBG] POST /api/wompi/signature body:', JSON.stringify(reqBody));
+    const sigRes = await fetch(`${API_BASE}/api/wompi/signature`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(reqBody),
+    });
+    console.log('[WOMPI-DBG] signature response status:', sigRes.status);
+    const sigJson = await sigRes.json();
+    console.log('[WOMPI-DBG] signature response body:', JSON.stringify(sigJson));
+    if (!sigRes.ok) throw new Error('signature error: ' + JSON.stringify(sigJson));
+    hash = sigJson.hash;
+    console.log('[WOMPI-DBG] hash recibido: ', hash);
+  } catch (e) {
+    console.error('[WOMPI-DBG] Error obteniendo firma Wompi', e);
+    showToast('Error iniciando pago. Intenta de nuevo.', 'error');
+    return;
+  }
   localStorage.setItem('cy_wompi_pending', JSON.stringify({ ref, od }));
   // Use clean redirect URL — Wompi appends its own params and may not preserve custom query params
   const redirectUrl = WOMPI.redirectUrl || window.location.origin + window.location.pathname;
   const url = `${WOMPI.checkoutUrl}?public-key=${encodeURIComponent(WOMPI.publicKey)}&currency=${WOMPI.currency}&amount-in-cents=${amountCents}&reference=${encodeURIComponent(ref)}&signature:integrity=${hash}&redirect-url=${encodeURIComponent(redirectUrl)}`;
+  console.log('[WOMPI-DBG] URL final Wompi:');
+  console.log('[WOMPI-DBG]', url);
+  console.log('[WOMPI-DBG] === submitWithWompi END ===');
   buyNowProduct = null;
   closeOrderPopup();
   window.location.href = url;

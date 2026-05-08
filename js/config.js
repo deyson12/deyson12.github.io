@@ -59,23 +59,20 @@ const WOMPI_ENV = ['localhost', '127.0.0.1'].includes(window.location.hostname) 
 
 const _WOMPI_ENVS = {
   test: {
-    publicKey:    'pub_test_gBIJZcgVdmv5iluo0lnk7w7WSiQ5GcFe',
-    integrityKey: 'prv_test_vCEJgyalPegJzYeLl08Ia8LXsKfZoALj',
-    checkoutUrl:  'https://checkout.wompi.co/p/',
+    publicKey:   'pub_test_gBIJZcgVdmv5iluo0lnk7w7WSiQ5GcFe',
+    checkoutUrl: 'https://checkout.wompi.co/p/',
   },
   prod: {
-    publicKey:    'pub_prod_BSbBJ5Dpy3Zjk5IGmOmFZrq8hF98pOXS',
-    integrityKey: 'prv_prod_zem1iFV5OKGcD6y7Kj6UPaCHySGR8Zlk',
-    checkoutUrl:  'https://checkout.wompi.co/p/',
+    publicKey:   'pub_prod_BSbBJ5Dpy3Zjk5IGmOmFZrq8hF98pOXS',
+    checkoutUrl: 'https://checkout.wompi.co/p/',
   },
 };
 
 const WOMPI = {
-  enabled:      true,
-  env:          WOMPI_ENV,
-  publicKey:    _WOMPI_ENVS[WOMPI_ENV].publicKey,
-  integrityKey: _WOMPI_ENVS[WOMPI_ENV].integrityKey,
-  checkoutUrl:  _WOMPI_ENVS[WOMPI_ENV].checkoutUrl,
-  currency:     'COP',
-  redirectUrl:  'https://pidefacil.shop/wompi-checkout.html',
+  enabled:     true,
+  env:         WOMPI_ENV,
+  publicKey:   _WOMPI_ENVS[WOMPI_ENV].publicKey,
+  checkoutUrl: _WOMPI_ENVS[WOMPI_ENV].checkoutUrl,
+  currency:    'COP',
+  redirectUrl: 'https://pidefacil.shop/wompi-checkout.html',
 };

@@ -30,28 +30,37 @@ function statusUI(status) {
   return map[status] || { icon: '🔐', title: 'Pago pendiente de confirmación', sub: 'Por favor confirma tu pedido por WhatsApp para continuar.', chip: 'wompi-chip-unknown', label: 'DESCONOCIDO' };
 }
 
+// ── Build osp-table (misma lógica que app.js _buildOspTable) ──
+function _buildOspTableCo(items) {
+  // items: [{name, qty, total, image?}]
+  let rows = '';
+  items.forEach((item, idx) => {
+    const cls   = idx % 2 === 1 ? ' class="osp-alt"' : '';
+    const nm    = item.name && item.name.length > 26 ? item.name.slice(0, 24) + '…' : (item.name || '—');
+    const thumb = item.image ? `<img class="osp-thumb" src="${item.image}" alt="" width="32" height="32" loading="lazy" decoding="async">` : '';
+    rows += `<tr${cls}><td class="osp-name">${thumb}<span>${nm}</span></td><td class="osp-qty">×${item.qty}</td><td class="osp-sub">${fmtPrice(item.total)}</td></tr>`;
+  });
+  return `<table class="osp-table"><thead><tr><th class="osp-th-name">Producto</th><th class="osp-th-qty">Cant.</th><th class="osp-th-sub">Total</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
 // ── Render order items ─────────────────────────────────────
 function renderItems(od, totalAmount) {
-  const body   = document.getElementById('itemsBody');
-  let html     = '';
-  const lineRe = /\(REF:([A-Z0-9]+)\)\s+\*(.+?)\*[\r\n]+\s+(\d+)\s+und\s+x\s+\$[\d.,]+\s+=\s+(\$[\d.,]+)/g;
-  let m, found = false;
-  while ((m = lineRe.exec(od.itemsBlock)) !== null) {
-    found = true;
-    html += `<div class="order-item">
-      <div style="flex:1;min-width:0">
-        <div class="order-item-ref">REF: ${m[1]}</div>
-        <div class="order-item-name">${m[2]}</div>
-        <div class="order-item-meta">
-          <span class="order-item-qty">${m[3]} unidad${m[3] > 1 ? 'es' : ''}</span>
-          <span class="order-item-price">${m[4]}</span>
-        </div>
-      </div>
-    </div>`;
-  }
-  if (!found) {
+  const body = document.getElementById('itemsBody');
+  let html   = '';
+
+  // Preferir od.items (array estructurado guardado en localStorage)
+  if (od.items && od.items.length) {
+    html += _buildOspTableCo(od.items.map(i => ({
+      name:  i.product ? i.product.name  : (i.name  || '—'),
+      qty:   i.product ? i.qty           : (i.qty   || 1),
+      total: i.product ? i.product.price * i.qty : (i.total || 0),
+      image: i.product ? i.product.image : (i.image || null),
+    })));
+  } else {
+    // Fallback: mostrar summaryHtml si no hay items estructurados
     html += `<div style="font-size:13px;color:var(--text-secondary);line-height:1.7">${od.summaryHtml || 'Pedido confirmado'}</div>`;
   }
+
   html += `<div class="order-total-row grand"><span>Total</span><span>${od.totalFmt || fmtPrice(totalAmount)}</span></div>`;
   body.innerHTML = html;
 }
