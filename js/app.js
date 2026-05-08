@@ -717,7 +717,9 @@ function resetMapState() {
 function renderSbnrBanners(banners) {
   const container = document.getElementById('sbnrContainer');
   if (!container) return;
-  container.innerHTML = banners.filter(b => b.visible).map(b => {
+  const visible = banners.filter(b => b.visible);
+
+  const renderSlide = b => {
     const innerStyle = `background:${b.bg};`;
     const labelStyle = `color:${b.labelColor};`;
     const emStyle    = `color:${b.accentColor};`;
@@ -735,9 +737,59 @@ function renderSbnrBanners(banners) {
     </div>
   </div>
 </div>`;
-  }).join('');
+  };
+
+  if (visible.length <= 1) {
+    // Un solo banner — sin carrusel
+    container.innerHTML = visible.map(renderSlide).join('');
+  } else {
+    // Múltiples banners — carrusel
+    const dots = visible.map((_, i) => `<button class="sbnr-dot${i === 0 ? ' active' : ''}" onclick="_sbnrGoTo(${i})" aria-label="Banner ${i + 1}"></button>`).join('');
+    container.innerHTML = `
+      <div class="sbnr-carousel" id="sbnrCarousel">
+        <div class="sbnr-carousel-viewport">
+          <div class="sbnr-track" id="sbnrTrack">
+            ${visible.map(renderSlide).join('')}
+          </div>
+        </div>
+        <div class="sbnr-dots" id="sbnrDots">${dots}</div>
+        <button class="sbnr-arrow sbnr-arrow-prev" onclick="_sbnrGoTo(_sbnrIdx - 1)" aria-label="Banner anterior">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button class="sbnr-arrow sbnr-arrow-next" onclick="_sbnrGoTo(_sbnrIdx + 1)" aria-label="Banner siguiente">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>`;
+    _sbnrIdx = 0;
+    _sbnrTotal = visible.length;
+    // Autoavance cada 5 s — pausa al hacer hover
+    clearInterval(_sbnrTimer);
+    _sbnrTimer = setInterval(() => _sbnrGoTo(_sbnrIdx + 1), 5000);
+    // Pausa al hover; reanuda al salir
+    setTimeout(() => {
+      const carousel = document.getElementById('sbnrCarousel');
+      if (!carousel) return;
+      carousel.addEventListener('mouseenter', () => clearInterval(_sbnrTimer));
+      carousel.addEventListener('mouseleave', () => {
+        clearInterval(_sbnrTimer);
+        _sbnrTimer = setInterval(() => _sbnrGoTo(_sbnrIdx + 1), 5000);
+      });
+    }, 0);
+  }
   window._sbnrData = banners;
 }
+
+let _sbnrIdx = 0, _sbnrTotal = 0, _sbnrTimer = null;
+
+window._sbnrGoTo = function(n) {
+  _sbnrIdx = ((n % _sbnrTotal) + _sbnrTotal) % _sbnrTotal;
+  const track = document.getElementById('sbnrTrack');
+  if (track) track.style.transform = `translateX(-${_sbnrIdx * 100}%)`;
+  document.querySelectorAll('.sbnr-dot').forEach((d, i) => d.classList.toggle('active', i === _sbnrIdx));
+  // Reinicia el timer al navegar manualmente
+  clearInterval(_sbnrTimer);
+  _sbnrTimer = setInterval(() => _sbnrGoTo(_sbnrIdx + 1), 5000);
+};
 window._sbnrAct = function(id, btnIdx) {
   if (!window._sbnrData) return;
   const b = window._sbnrData.find(x => x.id === id);

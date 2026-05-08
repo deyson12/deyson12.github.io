@@ -2459,7 +2459,7 @@ function _renderBannerForm(b) {
       </div>
       <div class="pf-form-field" style="grid-column:span 2">
         <label class="pf-form-label">Botón 1 — args (JSON array, ej: ["all",null])</label>
-        <input class="pf-form-input" id="bfBtn1Args" value="${v.btn1?.args ? JSON.stringify(v.btn1.args) : '["all",null]'}">
+        <input class="pf-form-input" id="bfBtn1Args">
       </div>
       <div class="pf-form-field">
         <label class="pf-form-label">Botón 2 — texto</label>
@@ -2474,7 +2474,7 @@ function _renderBannerForm(b) {
       </div>
       <div class="pf-form-field" style="grid-column:span 2">
         <label class="pf-form-label">Botón 2 — args (JSON array)</label>
-        <input class="pf-form-input" id="bfBtn2Args" value="${v.btn2?.args ? JSON.stringify(v.btn2.args) : '["offer","Ofertas del día"]'}">
+        <input class="pf-form-input" id="bfBtn2Args">
       </div>
     </div>
     <div class="pf-form-field">
@@ -2490,6 +2490,10 @@ function _renderBannerForm(b) {
       </button>
       <button style="flex:1;padding:11px;border:1.5px solid var(--border);background:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;color:var(--text-secondary);transition:background .15s" onclick="closeBannerModal()">Cancelar</button>
     </div>`;
+
+  // Asignar args por JS para evitar que las comillas del JSON rompan el atributo HTML
+  document.getElementById('bfBtn1Args').value = v.btn1?.args ? JSON.stringify(v.btn1.args) : '["all",null]';
+  document.getElementById('bfBtn2Args').value = v.btn2?.args ? JSON.stringify(v.btn2.args) : '["offer","Ofertas del día"]';
 }
 
 function updateBnnPreview() {

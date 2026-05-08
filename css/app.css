@@ -866,6 +866,22 @@ select.order-input option{background:var(--bg-card);color:var(--text-primary);}
 .sbnr-inner{border-radius:var(--radius-xl);min-height:190px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px 24px;position:relative;overflow:hidden;}
 @media(min-width:600px){.sbnr-inner{min-height:240px}}
 @media(min-width:768px){.sbnr-inner{min-height:295px;padding:40px 32px}}
+
+/* Carrusel multi-banner */
+.sbnr-carousel{max-width:1400px;margin:16px auto 0;padding:0 16px;position:relative;}
+.sbnr-carousel-viewport{overflow:hidden;border-radius:var(--radius-xl);}
+.sbnr-track{display:flex;transition:transform .45s cubic-bezier(.4,0,.2,1);will-change:transform;}
+.sbnr-carousel .sbnr{margin:0;padding:0;flex:0 0 100%;min-width:100%;}
+.sbnr-carousel .sbnr-inner{border-radius:0;}
+.sbnr-dots{display:flex;justify-content:center;gap:6px;margin-top:10px;}
+.sbnr-dot{width:8px;height:8px;border-radius:50%;border:none;background:var(--border);cursor:pointer;padding:0;transition:background .2s,transform .2s;}
+.sbnr-dot.active{background:var(--primary);transform:scale(1.25);}
+.sbnr-arrow{position:absolute;top:calc(50% - 11px);transform:translateY(-50%);background:rgba(0,0,0,.35);border:none;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;transition:background .2s;z-index:2;}
+.sbnr-arrow:hover{background:rgba(0,0,0,.55);}
+.sbnr-arrow svg{width:18px;height:18px;}
+.sbnr-arrow-prev{left:24px;}
+.sbnr-arrow-next{right:24px;}
+@media(max-width:480px){.sbnr-arrow{display:none;}}
 .sbnr-deco{position:absolute;font-size:clamp(80px,14vw,150px);opacity:.13;pointer-events:none;right:-5px;bottom:-12px;transform:rotate(-12deg);line-height:1;}
 .sbnr-deco2{position:absolute;font-size:clamp(40px,7vw,72px);opacity:.1;pointer-events:none;left:12px;top:12px;line-height:1;}
 .sbnr-label{font-family:var(--font-head);font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;position:relative;}
