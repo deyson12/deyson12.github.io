@@ -474,6 +474,11 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
         <div class="order-field">
           <label class="order-label" for="inputDireccion">📍 Dirección de entrega <span class="req">*</span></label>
           <input class="order-input" id="inputDireccion" type="text" placeholder="Ej: Calle 10 #5-23, Barrio El Prado">
+          <!-- MAP LINK -->
+          <a id="mapViewLink" class="map-view-link" href="#" onclick="expandMap();return false;" style="display:none">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Ver mapa (opcional)
+          </a>
           <!-- MAP CONFIRM -->
           <div class="map-confirm-wrap" id="mapConfirmWrap">
             <div class="map-wrap-inner">
@@ -490,6 +495,10 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
                 </div>
                 <div class="map-confirm-hint" id="mapConfirmHint">Arrastra el pin hasta la ubicación exacta</div>
                 <button class="btn-map-confirm" id="btnMapConfirm" onclick="confirmMapLocation()">Confirmar ubicación</button>
+                <a class="map-view-link" href="#" onclick="collapseMap();return false;" style="margin-top:6px;justify-content:center">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M18 15l-6-6-6 6"/></svg>
+                  Ocultar mapa
+                </a>
               </div>
             </div>
           </div>

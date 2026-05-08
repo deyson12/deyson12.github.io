@@ -428,7 +428,9 @@ h1,h2,h3,h4,h5{font-family:var(--font-head);font-weight:700;line-height:1.2}
 .order-scroll{overflow-y:auto;flex:1;}
 
 /* MAP CONFIRM */
-.map-confirm-wrap{overflow:hidden;max-height:0;transition:max-height .4s cubic-bezier(.4,0,.2,1);}
+.map-view-link{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--text-muted);text-decoration:none;margin-top:5px;padding:3px 0;transition:color .2s;}
+.map-view-link:hover{color:var(--primary);}
+.map-confirm-wrap{overflow:hidden;max-height:0;transition:max-height .4s cubic-bezier(.4,0,.2,1);margin-top:6px;}
 .map-confirm-wrap.visible{max-height:380px;}
 #mapEl{width:100%;height:190px;display:none;background:var(--bg);}
 .map-confirm-bar{padding:10px 13px;display:flex;flex-direction:column;gap:8px;background:var(--bg-card);border-top:1px solid var(--border);transition:background .3s;}

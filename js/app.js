@@ -414,56 +414,88 @@ async function geocodeAddress(address) {
   _deliveryLat  = null;
   _deliveryLng  = null;
 
-  const wrap        = document.getElementById('mapConfirmWrap');
-  const loadingEl   = document.getElementById('mapLoadingEl');
-  const mapEl       = document.getElementById('mapEl');
-  const badge       = document.getElementById('mapConfirmedBadge');
-  const confirmBtns = document.getElementById('mapConfirmBtns');
-  const hint        = document.getElementById('mapConfirmHint');
-  const btnConfirm  = document.getElementById('btnMapConfirm');
-  const question    = document.getElementById('mapQuestion');
-  if (!wrap) return;
+  // Ocultar el enlace mientras geocodifica
+  const viewLink = document.getElementById('mapViewLink');
+  if (viewLink) viewLink.style.display = 'none';
 
-  // Show loading state
+  // Resetear el wrap si estaba abierto
+  const wrap = document.getElementById('mapConfirmWrap');
+  if (wrap) wrap.classList.remove('visible');
+
+  const useGoogle = (typeof MAPS_PROVIDER !== 'undefined' && MAPS_PROVIDER === 'google');
+  let precision = 'address';
+  try {
+    if (useGoogle) {
+      const found = await geocodeGoogle(address);
+      if (!found) return;
+      _deliveryLat = found.lat;
+      _deliveryLng = found.lng;
+      precision    = found.precision;
+    } else {
+      const found = await geocodeCascade(address);
+      if (!found) return;
+      _deliveryLat = parseFloat(found.result.lat);
+      _deliveryLng = parseFloat(found.result.lon);
+      precision    = found.precision;
+    }
+  } catch (e) {
+    return;
+  }
+
+  // Coordenadas listas — mostrar enlace pequeño
+  if (viewLink) {
+    viewLink.style.display = 'inline-flex';
+    viewLink.dataset.precision = precision;
+  }
+}
+
+// Llamado al hacer clic en "Ver mapa (opcional)"
+async function expandMap() {
+  const wrap      = document.getElementById('mapConfirmWrap');
+  const loadingEl = document.getElementById('mapLoadingEl');
+  const mapEl     = document.getElementById('mapEl');
+  const badge     = document.getElementById('mapConfirmedBadge');
+  const confirmBtns = document.getElementById('mapConfirmBtns');
+  const hint      = document.getElementById('mapConfirmHint');
+  const btnConfirm = document.getElementById('btnMapConfirm');
+  const question  = document.getElementById('mapQuestion');
+  const viewLink  = document.getElementById('mapViewLink');
+  if (!wrap || _deliveryLat === null) return;
+
+  // Ocultar enlace mientras se carga
+  if (viewLink) viewLink.style.display = 'none';
+
   wrap.classList.add('visible');
   loadingEl.style.display = 'flex';
-  loadingEl.innerHTML     = '<div class="spin"></div> Buscando dirección…';
+  loadingEl.innerHTML     = '<div class="spin"></div> Cargando mapa…';
   mapEl.style.display     = 'none';
   badge.classList.remove('visible');
   confirmBtns.style.display = 'flex';
   hint.classList.remove('visible');
   btnConfirm.classList.remove('visible');
-  question.textContent = '¿Tu domicilio llega aquí?';
 
+  const precision = document.getElementById('mapViewLink')?.dataset.precision || 'address';
   const useGoogle = (typeof MAPS_PROVIDER !== 'undefined' && MAPS_PROVIDER === 'google');
   try {
     if (useGoogle) {
-      const found = await geocodeGoogle(address);
-      if (!found) { loadingEl.innerHTML = '⚠️ No se pudo cargar el mapa. Puedes continuar sin él.'; return; }
-      _deliveryLat = found.lat;
-      _deliveryLng = found.lng;
+      await loadGoogleMaps();
       loadingEl.style.display = 'none';
       mapEl.style.display     = 'block';
-      await loadGoogleMaps();
       renderGoogleMap(_deliveryLat, _deliveryLng);
-      if (found.precision === 'city') {
+      if (precision === 'city') {
         question.textContent = 'No encontramos la dirección exacta. Mueve el pin a tu ubicación:';
         enableMapDrag();
       } else {
         question.textContent = '¿Tu domicilio llega aquí?';
       }
     } else {
-      const found = await geocodeCascade(address);
-      if (!found) { loadingEl.innerHTML = '⚠️ No se pudo cargar el mapa. Puedes continuar sin él.'; return; }
-      _deliveryLat = parseFloat(found.result.lat);
-      _deliveryLng = parseFloat(found.result.lon);
+      await loadLeaflet();
       loadingEl.style.display = 'none';
       mapEl.style.display     = 'block';
-      await loadLeaflet();
       renderDeliveryMap(_deliveryLat, _deliveryLng);
-      if (found.precision === 'address') {
+      if (precision === 'address') {
         question.textContent = '¿Tu domicilio llega aquí?';
-      } else if (found.precision === 'street') {
+      } else if (precision === 'street') {
         question.textContent = 'Encontramos la calle. ¿El pin está en el lugar correcto?';
       } else {
         question.textContent = 'No encontramos la dirección exacta. Mueve el pin a tu ubicación:';
@@ -473,6 +505,13 @@ async function geocodeAddress(address) {
   } catch (e) {
     loadingEl.innerHTML = '⚠️ No se pudo cargar el mapa. Puedes continuar sin él.';
   }
+}
+
+function collapseMap() {
+  const wrap     = document.getElementById('mapConfirmWrap');
+  const viewLink = document.getElementById('mapViewLink');
+  if (wrap) wrap.classList.remove('visible');
+  if (viewLink && _deliveryLat !== null) viewLink.style.display = 'inline-flex';
 }
 
 function loadLeaflet() {
