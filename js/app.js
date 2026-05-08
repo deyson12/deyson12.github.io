@@ -1115,7 +1115,7 @@ function saveCart() {
   localStorage.setItem('cy_cart',    JSON.stringify(cart));
   localStorage.setItem('cy_checked', JSON.stringify([...checkedItems]));
 }
-function getCheckedItems()  { return cart.filter(i => checkedItems.has(i.id)); }
+function getCheckedItems()  { return cart.filter(i => checkedItems.has(i.id) && PRODUCTS.some(p => p.id === i.id)); }
 function getSelectedTotal() { return getCheckedItems().reduce((s, i) => s + i.price * i.qty, 0); }
 function getCount()         { return cart.reduce((s, i) => s + i.qty, 0); }
 
@@ -1210,7 +1210,7 @@ function renderCartPanel() {
   cart.forEach(i => { if (!g[i.seller]) g[i.seller] = []; g[i.seller].push(i); });
 
   body.innerHTML = Object.entries(g).map(([seller, items]) => {
-    const selSub = items.filter(i => checkedItems.has(i.id)).reduce((s, i) => s + i.price * i.qty, 0);
+    const selSub = items.filter(i => checkedItems.has(i.id) && PRODUCTS.some(p => p.id === i.id)).reduce((s, i) => s + i.price * i.qty, 0);
     return `<div class="seller-group">
       <div class="seller-group-header">
         <div class="seller-avatar">${seller[0]}</div>
@@ -1218,7 +1218,23 @@ function renderCartPanel() {
         <span class="seller-subtotal">${fmtPrice(selSub)}</span>
       </div>
       ${items.map(item => {
-        const checked = checkedItems.has(item.id);
+        const isActive = PRODUCTS.some(p => p.id === item.id);
+        const checked  = checkedItems.has(item.id);
+        if (!isActive) {
+          return `<div class="cart-item cart-item--unavailable">
+          <div class="cart-item-check"><input type="checkbox" disabled style="opacity:0;pointer-events:none"></div>
+          <img class="cart-item-img" src="${item.image}" alt="${item.name}" width="58" height="58" loading="lazy" decoding="async">
+          <div class="cart-item-info">
+            <div class="cart-item-name">${item.name}</div>
+            <div class="cart-item-unavailable-badge">⚠️ Ya no está disponible</div>
+            <div class="cart-item-controls">
+              <button class="btn-remove" onclick="removeFromCart('${item.id}')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>Quitar
+              </button>
+            </div>
+          </div>
+        </div>`;
+        }
         return `<div class="cart-item${checked ? '' : ' unchecked'}">
           <div class="cart-item-check"><input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleCheck('${item.id}')" title="Incluir en pedido"></div>
           <img class="cart-item-img" src="${item.image}" alt="${item.name}" width="58" height="58" loading="lazy" decoding="async">
@@ -1240,6 +1256,22 @@ function renderCartPanel() {
   }).join('');
 }
 
+// ===== ORDER SUMMARY TABLE HELPER =====
+function _buildOspTable(groups) {
+  // groups: [{seller: string|null, items: [{name, qty, total, image?}]}]
+  const hasSellers = groups.some(g => g.seller);
+  let rows = '';
+  groups.forEach((g) => {
+    g.items.forEach((item, idx) => {
+      const cls = idx % 2 === 1 ? ' class="osp-alt"' : '';
+      const nm = item.name.length > 26 ? item.name.slice(0, 24) + '…' : item.name;
+      const thumb = item.image ? `<img class="osp-thumb" src="${item.image}" alt="" width="32" height="32" loading="lazy" decoding="async">` : '';
+      rows += `<tr${cls}><td class="osp-name">${thumb}<span>${nm}</span></td><td class="osp-qty">×${item.qty}</td><td class="osp-sub">${fmtPrice(item.total)}</td></tr>`;
+    });
+  });
+  return `<table class="osp-table"><thead><tr><th class="osp-th-name">Producto</th><th class="osp-th-qty">Cant.</th><th class="osp-th-sub">Total</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
 // ===== ORDER POPUP =====
 function openOrderPopup() {
   trackEvent('CHECKOUT_START', { itemCount: cart.length, total: cart.reduce((s,i) => s + i.price * i.qty, 0) });
@@ -1247,20 +1279,17 @@ function openOrderPopup() {
   if (repeatOrderItems) {
     const items = repeatOrderItems;
     const totalAmount = items.reduce((s, i) => s + i.product.price * i.qty, 0);
-    let summary = '';
-    items.forEach(i => { summary += `• ${i.product.name} ×${i.qty} — ${fmtPrice(i.product.price * i.qty)}<br>`; });
+    const summary = _buildOspTable([{seller: null, items: items.map(i => ({name: i.product.name, qty: i.qty, total: i.product.price * i.qty, image: i.product.image}))}]);
     document.getElementById('orderSummary').innerHTML = summary;
     _setSummaryTotal(totalAmount);
   } else {
     const selected = getCheckedItems();
     if (!selected.length) { showToast('Selecciona al menos un producto', '⚠️'); return; }
+
+    // getCheckedItems() already excludes inactive products — no need to block or delete here
     const g = {}; selected.forEach(i => { if (!g[i.seller]) g[i.seller] = []; g[i.seller].push(i); });
-    let summary = '';
-    Object.entries(g).forEach(([seller, items]) => {
-      summary += `🏪 ${seller}<br>`;
-      items.forEach(i => { summary += `&nbsp;&nbsp;• ${i.name} ×${i.qty} — ${fmtPrice(i.price * i.qty)}<br>`; });
-    });
-    document.getElementById('orderSummary').innerHTML = summary;
+    const groups = Object.entries(g).map(([seller, items]) => ({seller, items: items.map(i => ({name: i.name, qty: i.qty, total: i.price * i.qty, image: i.image}))}));
+    document.getElementById('orderSummary').innerHTML = _buildOspTable(groups);
     _setSummaryTotal(getSelectedTotal());
   }
 
@@ -1400,29 +1429,29 @@ function _toApiProduct(p) {
  * @param {{ fullItems: Array<{product, qty}>, address: string, paymentType: string }} opts
  */
 async function postOrderToApi({ fullItems, address, paymentType, couponCode, discountAmount }) {
-  const _cu   = getCyUser();
-  const lat    = parseFloat(_cu.lat) || 0;
-  const lng    = parseFloat(_cu.lng) || 0;
-  const userId = _cu.id || _FIXED_SELLER_ID;
-  const body = {
-    id:             crypto.randomUUID(),
-    sellerId:       _FIXED_SELLER_ID,
-    buyerId:        userId,
-    products:       fullItems.map(i => ({
-      product:         _toApiProduct(i.product),
-      quantity:        i.qty,
-      selectedOptions: {},
-    })),
-    status:         'PENDIENTE',
-    address,
-    paymentType,
-    changeFrom:     0,
-    location:       [lat, lng],
-    deliveryPrice:  0,
-    couponCode:     couponCode || null,
-    discountAmount: discountAmount || null,
-  };
   try {
+    const _cu   = getCyUser();
+    const lat    = parseFloat(_cu.lat) || 0;
+    const lng    = parseFloat(_cu.lng) || 0;
+    const userId = _cu.id || _FIXED_SELLER_ID;
+    const body = {
+      id:             crypto.randomUUID(),
+      sellerId:       _FIXED_SELLER_ID,
+      buyerId:        userId,
+      products:       fullItems.map(i => ({
+        product:         _toApiProduct(i.product),
+        quantity:        i.qty,
+        selectedOptions: {},
+      })),
+      status:         'PENDIENTE',
+      address,
+      paymentType,
+      changeFrom:     0,
+      location:       [lat, lng],
+      deliveryPrice:  0,
+      couponCode:     couponCode || null,
+      discountAmount: discountAmount || null,
+    };
     const res = await fetch(`${API_BASE}/api/orders`, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1587,7 +1616,8 @@ async function submitWithWompi(od) {
   const buf         = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(hashInput));
   const hash        = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
   localStorage.setItem('cy_wompi_pending', JSON.stringify({ ref, od }));
-  const redirectUrl = (WOMPI.redirectUrl || window.location.origin + window.location.pathname) + '?wref=' + encodeURIComponent(ref);
+  // Use clean redirect URL — Wompi appends its own params and may not preserve custom query params
+  const redirectUrl = WOMPI.redirectUrl || window.location.origin + window.location.pathname;
   const url = `${WOMPI.checkoutUrl}?public-key=${encodeURIComponent(WOMPI.publicKey)}&currency=${WOMPI.currency}&amount-in-cents=${amountCents}&reference=${encodeURIComponent(ref)}&signature:integrity=${hash}&redirect-url=${encodeURIComponent(redirectUrl)}`;
   buyNowProduct = null;
   closeOrderPopup();
@@ -1596,16 +1626,15 @@ async function submitWithWompi(od) {
 
 function handleWompiReturn() {
   const sp = new URLSearchParams(window.location.search);
-  const wref = sp.get('wref');
-  if (!wref) return;
   const wompiId     = sp.get('id')               || '';
   const wompiStatus = (sp.get('status') || '').toLowerCase();
   const wompiAmount = sp.get('amount-in-cents')  || '';
+  // Wompi always appends 'id' to the redirect URL — use it as the detection signal
+  if (!wompiId) return;
   window.history.replaceState({}, document.title, window.location.pathname);
   const raw = localStorage.getItem('cy_wompi_pending');
   if (!raw) return;
   const pending = JSON.parse(raw);
-  if (pending.ref !== decodeURIComponent(wref)) return;
   const enriched = { ...pending, wompiId, wompiStatus, wompiAmount };
   localStorage.setItem('cy_wompi_pending', JSON.stringify(enriched));
   const { od } = pending;
@@ -1680,9 +1709,7 @@ function cancelWompiPayment() {
 function buyNow(id) {
   buyNowProduct = PRODUCTS.find(x => x.id === id);
   const p = buyNowProduct;
-  let summary = `• ${p.name} &mdash; ${fmtPrice(p.price)}<br>`;
-  if (p.oldPrice) summary += `<small style="color:var(--text-muted);text-decoration:line-through">${fmtPrice(p.oldPrice)}</small><br>`;
-  document.getElementById('orderSummary').innerHTML = summary;
+  document.getElementById('orderSummary').innerHTML = _buildOspTable([{seller: null, items: [{name: p.name, qty: 1, total: p.price, image: p.image}]}]);
   _setSummaryTotal(p.price);
   const _cu2 = getCyUser();
   document.getElementById('inputDireccion').value   = _cu2.dir  || '';
@@ -2455,8 +2482,8 @@ function _refreshSummaryDiscount() {
   if (disc > 0) {
     const row = document.createElement('div');
     row.id        = 'cuponDiscountRow';
-    row.innerHTML = '\uD83C\uDFF7\uFE0F Cup\u00f3n <strong>' + _appliedCoupon.code + '</strong>: -' + fmtPrice(disc);
-    row.style.cssText = 'color:var(--secondary);font-size:13px;margin-top:6px;';
+    row.innerHTML = `<span style="color:var(--text-muted);font-size:11px">🏷️ Cupón <strong style="color:var(--text-primary)">${_appliedCoupon.code}</strong></span><span style="color:#059669;font-weight:700;font-size:13px">−${fmtPrice(disc)}</span>`;
+    row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:7px 0 2px;border-top:1px dashed var(--border);margin-top:6px;';
     el.appendChild(row);
     if (hdr2) hdr2.textContent = 'Total: ' + fmtPrice(_currentOrderTotal - disc);
   } else {

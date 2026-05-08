@@ -209,13 +209,19 @@
   .t-lbl { color:#64748b;font-size:11.5px;flex-shrink:0; }
   .t-val { color:#0f172a;font-size:11.5px;font-weight:600;text-align:right;word-break:break-word; }
   .t-divider { border:none;border-top:1px solid #f1f5f9;margin:12px 0; }
-  .t-product-table { width:100%;border-collapse:collapse; }
-  .t-product-table th { font-size:9px;font-weight:800;color:#94a3b8;letter-spacing:1.5px;text-transform:uppercase;padding-bottom:7px;border-bottom:1px solid #e2e8f0; }
-  .t-product-table th:last-child { text-align:right; }
-  .t-product-table td { padding:7px 0;border-bottom:1px solid #f8fafc;vertical-align:top;font-size:12px;color:#0f172a; }
-  .t-product-table td.t-pd-name { font-weight:500; }
-  .t-product-table td.t-pd-qty { color:#64748b;font-size:11px;padding-left:6px;white-space:nowrap; }
-  .t-product-table td:last-child { text-align:right;font-weight:700;white-space:nowrap; }
+  .t-product-table { width:100%;border-collapse:collapse;table-layout:fixed; }
+  .t-th-name  { width:44%;text-align:left; }
+  .t-th-qty   { width:12%;text-align:center; }
+  .t-th-price { width:22%;text-align:right; }
+  .t-th-sub   { width:22%;text-align:right; }
+  .t-product-table th { font-size:9px;font-weight:800;color:#94a3b8;letter-spacing:1.5px;text-transform:uppercase;padding:0 4px 8px;border-bottom:2px solid #e2e8f0; }
+  .t-product-table td { padding:7px 4px;vertical-align:middle;font-size:11.5px;color:#0f172a;word-break:break-word; }
+  .t-pd-alt   { background:#f8fafc; }
+  .t-pd-name  { font-weight:600; }
+  .t-pd-ref   { font-family:monospace;font-size:9px;font-weight:500;color:#94a3b8;display:block;margin-bottom:1px; }
+  .t-pd-qty   { text-align:center;color:#64748b;font-size:11px; }
+  .t-pd-price { text-align:right;color:#64748b;font-size:11px;white-space:nowrap; }
+  .t-pd-sub   { text-align:right;font-weight:700;white-space:nowrap; }
   .t-subtotals { padding-top:10px; }
   .t-total-block { background:#0f172a;border-radius:10px;padding:13px 16px;margin:14px 0 4px;display:flex;justify-content:space-between;align-items:center; }
   .t-total-block .t-lbl { color:#dbdbdb;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase; }
@@ -1372,15 +1378,19 @@ function _buildTirillaHtml(order) {
   const website   = (typeof STORE_WEBSITE   !== 'undefined' && STORE_WEBSITE)   ? STORE_WEBSITE   : null;
   const waDisplay = (typeof STORE_PHONE_DISPLAY !== 'undefined' && STORE_PHONE_DISPLAY) ? STORE_PHONE_DISPLAY : null;
 
-  const rows = (order.products ?? []).map(p => {
-    const name  = p.product?.name ?? '—';
+  const rows = (order.products ?? []).map((p, idx) => {
+    const rawName = p.product?.name ?? '—';
+    const name  = rawName.length > 22 ? rawName.substring(0, 22) + '…' : rawName;
+    const ref   = (p.product?.id ?? '').substring(0, 8).toUpperCase();
     const qty   = p.quantity ?? 1;
     const price = p.unitPrice != null ? Number(p.unitPrice) : (p.product?.price ?? 0);
     const sub   = price * qty;
-    return `<tr>
-      <td class="t-pd-name">${name}</td>
-      <td class="t-pd-qty">${qty} × ${fmtPrice(price)}</td>
-      <td>${fmtPrice(sub)}</td>
+    const bg    = idx % 2 === 0 ? '' : ' class="t-pd-alt"';
+    return `<tr${bg}>
+      <td class="t-pd-name" title="${rawName}"><span class="t-pd-ref">${ref}</span> ${name}</td>
+      <td class="t-pd-qty">${qty}</td>
+      <td class="t-pd-price">${fmtPrice(price)}</td>
+      <td class="t-pd-sub">${fmtPrice(sub)}</td>
     </tr>`;
   }).join('');
 
@@ -1442,7 +1452,7 @@ function _buildTirillaHtml(order) {
       <hr class="t-divider">
       <div class="t-section-label">Productos</div>
       <table class="t-product-table">
-        <thead><tr><th>Producto</th><th>Cant.</th><th>Total</th></tr></thead>
+        <thead><tr><th class="t-th-name">Producto</th><th class="t-th-qty">Cant.</th><th class="t-th-price">P. Unit.</th><th class="t-th-sub">Total</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
 
@@ -1505,13 +1515,19 @@ function downloadInvoice() {
     '.t-lbl{color:#64748b;font-size:11.5px;flex-shrink:0}' +
     '.t-val{color:#0f172a;font-size:11.5px;font-weight:600;text-align:right;word-break:break-word}' +
     '.t-divider{border:none;border-top:1px solid #f1f5f9;margin:12px 0}' +
-    '.t-product-table{width:100%;border-collapse:collapse}' +
-    '.t-product-table th{font-size:9px;font-weight:800;color:#94a3b8;letter-spacing:1.5px;text-transform:uppercase;padding-bottom:7px;border-bottom:1px solid #e2e8f0}' +
-    '.t-product-table th:last-child{text-align:right}' +
-    '.t-product-table td{padding:7px 0;border-bottom:1px solid #f8fafc;vertical-align:top;font-size:12px;color:#0f172a}' +
-    '.t-product-table td.t-pd-name{font-weight:500}' +
-    '.t-product-table td.t-pd-qty{color:#64748b;font-size:11px;padding-left:6px;white-space:nowrap}' +
-    '.t-product-table td:last-child{text-align:right;font-weight:700;white-space:nowrap}' +
+    '.t-product-table{width:100%;border-collapse:collapse;table-layout:fixed}' +
+    '.t-th-name{width:44%;text-align:left}' +
+    '.t-th-qty{width:12%;text-align:center}' +
+    '.t-th-price{width:22%;text-align:right}' +
+    '.t-th-sub{width:22%;text-align:right}' +
+    '.t-product-table th{font-size:9px;font-weight:800;color:#94a3b8;letter-spacing:1.5px;text-transform:uppercase;padding:0 4px 8px;border-bottom:2px solid #e2e8f0}' +
+    '.t-product-table td{padding:7px 4px;vertical-align:middle;font-size:11.5px;color:#0f172a;word-break:break-word}' +
+    '.t-pd-alt{background:#f8fafc}' +
+    '.t-pd-name{font-weight:600}' +
+    '.t-pd-ref{font-family:monospace;font-size:9px;font-weight:500;color:#94a3b8;display:block;margin-bottom:1px}' +
+    '.t-pd-qty{text-align:center;color:#64748b;font-size:11px}' +
+    '.t-pd-price{text-align:right;color:#64748b;font-size:11px;white-space:nowrap}' +
+    '.t-pd-sub{text-align:right;font-weight:700;white-space:nowrap}' +
     '.t-subtotals{padding-top:10px}' +
     '.t-total-block{background:#0f172a;border-radius:10px;padding:13px 16px;margin:14px 0 4px;display:flex;justify-content:space-between;align-items:center}' +
     '.t-total-block .t-lbl{color:#dbdbdb;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}' +

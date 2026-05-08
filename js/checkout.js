@@ -75,6 +75,70 @@ function renderPayment(ref, wompiId, status, rawAmount) {
   `;
 }
 
+// ── POST order to backend ──────────────────────────────────
+function _toApiProductCo(p) {
+  return {
+    id: p.id, name: p.name, description: p.description || '',
+    price: p.price, originalPrice: p.originalPrice ?? p.oldPrice ?? null,
+    featured: p.featured || false, image: p.image, category: p.category,
+    seller: p.seller, note: p.note ?? null, tags: p.tags || '',
+    stock: p.stock === 'ok' ? null : (p.stock ?? null),
+    active: p.active !== undefined ? p.active : true,
+    dropshippingUrl: p.dropshippingUrl ?? p.dropshipping_url ?? null,
+    dropshippingPrice: p.dropshippingPrice ?? p.dropshipping_price ?? null,
+    maxDeliveryTime: p.maxDeliveryTime ?? null,
+    customOptions: p.customOptions ?? p.badges ?? [],
+  };
+}
+
+async function postOrderToBackend(od, wompiId, wompiStatus) {
+  // Guard: only post once per Wompi reference to avoid duplicates on refresh
+  const sentKey = 'cy_wompi_api_sent_' + od.ref;
+  if (localStorage.getItem(sentKey)) return;
+  localStorage.setItem(sentKey, '1');
+
+  // Only register approved or pending payments
+  if (wompiStatus === 'declined' || wompiStatus === 'voided' || wompiStatus === 'error') return;
+
+  try {
+    const _cu   = getCyUser();
+    const lat    = parseFloat(_cu.lat) || 0;
+    const lng    = parseFloat(_cu.lng) || 0;
+    const userId = _cu.id || (typeof _FIXED_SELLER_ID !== 'undefined' ? _FIXED_SELLER_ID : '');
+    const fullItems = od.fullItems || [];
+    const body = {
+      id:             crypto.randomUUID(),
+      sellerId:       typeof _FIXED_SELLER_ID !== 'undefined' ? _FIXED_SELLER_ID : '',
+      buyerId:        userId,
+      products:       fullItems.map(i => ({
+        product:         _toApiProductCo(i.product),
+        quantity:        i.qty,
+        selectedOptions: {},
+      })),
+      status:         'PENDIENTE',
+      address:        od.dir,
+      paymentType:    'WOMPI',
+      changeFrom:     0,
+      location:       [lat, lng],
+      deliveryPrice:  0,
+      couponCode:     od.couponCode || null,
+      discountAmount: od.discountAmount || null,
+    };
+    const apiBase = typeof API_BASE !== 'undefined' ? API_BASE : '';
+    const res = await fetch(`${apiBase}/api/orders`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(body),
+    });
+    if (!res.ok) console.warn('[checkout] postOrderToBackend HTTP', res.status, await res.text().catch(() => ''));
+    else console.log('[checkout] Orden registrada en backend OK');
+  } catch (e) {
+    // Remove guard so a retry is possible on next page load
+    localStorage.removeItem(sentKey);
+    console.warn('[checkout] postOrderToBackend error:', e);
+  }
+}
+
 // ── WhatsApp send ──────────────────────────────────────────
 let _pending = null;
 let _waSent  = false;
@@ -131,6 +195,9 @@ function init() {
 
   const enriched = { ...pending, wompiStatus: params.status, wompiId: params.id, resolvedAt: new Date().toISOString() };
   localStorage.setItem('cy_wompi_pending', JSON.stringify(enriched));
+
+  // ── Register order in backend (fire-and-forget, once per ref) ──
+  postOrderToBackend({ ...od, ref }, params.status, params.id);
 
   const ui = statusUI(params.status);
 
