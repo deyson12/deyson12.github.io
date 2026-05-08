@@ -76,6 +76,10 @@ function renderPayment(ref, wompiId, status, rawAmount) {
 }
 
 // ── POST order to backend ──────────────────────────────────
+const _FIXED_SELLER_ID = 'd59ea1a4-5841-4740-950a-fb501a46ebae';
+
+function _getCyUserCo() { try { return JSON.parse(localStorage.getItem('cy_user') || '{}'); } catch(_) { return {}; } }
+
 function _toApiProductCo(p) {
   return {
     id: p.id, name: p.name, description: p.description || '',
@@ -101,14 +105,14 @@ async function postOrderToBackend(od, wompiId, wompiStatus) {
   if (wompiStatus === 'declined' || wompiStatus === 'voided' || wompiStatus === 'error') return;
 
   try {
-    const _cu   = getCyUser();
+    const _cu   = _getCyUserCo();
     const lat    = parseFloat(_cu.lat) || 0;
     const lng    = parseFloat(_cu.lng) || 0;
-    const userId = _cu.id || (typeof _FIXED_SELLER_ID !== 'undefined' ? _FIXED_SELLER_ID : '');
+    const userId = _cu.id || _FIXED_SELLER_ID;
     const fullItems = od.fullItems || [];
     const body = {
       id:             crypto.randomUUID(),
-      sellerId:       typeof _FIXED_SELLER_ID !== 'undefined' ? _FIXED_SELLER_ID : '',
+      sellerId:       _FIXED_SELLER_ID,
       buyerId:        userId,
       products:       fullItems.map(i => ({
         product:         _toApiProductCo(i.product),
@@ -124,7 +128,7 @@ async function postOrderToBackend(od, wompiId, wompiStatus) {
       couponCode:     od.couponCode || null,
       discountAmount: od.discountAmount || null,
     };
-    const apiBase = typeof API_BASE !== 'undefined' ? API_BASE : '';
+    const apiBase = typeof API_BASE !== 'undefined' ? API_BASE : API_BASE;
     const res = await fetch(`${apiBase}/api/orders`, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },

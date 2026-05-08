@@ -55,17 +55,17 @@ const GOOGLE_MAPS_KEY = 'AIzaSyCZDKgSFqjayBMohK8lawKi2KPf8HLWdnM';           // 
 //   2. Llena publicKey y integrityKey de la sección prod con tus
 //      llaves reales de panel.wompi.co → "Llaves API"
 // ────────────────────────────────────────────────────────────
-const WOMPI_ENV = ['localhost', '127.0.0.1'].includes(window.location.hostname) ? 'test' : 'test'; // auto
+const WOMPI_ENV = ['localhost', '127.0.0.1'].includes(window.location.hostname) ? 'test' : 'prod'; // auto
 
 const _WOMPI_ENVS = {
   test: {
-    publicKey:    'pub_test_AJwwVnKMkBtahpgfizo6x44ZZ64XfmHd',
-    integrityKey: 'test_integrity_j4FgZZzlGfbSarhaeqhjx4UqgzDym4iC',
+    publicKey:    'pub_test_gBIJZcgVdmv5iluo0lnk7w7WSiQ5GcFe',
+    integrityKey: 'prv_test_vCEJgyalPegJzYeLl08Ia8LXsKfZoALj',
     checkoutUrl:  'https://checkout.wompi.co/p/',
   },
   prod: {
-    publicKey:    'pub_prod_fboTzzBItNEd4ftjNsk7GLcrjuuwvPaZ',
-    integrityKey: 'prod_integrity_F1KDvo3ItFpC2Z90TlY3LOT2d59u0odY',
+    publicKey:    'pub_prod_BSbBJ5Dpy3Zjk5IGmOmFZrq8hF98pOXS',
+    integrityKey: 'prv_prod_zem1iFV5OKGcD6y7Kj6UPaCHySGR8Zlk',
     checkoutUrl:  'https://checkout.wompi.co/p/',
   },
 };
