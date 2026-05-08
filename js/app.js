@@ -128,6 +128,9 @@ let _mapConfirmed   = false;
 let _lastGeoDir     = '';
 let _mapFieldInited = false;
 
+// Texto centralizado de la pregunta del mapa
+const MAP_Q_DEFAULT = '¿Aquí te entregamos el pedido?';
+
 // Auto-detect city via IP geolocation (no permission required).
 // Updates DELIVERY_CITY silently; runs concurrently with product fetch.
 function _showCountryBlock(countryName) {
@@ -473,6 +476,7 @@ async function expandMap() {
   confirmBtns.style.display = 'flex';
   hint.classList.remove('visible');
   btnConfirm.classList.remove('visible');
+  question.textContent    = MAP_Q_DEFAULT;
 
   const precision = document.getElementById('mapViewLink')?.dataset.precision || 'address';
   const useGoogle = (typeof MAPS_PROVIDER !== 'undefined' && MAPS_PROVIDER === 'google');
@@ -486,7 +490,7 @@ async function expandMap() {
         question.textContent = 'No encontramos la dirección exacta. Mueve el pin a tu ubicación:';
         enableMapDrag();
       } else {
-        question.textContent = '¿Tu domicilio llega aquí?';
+        question.textContent = MAP_Q_DEFAULT;
       }
     } else {
       await loadLeaflet();
@@ -494,7 +498,7 @@ async function expandMap() {
       mapEl.style.display     = 'block';
       renderDeliveryMap(_deliveryLat, _deliveryLng);
       if (precision === 'address') {
-        question.textContent = '¿Tu domicilio llega aquí?';
+        question.textContent = MAP_Q_DEFAULT;
       } else if (precision === 'street') {
         question.textContent = 'Encontramos la calle. ¿El pin está en el lugar correcto?';
       } else {
