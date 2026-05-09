@@ -1,5 +1,5 @@
 // ============================================================
-// PideFacil — Lógica principal (index.html)
+// PideFácil — Lógica principal (index.html)
 // Requiere: js/config.js, js/utils.js
 // ============================================================
 
@@ -56,7 +56,7 @@ function show429Alert(seconds) {
   }, 1000);
 }
 
-const SELLER = 'PideFacil';
+const SELLER = 'PideFácil';
 
 let PRODUCTS = [];
 
@@ -372,7 +372,7 @@ function extractStreet(norm) {
 /** Llama a Nominatim para una sola query; devuelve el primer resultado o null. */
 async function nominatimFetch(q) {
   const url  = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&countrycodes=co`;
-  const res  = await fetch(url, { headers: { 'Accept-Language': 'es', 'User-Agent': 'PideFacil/1.0' } });
+  const res  = await fetch(url, { headers: { 'Accept-Language': 'es', 'User-Agent': 'PideFácil/1.0' } });
   const data = await res.json();
   return data.length ? data[0] : null;
 }
@@ -927,7 +927,7 @@ function promoWaUrl(p) {
   const disc = (p.oldPrice && p.oldPrice > p.price)
     ? Math.round((p.oldPrice - p.price) / p.oldPrice * 100) : 0;
   const msg = encodeURIComponent(
-    `Hola ${p.sellerName}! Vi tu producto en PideFacil:\n\n` +
+    `Hola ${p.sellerName}! Vi tu producto en PideFácil:\n\n` +
     `*${p.name}*\n` +
     `Precio: ${fmtPrice(p.price)}` +
     (disc > 0 ? ` (antes ${fmtPrice(p.oldPrice)}, -${disc}%)` : '') +
@@ -992,7 +992,7 @@ function openPromotedProduct(id) {
             Contactar por WhatsApp
           </a>
         </div>
-        <p class="modal-ref" style="margin-top:12px">Producto patrocinado · Vendedor externo a PideFacil</p>
+        <p class="modal-ref" style="margin-top:12px">Producto patrocinado · Vendedor externo a PideFácil</p>
       </div>
     </div>`;
   document.getElementById('modalOverlay').classList.add('open');
@@ -1501,7 +1501,7 @@ async function ensureGuestUser(name, phone) {
 }
 
 function openRegisterError(name, phone) {
-  const txt = `Hola, necesito ayuda. Tuve un error al intentar hacer un pedido en PideFacil. Nombre: ${name}. Celular: ${phone}. Por favor ayudame a completar mi pedido.`;
+  const txt = `Hola, necesito ayuda. Tuve un error al intentar hacer un pedido en PideFácil. Nombre: ${name}. Celular: ${phone}. Por favor ayudame a completar mi pedido.`;
   document.getElementById('regErrWaBtn').href = `https://wa.me/${WA_PHONE}?text=${encodeURIComponent(txt)}`;
   document.getElementById('regErrOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -1699,7 +1699,7 @@ async function sendWhatsappOrder() {
   window.open(`https://wa.me/${WA_PHONE}?text=${encodeURIComponent(msg)}`, '_blank');
 
   } catch (err) {
-    console.error('[PideFacil] Error al procesar pedido:', err);
+    console.error('[PideFácil] Error al procesar pedido:', err);
     _orderLoading(false);
     showToast('Ocurrió un error al enviar el pedido. Intenta de nuevo.', '❌');
   }
@@ -1999,7 +1999,7 @@ function openProduct(id) {
         <img class="modal-main-img" id="modalMainImg" src="${p.image}" alt="${p.name}" decoding="async">
       </div>
       <div class="modal-info">
-        <div class="modal-seller">${typeof STORE_NAME !== 'undefined' ? STORE_NAME : 'PideFacil'}</div>
+        <div class="modal-seller">${typeof STORE_NAME !== 'undefined' ? STORE_NAME : 'PideFácil'}</div>
         <h2 class="modal-name">${p.name}</h2>
         <div class="modal-price-wrap">
           <span class="modal-price">${fmtPrice(p.price)}</span>
@@ -2098,7 +2098,7 @@ function shareProduct(id) {
   if (!p) return;
   const base = window.location.origin + window.location.pathname;
   const link = base + '?p=' + id.substring(0, 8);
-  const text = `¡Mira este producto en PideFacil! 🛍️\n*${p.name}* — ${fmtPrice(p.price)}\n${link}`;
+  const text = `¡Mira este producto en PideFácil! 🛍️\n*${p.name}* — ${fmtPrice(p.price)}\n${link}`;
   if (navigator.share) {
     navigator.share({ title: p.name, text: `${p.name} — ${fmtPrice(p.price)}`, url: link }).catch(() => {});
   } else {

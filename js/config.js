@@ -1,10 +1,10 @@
 // ============================================================
-// PideFacil — Configuración global compartida
+// PideFácil — Configuración global compartida
 // Edita SOLO este archivo para cambiar teléfono, Wompi, etc.
 // ============================================================
 
 const WA_PHONE   = '573213421697';
-const STORE_NAME = 'PideFacil';
+const STORE_NAME = 'PideFácil';
 const ORDERS_KEY = 'cy_orders_history';
 
 // ── Datos de la tienda (factura / tirilla) ────────────────

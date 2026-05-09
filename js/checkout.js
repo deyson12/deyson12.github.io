@@ -1,5 +1,5 @@
 // ============================================================
-// PideFacil — Lógica de confirmación Wompi (wompi-checkout.html)
+// PideFácil — Lógica de confirmación Wompi (wompi-checkout.html)
 // Requiere: js/config.js, js/utils.js
 // ============================================================
 
