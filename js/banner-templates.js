@@ -439,7 +439,7 @@ const BANNER_TEMPLATES = {
       <h2 class="sbnr-frame-title" style="color:${tc}">${b.title}&ensp;<em style="color:${acc}">${b.titleEm}</em></h2>
       <p class="sbnr-frame-sub" style="color:${sub}">${b.sub}</p>
       <div class="sbnr-frame-btns">
-        <button class="sbnr-frame-btn" style="background:${acc};box-shadow:0 4px 16px ${acc}44" onclick="_sbnrAct('${b.id}',0)">${b.btn1.text}</button>
+        <button class="sbnr-frame-btn" style="background:${acc};box-shadow:0 4px 16px ${acc}44;color:#000" onclick="_sbnrAct('${b.id}',0)">${b.btn1.text}</button>
         <button class="sbnr-frame-ghost" style="border-color:${acc}55;color:${acc}" onclick="_sbnrAct('${b.id}',1)">${b.btn2.text}</button>
       </div>
     </div>
