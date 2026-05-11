@@ -863,7 +863,7 @@ function buildCard(p, extra = '') {
         <div id="btnCart${p.id}">
           ${inCart
             ? `<div class="card-qty-ctrl"><button class="card-qty-btn" onclick="changeQty('${p.id}',-1)" aria-label="Reducir cantidad">−</button><span class="card-qty-num" aria-live="polite">${cartItem.qty}</span><button class="card-qty-btn" onclick="changeQty('${p.id}',1)" aria-label="Aumentar cantidad">+</button></div>`
-            : `<button class="btn btn-cart" onclick="addToCart('${p.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Agregar</button>`
+            : `<button class="btn btn-cart" onclick="addToCart('${p.id}', event)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Agregar</button>`
           }
         </div>
         <button class="btn btn-buy-now" onclick="buyNow('${p.id}')">
@@ -911,7 +911,7 @@ function buildRecentCard(p) {
         <div id="btnCart${p.id}">
           ${inCart
             ? `<div class="card-qty-ctrl"><button class="card-qty-btn" onclick="changeQty('${p.id}',-1)" aria-label="Reducir">−</button><span class="card-qty-num" aria-live="polite">${cartItem.qty}</span><button class="card-qty-btn" onclick="changeQty('${p.id}',1)" aria-label="Aumentar">+</button></div>`
-            : `<button class="btn btn-cart" onclick="addToCart('${p.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Agregar</button>`
+            : `<button class="btn btn-cart" onclick="addToCart('${p.id}', event)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Agregar</button>`
           }
         </div>
         <button class="btn btn-buy-now" onclick="buyNow('${p.id}')">
@@ -1238,7 +1238,51 @@ function getCheckedItems()  { return cart.filter(i => checkedItems.has(i.id) && 
 function getSelectedTotal() { return getCheckedItems().reduce((s, i) => s + i.price * i.qty, 0); }
 function getCount()         { return cart.reduce((s, i) => s + i.qty, 0); }
 
-function addToCart(id) {
+function flyToCart(originEl) {
+  const fab = document.getElementById('fabCart');
+  if (!originEl || !fab) return;
+  const fabVisible = fab.classList.contains('visible');
+  const targetEl = fab;
+  const from = originEl.getBoundingClientRect();
+  const to   = targetEl.getBoundingClientRect();
+  const startX = from.left + from.width  / 2;
+  const startY = from.top  + from.height / 2;
+  const endX   = to.left   + to.width    / 2;
+  const endY   = to.top    + to.height   / 2;
+  const cpX    = (startX + endX) / 2;
+  const cpY    = Math.min(startY, endY) - 90;
+  const el = document.createElement('div');
+  el.className = 'fly-add';
+  el.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="17" height="17"><path d="M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>`;
+  el.style.left = (startX - 19) + 'px';
+  el.style.top  = (startY - 19) + 'px';
+  document.body.appendChild(el);
+  const duration = 620;
+  const start = performance.now();
+  function step(now) {
+    const t = Math.min((now - start) / duration, 1);
+    const e = t < .5 ? 2*t*t : -1+(4-2*t)*t;
+    const bx = (1-e)*(1-e)*startX + 2*(1-e)*e*cpX + e*e*endX;
+    const by = (1-e)*(1-e)*startY + 2*(1-e)*e*cpY + e*e*endY;
+    el.style.left      = (bx - 19) + 'px';
+    el.style.top       = (by - 19) + 'px';
+    el.style.opacity   = t > .72 ? String(1 - (t - .72) / .28) : '1';
+    el.style.transform = `scale(${1 - t * .45})`;
+    if (t < 1) { requestAnimationFrame(step); }
+    else {
+      el.remove();
+      if (fab) {
+        fab.classList.remove('fab-catch');
+        void fab.offsetWidth;
+        fab.classList.add('fab-catch');
+      }
+    }
+  }
+  requestAnimationFrame(step);
+}
+
+function addToCart(id, e) {
+  flyToCart(e?.currentTarget || e?.target);
   const p = PRODUCTS.find(x => x.id === id), ex = cart.find(x => x.id === id);
   if (ex) ex.qty++;
   else { cart.push({ ...p, qty: 1 }); checkedItems.add(id); }
@@ -1253,7 +1297,7 @@ function updateAllBtns() {
     document.querySelectorAll(`#btnCart${p.id}`).forEach(wrap => {
       wrap.innerHTML = ci
         ? `<div class="card-qty-ctrl"><button class="card-qty-btn" onclick="changeQty('${p.id}',-1)" aria-label="Reducir cantidad">−</button><span class="card-qty-num" aria-live="polite">${ci.qty}</span><button class="card-qty-btn" onclick="changeQty('${p.id}',1)" aria-label="Aumentar cantidad">+</button></div>`
-        : `<button class="btn btn-cart" onclick="addToCart('${p.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Agregar</button>`;
+        : `<button class="btn btn-cart" onclick="addToCart('${p.id}', event)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Agregar</button>`;
     });
   });
 }
@@ -1939,7 +1983,7 @@ function renderWishPanel() {
           <button class="wish-btn-buy" onclick="closeWish();buyNow('${p.id}')">
             ⚡ Comprar ahora
           </button>
-          <button class="wish-btn-cart ${inCart ? 'added' : ''}" onclick="addToCart('${p.id}');renderWishPanel()">
+          <button class="wish-btn-cart ${inCart ? 'added' : ''}" onclick="addToCart('${p.id}', event);renderWishPanel()">
             ${inCart ? '✓ En carrito' : '🛒 Al carrito'}
           </button>
           <button class="wish-btn-remove" title="Quitar de favoritos" aria-label="Quitar de favoritos" onclick="toggleWish(event,'${p.id}');">💔</button>
@@ -2009,7 +2053,7 @@ function openProduct(id) {
         ${buildModalDesc(p.description)}
         <p class="modal-ref">REF: ${p.id.substring(0, 8).toUpperCase()}</p>
         <div class="modal-actions">
-          <button class="btn btn-cart" style="width:100%;padding:12px;font-size:14px" onclick="addToCart('${p.id}');closeModal()">Agregar al carrito</button>
+          <button class="btn btn-cart" style="width:100%;padding:12px;font-size:14px" onclick="addToCart('${p.id}', event);closeModal()">Agregar al carrito</button>
           <button class="btn btn-wa" style="width:100%;padding:12px;font-size:14px" onclick="buyNow('${p.id}')">
             <svg viewBox="0 0 24 24" style="width:18px;height:18px"><path fill="#25D366" d="M12 0C5.373 0 0 5.373 0 12c0 2.025.507 3.967 1.399 5.671L.1 23.9l6.499-1.699A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/><path fill="#fff" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/></svg>
             Comprar por WhatsApp
