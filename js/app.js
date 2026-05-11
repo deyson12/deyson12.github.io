@@ -718,54 +718,34 @@ function renderSbnrBanners(banners) {
   const container = document.getElementById('sbnrContainer');
   if (!container) return;
   const visible = banners.filter(b => b.visible);
+  if (!visible.length) { container.innerHTML = ''; container.style.display = 'none'; return; }
+  container.style.display = '';
 
-  const renderSlide = b => {
-    const innerStyle = `background:${b.bg};`;
-    const labelStyle = `color:${b.labelColor};`;
-    const emStyle    = `color:${b.accentColor};`;
-    const btnStyle   = `background:${b.btnBg};color:${b.btnColor};`;
-    return `<div class="sbnr">
-  <div class="sbnr-inner" style="${innerStyle}">
-    <div class="sbnr-deco">${b.deco}</div>
-    <div class="sbnr-deco2">${b.deco2}</div>
-    <div class="sbnr-label" style="${labelStyle}">${b.label}</div>
-    <h2 class="sbnr-title">${b.title}<br><em style="${emStyle}">${b.titleEm}</em></h2>
-    <p class="sbnr-sub">${b.sub}</p>
-    <div class="sbnr-btns">
-      <button class="sbnr-btn" style="${btnStyle}" onclick="_sbnrAct('${b.id}',0)">${b.btn1.text}</button>
-      <button class="sbnr-ghost" onclick="_sbnrAct('${b.id}',1)">${b.btn2.text}</button>
-    </div>
-  </div>
-</div>`;
-  };
+  const renderSlide = b => renderBannerTemplate(b);
 
-  if (visible.length <= 1) {
-    // Un solo banner — sin carrusel
-    container.innerHTML = visible.map(renderSlide).join('');
-  } else {
-    // Múltiples banners — carrusel
-    const dots = visible.map((_, i) => `<button class="sbnr-dot${i === 0 ? ' active' : ''}" onclick="_sbnrGoTo(${i})" aria-label="Banner ${i + 1}"></button>`).join('');
-    container.innerHTML = `
-      <div class="sbnr-carousel" id="sbnrCarousel">
-        <div class="sbnr-carousel-viewport">
-          <div class="sbnr-track" id="sbnrTrack">
-            ${visible.map(renderSlide).join('')}
-          </div>
+  const multi = visible.length > 1;
+  const dots = multi ? visible.map((_, i) => `<button class="sbnr-dot${i === 0 ? ' active' : ''}" onclick="_sbnrGoTo(${i})" aria-label="Banner ${i + 1}"></button>`).join('') : '';
+  container.innerHTML = `
+    <div class="sbnr-carousel" id="sbnrCarousel">
+      <div class="sbnr-carousel-viewport">
+        <div class="sbnr-track" id="sbnrTrack">
+          ${visible.map(renderSlide).join('')}
         </div>
-        <div class="sbnr-dots" id="sbnrDots">${dots}</div>
-        <button class="sbnr-arrow sbnr-arrow-prev" onclick="_sbnrGoTo(_sbnrIdx - 1)" aria-label="Banner anterior">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
-        <button class="sbnr-arrow sbnr-arrow-next" onclick="_sbnrGoTo(_sbnrIdx + 1)" aria-label="Banner siguiente">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-      </div>`;
-    _sbnrIdx = 0;
-    _sbnrTotal = visible.length;
+      </div>
+      ${multi ? `<div class="sbnr-dots" id="sbnrDots">${dots}</div>
+      <button class="sbnr-arrow sbnr-arrow-prev" onclick="_sbnrGoTo(_sbnrIdx - 1)" aria-label="Banner anterior">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <button class="sbnr-arrow sbnr-arrow-next" onclick="_sbnrGoTo(_sbnrIdx + 1)" aria-label="Banner siguiente">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>` : ''}
+    </div>`;
+  _sbnrIdx = 0;
+  _sbnrTotal = visible.length;
+  if (multi) {
     // Autoavance cada 5 s — pausa al hacer hover
     clearInterval(_sbnrTimer);
     _sbnrTimer = setInterval(() => _sbnrGoTo(_sbnrIdx + 1), 5000);
-    // Pausa al hover; reanuda al salir
     setTimeout(() => {
       const carousel = document.getElementById('sbnrCarousel');
       if (!carousel) return;

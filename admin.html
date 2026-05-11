@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -445,7 +446,11 @@
   .bnn-color-row { display: flex; align-items: center; gap: 8px; }
   .bnn-color-row input[type=color] { width: 36px; height: 36px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; background: none; padding: 2px; flex-shrink: 0; }
   .bnn-color-row input[type=text] { flex: 1; }
-  .bnn-live-preview { margin-top: 4px; padding: 12px 16px; border-radius: var(--radius-sm); min-height: 56px; display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 700; }
+  .bnn-preview-wrap { border-radius: var(--radius-sm); background: var(--bg); border: 1.5px solid var(--border); }
+  .bnn-preview-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); padding: 6px 12px 4px; }
+  .bnn-preview-frame { height: 260px; overflow: hidden; pointer-events: none; position: relative; }
+  .bnn-preview-frame .sbnr { max-width: 100% !important; width: 100% !important; margin: 0 !important; padding: 0 !important; height: 100%; }
+  .bnn-preview-frame .sbnr > * { border-radius: 0 !important; margin: 0 !important; height: 100% !important; min-height: unset !important; }
 
   /* ── FORM FIELDS (shared by products & banners modals) ── */
   .pf-form-field { display: flex; flex-direction: column; gap: 5px; }
@@ -896,7 +901,7 @@
 
 <!-- BANNER EDIT/CREATE MODAL -->
 <div class="modal-overlay" id="bannerModal" onclick="handleBannerModalClick(event)">
-  <div class="modal-box" style="max-width:560px">
+  <div class="modal-box" style="max-width:80vw;width:80vw">
     <div class="modal-head">
       <div class="modal-head-title" id="bannerModalTitle">Banner</div>
       <button class="modal-close" onclick="closeBannerModal()">
@@ -960,6 +965,7 @@
 <div class="adm-toast" id="admToast"></div>
 
 <script src="js/config.js"></script>
+<script src="js/banner-templates.js"></script>
 <script>
 const AUTH_KEY = 'adm_token';
 let _activeSection = 'pedidos';
@@ -2361,12 +2367,9 @@ function _renderBannerForm(b) {
   const bcVal   = v.btnColor || '#fff';
 
   document.getElementById('bannerModalBody').innerHTML = `
-    <div class="bnn-live-preview" id="bnnPreview" style="background:${bgVal}">
-      <span id="bnnPrevDeco" style="font-size:24px">${v.deco || '🎉'}</span>
-      <div>
-        <div style="font-size:11px;font-weight:700;color:${lcVal}" id="bnnPrevLabel">${v.label || 'Etiqueta'}</div>
-        <div style="font-size:15px;font-weight:800;color:#fff" id="bnnPrevTitle">${v.title || 'Título'} <em style="color:${acVal}" id="bnnPrevTitleEm">${v.titleEm || 'destacado'}</em></div>
-      </div>
+    <div class="bnn-preview-wrap">
+      <div class="bnn-preview-label">Vista previa en tiempo real</div>
+      <div class="bnn-preview-frame" id="bnnPreviewFrame"></div>
     </div>
     <div class="bnn-form-grid">
       <div class="pf-form-field">
@@ -2448,33 +2451,33 @@ function _renderBannerForm(b) {
     <div class="bnn-form-grid">
       <div class="pf-form-field">
         <label class="pf-form-label">Botón 1 — texto</label>
-        <input class="pf-form-input" id="bfBtn1Text" value="${v.btn1?.text || ''}">
+        <input class="pf-form-input" id="bfBtn1Text" value="${v.btn1?.text || ''}" oninput="updateBnnPreview()">
       </div>
       <div class="pf-form-field">
         <label class="pf-form-label">Botón 1 — acción</label>
-        <select class="pf-form-input" id="bfBtn1Action">
+        <select class="pf-form-input" id="bfBtn1Action" onchange="updateBnnPreview()">
           <option value="filterCategory" ${(v.btn1?.action||'filterCategory')==='filterCategory'?'selected':''}>filterCategory</option>
           <option value="openBannerPopup" ${v.btn1?.action==='openBannerPopup'?'selected':''}>openBannerPopup</option>
         </select>
       </div>
       <div class="pf-form-field" style="grid-column:span 2">
         <label class="pf-form-label">Botón 1 — args (JSON array, ej: ["all",null])</label>
-        <input class="pf-form-input" id="bfBtn1Args">
+        <input class="pf-form-input" id="bfBtn1Args" oninput="updateBnnPreview()">
       </div>
       <div class="pf-form-field">
         <label class="pf-form-label">Botón 2 — texto</label>
-        <input class="pf-form-input" id="bfBtn2Text" value="${v.btn2?.text || ''}">
+        <input class="pf-form-input" id="bfBtn2Text" value="${v.btn2?.text || ''}" oninput="updateBnnPreview()">
       </div>
       <div class="pf-form-field">
         <label class="pf-form-label">Botón 2 — acción</label>
-        <select class="pf-form-input" id="bfBtn2Action">
+        <select class="pf-form-input" id="bfBtn2Action" onchange="updateBnnPreview()">
           <option value="filterCategory" ${v.btn2?.action==='filterCategory'?'selected':''}>filterCategory</option>
           <option value="openBannerPopup" ${(v.btn2?.action||'openBannerPopup')==='openBannerPopup'?'selected':''}>openBannerPopup</option>
         </select>
       </div>
       <div class="pf-form-field" style="grid-column:span 2">
         <label class="pf-form-label">Botón 2 — args (JSON array)</label>
-        <input class="pf-form-input" id="bfBtn2Args">
+        <input class="pf-form-input" id="bfBtn2Args" oninput="updateBnnPreview()">
       </div>
     </div>
     <div class="pf-form-field">
@@ -2482,6 +2485,26 @@ function _renderBannerForm(b) {
         <input type="checkbox" id="bfVisible" ${v.visible !== false ? 'checked' : ''} style="width:16px;height:16px;accent-color:var(--primary)">
         Visible en la tienda
       </label>
+    </div>
+    <div class="pf-form-field">
+      <label class="pf-form-label">🖼 Plantilla de diseño</label>
+      <select class="pf-form-input" id="bfTemplate" onchange="updateBnnPreview()">
+        <option value="glow"          ${(!v.template||v.template==='glow')          ?'selected':''}>Glow (predeterminado)</option>
+        <option value="neon-dark"     ${v.template==='neon-dark'     ?'selected':''}>Neon Dark</option>
+        <option value="frosted"       ${v.template==='frosted'       ?'selected':''}>Frosted Light</option>
+        <option value="diagonal-split"${v.template==='diagonal-split'?'selected':''}>Diagonal Split</option>
+        <option value="marquee"       ${v.template==='marquee'       ?'selected':''}>Marquee Strip</option>
+        <option value="brutalist"     ${v.template==='brutalist'     ?'selected':''}>Brutalist</option>
+        <option value="aurora"        ${v.template==='aurora'        ?'selected':''}>Aurora</option>
+        <option value="magazine"      ${v.template==='magazine'      ?'selected':''}>Magazine Editorial</option>
+        <option value="spotlight"     ${v.template==='spotlight'     ?'selected':''}>Spotlight</option>
+        <option value="retro"         ${v.template==='retro'         ?'selected':''}>Retro Wave</option>
+        <option value="pill"          ${v.template==='pill'          ?'selected':''}>Pill</option>
+        <option value="side-stat"     ${v.template==='side-stat'     ?'selected':''}>Side Stat</option>
+        <option value="duo-tone"      ${v.template==='duo-tone'      ?'selected':''}>Duo Tone</option>
+        <option value="ink"           ${v.template==='ink'           ?'selected':''}>Ink</option>
+        <option value="border-frame"  ${v.template==='border-frame'  ?'selected':''}>Border Frame</option>
+      </select>
     </div>
     <div class="modal-actions">
       <button class="btn-confirm" onclick="saveBanner()">
@@ -2494,26 +2517,31 @@ function _renderBannerForm(b) {
   // Asignar args por JS para evitar que las comillas del JSON rompan el atributo HTML
   document.getElementById('bfBtn1Args').value = v.btn1?.args ? JSON.stringify(v.btn1.args) : '["all",null]';
   document.getElementById('bfBtn2Args').value = v.btn2?.args ? JSON.stringify(v.btn2.args) : '["offer","Ofertas del día"]';
+  // Render initial preview
+  updateBnnPreview();
 }
 
 function updateBnnPreview() {
-  const bg    = document.getElementById('bfBg')?.value || '#eee';
-  const lc    = document.getElementById('bfLc')?.value || '#fff';
-  const ac    = document.getElementById('bfAc')?.value || '#fff';
-  const deco  = document.getElementById('bfDeco')?.value || '🎉';
-  const label = document.getElementById('bfLabel')?.value || '';
-  const title = document.getElementById('bfTitle')?.value || '';
-  const em    = document.getElementById('bfTitleEm')?.value || '';
-  const prev  = document.getElementById('bnnPreview');
-  if (!prev) return;
-  prev.style.background = bg;
-  document.getElementById('bnnPrevDeco').textContent = deco;
-  document.getElementById('bnnPrevLabel').style.color = lc;
-  document.getElementById('bnnPrevLabel').textContent = label;
-  document.getElementById('bnnPrevTitle').childNodes[0].textContent = title + ' ';
-  const emEl = document.getElementById('bnnPrevTitleEm');
-  emEl.style.color = ac;
-  emEl.textContent = em;
+  const frame = document.getElementById('bnnPreviewFrame');
+  if (!frame) return;
+  const b = {
+    id: document.getElementById('bfId')?.value || 'preview',
+    bg:          document.getElementById('bfBg')?.value    || '#F15200',
+    labelColor:  document.getElementById('bfLc')?.value    || '#fff',
+    accentColor: document.getElementById('bfAc')?.value    || '#fff',
+    btnBg:       document.getElementById('bfBbg')?.value   || '#333',
+    btnColor:    document.getElementById('bfBc')?.value    || '#fff',
+    deco:        document.getElementById('bfDeco')?.value  || '🎉',
+    deco2:       document.getElementById('bfDeco2')?.value || '',
+    label:       document.getElementById('bfLabel')?.value || 'Etiqueta',
+    title:       document.getElementById('bfTitle')?.value || 'Título',
+    titleEm:     document.getElementById('bfTitleEm')?.value || 'destacado',
+    sub:         document.getElementById('bfSub')?.value   || 'Subtítulo del banner',
+    template:    document.getElementById('bfTemplate')?.value || 'glow',
+    btn1: { text: document.getElementById('bfBtn1Text')?.value || 'Ver más', action: 'filterCategory', args: [] },
+    btn2: { text: document.getElementById('bfBtn2Text')?.value || 'Explorar', action: 'filterCategory', args: [] },
+  };
+  frame.innerHTML = renderBannerTemplate(b);
 }
 
 function openBannerCreateModal() {
@@ -2555,6 +2583,7 @@ async function saveBanner() {
     title:       document.getElementById('bfTitle').value.trim(),
     titleEm:     document.getElementById('bfTitleEm').value.trim(),
     sub:         document.getElementById('bfSub').value.trim(),
+    template:    document.getElementById('bfTemplate').value.trim() || 'glow',
     btn1: { text: document.getElementById('bfBtn1Text').value.trim(), action: document.getElementById('bfBtn1Action').value, args: btn1Args },
     btn2: { text: document.getElementById('bfBtn2Text').value.trim(), action: document.getElementById('bfBtn2Action').value, args: btn2Args },
   };
