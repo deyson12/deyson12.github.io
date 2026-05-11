@@ -256,11 +256,11 @@ h1,h2,h3,h4,h5{font-family:var(--font-head);font-weight:700;line-height:1.2}
 .section{max-width:1400px;margin:0 auto;padding:22px 16px 0;}
 
 /* DEALS ZONE */
-.deals-zone{background:var(--bg-card);margin:22px 0 0;padding:20px 16px 22px;position:relative;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.deals-zone{background:var(--primary);margin:22px 0 0;padding:20px 16px 22px;position:relative;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
 .deals-zone::before{display:none;}
 .deals-zone::after{display:none;}
 .deals-zone-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;max-width:1400px;margin-left:auto;margin-right:auto;}
-.deals-zone-title{font-family:var(--font-head);font-size:clamp(15px,3vw,18px);font-weight:800;color:var(--text-primary);display:flex;align-items:center;gap:7px;}
+.deals-zone-title{font-family:var(--font-head);font-size:clamp(15px,3vw,18px);font-weight:800;color:#fff;display:flex;align-items:center;gap:7px;}
 .deals-zone-title svg{flex-shrink:0;}
 .deals-zone-badge{background:var(--primary-light);color:var(--primary);font-family:var(--font-head);font-size:11px;font-weight:700;padding:4px 10px;border-radius:var(--radius-full);letter-spacing:.04em;text-transform:uppercase;border:1px solid rgba(241,82,0,.15);}
 .deals-zone .carousel-arrow{background:var(--bg);border-color:var(--border);color:var(--text-secondary);}
@@ -330,15 +330,15 @@ h1,h2,h3,h4,h5{font-family:var(--font-head);font-weight:700;line-height:1.2}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 .card-actions{display:flex;flex-direction:column;gap:5px;margin-top:auto;padding-top:7px;}
 .btn{display:flex;align-items:center;justify-content:center;gap:5px;padding:8px 10px;border-radius:var(--radius-md);font-family:var(--font-head);font-size:12px;font-weight:700;border:none;cursor:pointer;transition:var(--transition);text-decoration:none;line-height:1;}
-.btn-cart{background:var(--primary-light);color:var(--primary);border:1.5px solid rgba(241,82,0,.2);width:100%;}
+.btn-cart{background:var(--primary-light);color:var(--primary);border:1.5px solid rgba(241,82,0,.2);width:100%;height:34px;box-sizing:border-box;}
 .btn-cart:hover{background:var(--primary);color:#fff}
 .btn-cart svg{width:13px;height:13px}
 .btn-cart.added{background:var(--secondary);color:#fff;border-color:var(--secondary);}
 .btn-wa{background:var(--primary);color:#fff;}
 .btn-wa:hover{background:var(--primary-dark);}
 .btn-wa svg{width:16px;height:16px}
-.btn-buy-now{background:var(--secondary);color:#fff;width:100%;}
-.btn-buy-now:hover{background:#008a44;}
+.btn-buy-now{background:var(--primary);color:#fff;width:100%;}
+.btn-buy-now:hover{background:var(--primary-dark);}
 .btn-buy-now svg{width:13px;height:13px}
 .card-stars{display:flex;align-items:center;gap:3px;font-size:11px;color:#A16207;}
 .star-count{color:var(--text-muted);margin-left:2px}

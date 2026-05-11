@@ -472,7 +472,7 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
       </div>
       <div class="order-body">
         <div class="order-field">
-          <label class="order-label" for="inputDireccion">📍 Dirección de entrega <span class="req">*</span></label>
+          <label class="order-label" for="inputDireccion">Dirección de entrega <span class="req">*</span></label>
           <input class="order-input" id="inputDireccion" type="text" placeholder="Ej: Calle 10 #5-23, Barrio El Prado">
           <!-- MAP LINK -->
           <a id="mapViewLink" class="map-view-link" href="#" onclick="expandMap();return false;" style="display:none">
@@ -504,24 +504,24 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
           </div>
         </div>
         <div class="order-field">
-          <label class="order-label" for="inputNombre">👤 A nombre de <span class="req">*</span></label>
+          <label class="order-label" for="inputNombre">A nombre de <span class="req">*</span></label>
           <input class="order-input" id="inputNombre" type="text" placeholder="Nombre completo del destinatario">
         </div>
         <div class="order-field">
-          <label class="order-label" for="inputCelular">📱 Celular <span class="req">*</span></label>
+          <label class="order-label" for="inputCelular">Celular <span class="req">*</span></label>
           <div class="input-prefix-wrap">
             <span class="input-prefix"><svg class="flag-co" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#FCD116"/><rect y="7" width="20" height="7" fill="#003893"/><rect y="9.33" width="20" height="4.67" fill="#CE1126"/></svg> +57</span>
             <input class="order-input order-input-prefixed" id="inputCelular" type="tel" placeholder="3001234567" inputmode="numeric" maxlength="10" oninput="fmtCelularInput(this)">
           </div>
         </div>
         <div class="order-field">
-          <label class="order-label" for="inputPago">💳 Método de pago <span class="req">*</span></label>
+          <label class="order-label" for="inputPago">Método de pago <span class="req">*</span></label>
           <select class="order-input" id="inputPago" onchange="onPaymentChange()">
             <option value="">-- Seleccionar --</option>
           </select>
         </div>
         <div class="order-field" id="cambioWrap">
-          <label class="order-label" for="inputCambio">💵 ¿Con cuánto va a pagar? <span style="font-weight:400;color:var(--text-muted)">(para devuelta)</span></label>
+          <label class="order-label" for="inputCambio">¿Con cuánto va a pagar? <span style="font-weight:400;color:var(--text-muted)">(para devuelta)</span></label>
           <div class="input-prefix-wrap">
             <span class="input-prefix">$</span>
             <input class="order-input order-input-prefixed" id="inputCambio" type="text" placeholder="50.000" inputmode="numeric" oninput="fmtCambioInput(this)">
@@ -530,7 +530,7 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
         <div class="order-field cupon-toggle-row">
           <label class="cupon-toggle-label">
             <input type="checkbox" id="chkCupon" onchange="document.getElementById('cuponWrap').style.display=this.checked?'':'none'">
-            &#127991;&#65039; ¿Tienes un cupón de descuento?
+            ¿Tienes un cupón de descuento?
           </label>
         </div>
         <div class="order-field" id="cuponWrap" style="display:none">

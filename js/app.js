@@ -853,7 +853,7 @@ function buildCard(p, extra = '') {
     <div class="card-body">
       <div class="card-seller">Ref: ${p.id.slice(0, 8)}</div>
       <div class="card-name">${p.name}</div>
-      <div class="card-stars">${stars(p.rating)}<span class="star-count">(${p.sales})</span></div>
+      <!--div class="card-stars">${stars(p.rating)}<span class="star-count">(${p.sales})</span></div-->
       <div class="card-prices">
         <span class="card-price">${fmtPrice(p.price)}</span>
         ${disc > 0 ? `<span class="card-old-price">${fmtPrice(p.oldPrice)}</span><span class="card-discount">-${disc}%</span>` : ''}
