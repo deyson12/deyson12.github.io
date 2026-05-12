@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es" data-theme="light">
 <head>
 <meta charset="UTF-8">
@@ -125,7 +125,7 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
 #btnSendOrder:disabled{opacity:.4;pointer-events:none}
 .tnc-overlay{position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;padding:16px}
 .tnc-overlay.open{display:flex}
-.tnc-box{background:#fff;border-radius:16px;max-height:90vh;display:flex;flex-direction:column;width:580px;max-width:100%;box-shadow:0 24px 80px rgba(0,0,0,.4)}
+.tnc-box{background:#fff;border-radius:16px;height:80vh;max-height:80vh;display:flex;flex-direction:column;width:580px;max-width:100%;box-shadow:0 24px 80px rgba(0,0,0,.4)}
 [data-theme="dark"] .tnc-box{background:#1A1D27}
 .tnc-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #e5e7eb;flex-shrink:0}
 [data-theme="dark"] .tnc-head{border-color:#2D3142}
@@ -151,6 +151,7 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
 .btn-tnc-accept:hover{background:#CC4500}
 .btn-tnc-secondary{padding:12px 16px;background:transparent;border:1.5px solid #E5E7EB;border-radius:10px;color:#6B7280;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
 [data-theme="dark"] .btn-tnc-secondary{color:#9CA3AF;border-color:#2D3142}
+.tnc-iframe{flex:1;border:none;width:100%;display:block;min-height:0;border-radius:0}
 </style>
 
 <!-- Google Analytics 4 -->
@@ -727,70 +728,7 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
       </button>
     </div>
-    <div class="tnc-scroll">
-      <p class="tnc-updated">Versión vigente: mayo de 2026 &middot; Aplicable en Colombia</p>
-
-      <h3>1. Naturaleza del servicio</h3>
-      <p>PideFácil es una plataforma de comercio electrónico que facilita la adquisición de productos al conectar a compradores con <strong>proveedores aliados y operadores logísticos externos</strong>. Al realizar un pedido, el cliente acepta que el proceso de almacenamiento, empaque y despacho puede estar a cargo de dichos proveedores o plataformas externas, y que PideFácil actúa como intermediario comercial entre las partes.</p>
-      <p>Las imágenes y descripciones son referencia proporcionada por los proveedores. Pueden existir diferencias menores de presentación entre la imagen mostrada y el producto recibido, siempre que el artículo corresponda a la categoría y especificación solicitada.</p>
-
-      <h3>2. Precios y disponibilidad</h3>
-      <ul>
-        <li>Los precios están expresados en pesos colombianos (COP). PideFácil se reserva el derecho de modificarlos sin previo aviso; el precio válido es el vigente al momento de <strong>confirmar</strong> el pedido.</li>
-        <li>La disponibilidad depende del inventario de los proveedores aliados. Si un producto no está disponible tras la confirmación, PideFácil contactará al cliente para ofrecer una alternativa o el reembolso correspondiente.</li>
-        <li>PideFácil se reserva el derecho de cancelar pedidos por razones de seguridad, información incorrecta o falta de pago.</li>
-      </ul>
-
-      <h3>3. Proceso de pedido y pago</h3>
-      <ul>
-        <li>El pedido se considera <strong>confirmado</strong> únicamente cuando PideFácil envía un mensaje de confirmación por WhatsApp.</li>
-        <li>Los métodos de pago aceptados son: tarjeta débito/crédito, transferencia bancaria, Nequi y demás billeteras o plataformas digitales habilitadas en la plataforma. <strong>No se acepta pago en efectivo.</strong> El pago debe realizarse según las condiciones indicadas en la confirmación del pedido.</li>
-        <li>WhatsApp es el canal oficial de gestión, seguimiento y soporte. PideFácil no se responsabiliza por comunicaciones realizadas por canales no oficiales.</li>
-      </ul>
-
-      <h3>4. Envíos y tiempos de entrega</h3>
-      <ul>
-        <li>Los despachos se realizan a través de <strong>operadores logísticos y plataformas externas</strong> aliadas a PideFácil. Por tanto, los tiempos y condiciones de entrega dependen de dichos terceros.</li>
-        <li>El tiempo estimado de entrega es de <strong>3 a 15 días hábiles</strong> a partir de la confirmación, dependiendo de la ubicación del cliente y el proveedor. PideFácil <strong>no garantiza fechas exactas</strong> de entrega.</li>
-        <li>PideFácil no es responsable por retrasos, pérdidas o daños causados por los operadores logísticos durante el transporte.</li>
-        <li>El cliente recibirá información de seguimiento cuando el proveedor la ponga a disposición.</li>
-      </ul>
-
-      <h3>5. Política de devoluciones y cambios</h3>
-      <div class="tnc-highlight">
-        <strong>Importante:</strong> PideFácil <strong>NO realiza recolecciones en la dirección del cliente</strong>. El traslado del producto para devolución es responsabilidad y costo del comprador.
-      </div>
-      <p>El cliente podrá solicitar devolución o cambio dentro de los <strong>5 días hábiles</strong> siguientes a la recepción, siempre que se cumplan estas condiciones:</p>
-      <ul>
-        <li>El producto debe estar en su <strong>estado original</strong>: sin uso, con todos sus accesorios, empaques y etiquetas intactos.</li>
-        <li>El cliente debe conservar el comprobante de compra o número de pedido.</li>
-        <li>El producto debe presentar defecto de fábrica comprobable, o corresponder a un artículo diferente al solicitado.</li>
-      </ul>
-      <p><strong>Procedimiento:</strong> El cliente debe contactar a PideFácil por WhatsApp dentro del plazo indicado. Una vez validada la solicitud, se informará la <strong>sede o punto de entrega</strong> donde deberá entregar el producto. Los gastos de transporte hasta dicho punto corren por cuenta del cliente, salvo que el error sea atribuible a PideFácil o al proveedor.</p>
-
-      <h3>6. Productos no sujetos a devolución</h3>
-      <ul>
-        <li>Productos de higiene personal, cosméticos o ropa interior que hayan sido abiertos o usados.</li>
-        <li>Alimentos, bebidas y productos perecederos.</li>
-        <li>Artículos con empaques violados o dañados por el cliente.</li>
-        <li>Productos en promoción o liquidación marcados como “sin cambios ni devoluciones”.</li>
-        <li>Productos digitales o con licencias activadas.</li>
-        <li>Solicitudes realizadas después de <strong>5 días hábiles</strong> desde la recepción.</li>
-      </ul>
-
-      <h3>7. Limitación de responsabilidad</h3>
-      <ul>
-        <li>PideFácil no será responsable por daños indirectos, lucro cesante ni perjuicios derivados del uso del producto o de retrasos en la entrega.</li>
-        <li>La responsabilidad máxima de PideFácil no superará el valor total del pedido afectado.</li>
-        <li>PideFácil no controla la calidad final del empaque o manipulación de los productos durante el transporte, ya que este proceso está a cargo de terceros.</li>
-      </ul>
-
-      <h3>8. Protección de datos personales</h3>
-      <p>PideFácil trata los datos personales (nombre, teléfono, dirección) de conformidad con la <strong>Ley 1581 de 2012</strong> y el Decreto 1377 de 2013 de Colombia. Dichos datos se usan exclusivamente para gestionar el pedido y coordinar la entrega. No serán vendidos a terceros; únicamente se compartirán con los proveedores aliados en la medida necesaria para cumplir el pedido. El cliente puede ejercer sus derechos de acceso, corrección o supresión contactándonos por WhatsApp.</p>
-
-      <h3>9. Modificaciones y ley aplicable</h3>
-      <p>PideFácil puede modificar estos Términos en cualquier momento. Los cambios aplicarán a pedidos realizados con posterioridad a su publicación. Estos Términos se rigen por las leyes de Colombia, especialmente la <strong>Ley 1480 de 2011</strong> (Estatuto del Consumidor). Cualquier controversia se resolverá ante los jueces competentes de la ciudad de Medellín, Colombia.</p>
-    </div>
+    <iframe src="tnc.html" class="tnc-iframe" title="Términos y Condiciones"></iframe>
     <div class="tnc-foot">
       <button class="btn-tnc-secondary" onclick="closeTnc()">Cerrar</button>
       <button class="btn-tnc-accept" onclick="_tncAccept()">Acepto los Términos y Condiciones</button>

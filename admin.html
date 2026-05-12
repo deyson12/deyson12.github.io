@@ -542,6 +542,10 @@
       <span class="nav-item-icon">🎟️</span>
       Cupones & Gift Cards
     </button>
+    <button class="nav-item" id="navPublicidad" onclick="showSection('publicidad');closeNavDrawer()">
+      <span class="nav-item-icon">📢</span>
+      Publicidad
+    </button>
   </div>
   <div class="nav-drawer-footer">
     <button class="nav-item" onclick="clearCache();closeNavDrawer()">
@@ -899,6 +903,87 @@
   </div>
 </div>
 
+<!-- PUBLICIDAD SECTION -->
+<div class="content" id="publicidadSection" style="display:none">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+    <h2 style="font-size:18px;font-weight:800;flex:1">Publicidad patrocinada</h2>
+    <button class="btn-confirm" style="flex:none;padding:8px 16px;font-size:13px" onclick="openAdModal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M12 5v14M5 12h14"/></svg>
+      Nuevo anuncio
+    </button>
+  </div>
+  <div class="table-wrap">
+    <div class="table-count" id="adCount"></div>
+    <div id="adGrid"></div>
+  </div>
+</div>
+
+<!-- PUBLICIDAD CREATE/EDIT MODAL -->
+<div class="modal-overlay" id="adModal" onclick="handleAdModalClick(event)">
+  <div class="modal-box" style="max-width:540px">
+    <div class="modal-head">
+      <div class="modal-head-title" id="adModalTitle">Nuevo anuncio</div>
+      <button class="modal-close" onclick="closeAdModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;max-height:75vh;overflow-y:auto">
+      <div class="pf-form-row">
+        <label class="pf-form-label">Nombre del producto</label>
+        <input class="pf-form-input" id="adName" type="text" maxlength="250" placeholder="Ej: Camiseta Oversize Premium">
+      </div>
+      <div class="pf-form-row">
+        <label class="pf-form-label">Descripción <span style="color:#9CA3AF;font-weight:400">opcional</span></label>
+        <textarea class="pf-form-input" id="adDescription" rows="3" placeholder="Descripción corta del producto…" style="resize:vertical"></textarea>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="pf-form-row">
+          <label class="pf-form-label">Precio (COP)</label>
+          <input class="pf-form-input" id="adPrice" type="number" min="0" placeholder="45000">
+        </div>
+        <div class="pf-form-row">
+          <label class="pf-form-label">Precio anterior <span style="color:#9CA3AF;font-weight:400">opcional</span></label>
+          <input class="pf-form-input" id="adOldPrice" type="number" min="0" placeholder="65000">
+        </div>
+      </div>
+      <div class="pf-form-row">
+        <label class="pf-form-label">URL imagen</label>
+        <input class="pf-form-input" id="adImage" type="url" placeholder="https://…">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="pf-form-row">
+          <label class="pf-form-label">Nombre del vendedor</label>
+          <input class="pf-form-input" id="adSellerName" type="text" maxlength="150" placeholder="Moda Urbana Cali">
+        </div>
+        <div class="pf-form-row">
+          <label class="pf-form-label">WhatsApp vendedor</label>
+          <input class="pf-form-input" id="adSellerPhone" type="text" maxlength="20" placeholder="573001234567">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="pf-form-row">
+          <label class="pf-form-label">Badge <span style="color:#9CA3AF;font-weight:400">opcional</span></label>
+          <input class="pf-form-input" id="adBadge" type="text" maxlength="60" placeholder="Destacado">
+        </div>
+        <div class="pf-form-row">
+          <label class="pf-form-label">Fecha fin <span style="color:#9CA3AF;font-weight:400">opcional</span></label>
+          <input class="pf-form-input" id="adEndDate" type="date">
+        </div>
+      </div>
+      <div class="pf-form-row">
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+          <input type="checkbox" id="adActive" checked style="width:16px;height:16px;accent-color:#F15200">
+          Activo
+        </label>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;padding:14px 20px;border-top:1px solid var(--border)">
+      <button class="btn-confirm" style="flex:1" onclick="saveAd()">Guardar</button>
+      <button class="btn-drop" onclick="closeAdModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- BANNER EDIT/CREATE MODAL -->
 <div class="modal-overlay" id="bannerModal" onclick="handleBannerModalClick(event)">
   <div class="modal-box" style="max-width:80vw;width:80vw">
@@ -988,22 +1073,25 @@ function showSection(section) {
   document.getElementById('dashSection').style.display       = section === 'pedidos'   ? 'block' : 'none';
   document.getElementById('analyticsSection').style.display  = section === 'analytics' ? 'block' : 'none';
   document.getElementById('productosSection').style.display  = section === 'productos' ? 'block' : 'none';
-  document.getElementById('bannersSection').style.display    = section === 'banners'   ? 'block' : 'none';
-  document.getElementById('cuponesSection').style.display    = section === 'cupones'   ? 'block' : 'none';
-  document.getElementById('navPedidos').classList.toggle('active',   section === 'pedidos');
-  document.getElementById('navAnalytics').classList.toggle('active', section === 'analytics');
-  document.getElementById('navProductos').classList.toggle('active', section === 'productos');
-  document.getElementById('navBanners').classList.toggle('active',   section === 'banners');
-  document.getElementById('navCupones').classList.toggle('active',   section === 'cupones');
-  const sectionLabels = { pedidos: 'Pedidos', analytics: 'Analytics', productos: 'Productos', banners: 'Banners', cupones: 'Cupones & Gift Cards' };
+  document.getElementById('bannersSection').style.display    = section === 'banners'    ? 'block' : 'none';
+  document.getElementById('cuponesSection').style.display    = section === 'cupones'    ? 'block' : 'none';
+  document.getElementById('publicidadSection').style.display = section === 'publicidad' ? 'block' : 'none';
+  document.getElementById('navPedidos').classList.toggle('active',    section === 'pedidos');
+  document.getElementById('navAnalytics').classList.toggle('active',  section === 'analytics');
+  document.getElementById('navProductos').classList.toggle('active',  section === 'productos');
+  document.getElementById('navBanners').classList.toggle('active',    section === 'banners');
+  document.getElementById('navCupones').classList.toggle('active',    section === 'cupones');
+  document.getElementById('navPublicidad').classList.toggle('active', section === 'publicidad');
+  const sectionLabels = { pedidos: 'Pedidos', analytics: 'Analytics', productos: 'Productos', banners: 'Banners', cupones: 'Cupones & Gift Cards', publicidad: 'Publicidad' };
   const labelEl = document.getElementById('topbarSectionLabel');
   if (labelEl) labelEl.textContent = sectionLabels[section] ?? section;
   history.replaceState(null, '', '#' + section);
   if (section === 'analytics') loadAnalytics();
   if (section === 'productos') loadProducts();
   if (section === 'pedidos') loadOrders();
-  if (section === 'banners') loadBanners();
-  if (section === 'cupones') loadCoupons();
+  if (section === 'banners')     loadBanners();
+  if (section === 'cupones')     loadCoupons();
+  if (section === 'publicidad')  loadAds();
 }
 
 function onRefresh() {
@@ -1066,7 +1154,7 @@ function showDashboard() {
   document.getElementById('dashSection').style.display  = 'block';
   _updateMonthNavs();
   // Restore section from URL hash if present
-  const validSections = ['pedidos', 'analytics', 'productos', 'banners'];
+  const validSections = ['pedidos', 'analytics', 'productos', 'banners', 'publicidad'];
   const hashSection = location.hash.replace('#', '');
   if (validSections.includes(hashSection)) {
     showSection(hashSection);
@@ -3168,6 +3256,150 @@ async function saveCoupon() {
     renderCoupons();
     closeCouponModal();
     showToast(`Cupón "${saved.code}" guardado correctamente.`);
+  } catch (e) { showToast('Error: ' + e.message); }
+}
+
+// ── PUBLICIDAD ─────────────────────────────────────────────
+let _allAds = [];
+let _editingAdId = null;
+
+async function loadAds() {
+  const grid = document.getElementById('adGrid');
+  const countEl = document.getElementById('adCount');
+  grid.innerHTML = '<div class="state-box"><div class="state-sub">Cargando anuncios…</div></div>';
+  try {
+    const res = await fetch(`${API_BASE}/api/promoted-ads`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    _allAds = await res.json();
+    renderAds();
+  } catch (e) {
+    grid.innerHTML = `<div class="state-box"><div class="state-sub">Error: ${e.message}</div></div>`;
+  }
+}
+
+function _adStatus(ad) {
+  const expired = ad.endDate && new Date(ad.endDate) < new Date();
+  if (!ad.active) return { label: 'Inactivo',  cls: 'osc-declined' };
+  if (expired)    return { label: 'Vencido',    cls: 'osc-declined' };
+  return           { label: 'Activo',    cls: 'osc-approved' };
+}
+
+function renderAds() {
+  const grid    = document.getElementById('adGrid');
+  const countEl = document.getElementById('adCount');
+  if (countEl) countEl.textContent = `${_allAds.length} anuncio${_allAds.length !== 1 ? 's' : ''}`;
+  if (!_allAds.length) {
+    grid.innerHTML = '<div class="state-box"><div class="state-icon">📢</div><div class="state-sub">Sin anuncios. Crea el primero.</div></div>';
+    return;
+  }
+  grid.innerHTML = _allAds.map(ad => {
+    const st = _adStatus(ad);
+    const disc = (ad.oldPrice && ad.oldPrice > ad.price)
+      ? Math.round((ad.oldPrice - ad.price) / ad.oldPrice * 100) : 0;
+    return `<div class="order-card" style="display:flex;align-items:center;gap:12px;padding:12px 16px;margin-bottom:8px">
+      <img src="${ad.image || ''}" alt="" width="56" height="56" style="border-radius:8px;object-fit:cover;flex-shrink:0;background:var(--border)" onerror="this.style.display='none'">
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ad.name}</div>
+        <div style="font-size:12px;color:var(--text-secondary)">${ad.sellerName} · ${ad.sellerPhone}</div>
+        <div style="font-size:12px;margin-top:2px">
+          <strong>$${Number(ad.price).toLocaleString('es-CO')}</strong>
+          ${disc > 0 ? `<span style="color:#9CA3AF;text-decoration:line-through;margin-left:4px">$${Number(ad.oldPrice).toLocaleString('es-CO')}</span><span style="color:#059669;font-weight:700;margin-left:4px">-${disc}%</span>` : ''}
+        </div>
+        ${ad.endDate ? `<div style="font-size:11px;color:var(--text-muted);margin-top:1px">Vence: ${ad.endDate}</div>` : ''}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
+        <span class="ord-status-chip ${st.cls}" style="font-size:10px">${st.label}</span>
+        <div style="display:flex;gap:6px">
+          <button class="btn-drop" style="padding:5px 10px;font-size:11px" onclick="openAdModal('${ad.id}')">Editar</button>
+          <button class="btn-drop" style="padding:5px 10px;font-size:11px" onclick="toggleAdActive('${ad.id}')">${ad.active ? 'Desactivar' : 'Activar'}</button>
+          <button class="btn-drop" style="padding:5px 10px;font-size:11px;color:#b91c1c" onclick="deleteAd('${ad.id}')">Borrar</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openAdModal(id) {
+  _editingAdId = id || null;
+  const ad = id ? _allAds.find(a => a.id === id) : null;
+  document.getElementById('adModalTitle').textContent = ad ? 'Editar anuncio' : 'Nuevo anuncio';
+  document.getElementById('adName').value        = ad?.name        || '';
+  document.getElementById('adDescription').value = ad?.description || '';
+  document.getElementById('adPrice').value       = ad?.price       || '';
+  document.getElementById('adOldPrice').value    = ad?.oldPrice    || '';
+  document.getElementById('adImage').value       = ad?.image       || '';
+  document.getElementById('adSellerName').value  = ad?.sellerName  || '';
+  document.getElementById('adSellerPhone').value = ad?.sellerPhone || '';
+  document.getElementById('adBadge').value       = ad?.badge       || '';
+  document.getElementById('adEndDate').value     = ad?.endDate     || '';
+  document.getElementById('adActive').checked    = ad ? ad.active  : true;
+  document.getElementById('adModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeAdModal() {
+  document.getElementById('adModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function handleAdModalClick(e) { if (e.target === document.getElementById('adModal')) closeAdModal(); }
+
+async function saveAd() {
+  const dto = {
+    name:        document.getElementById('adName').value.trim(),
+    description: document.getElementById('adDescription').value.trim() || null,
+    price:       parseFloat(document.getElementById('adPrice').value) || 0,
+    oldPrice:    parseFloat(document.getElementById('adOldPrice').value) || null,
+    image:       document.getElementById('adImage').value.trim(),
+    sellerName:  document.getElementById('adSellerName').value.trim(),
+    sellerPhone: document.getElementById('adSellerPhone').value.trim(),
+    badge:       document.getElementById('adBadge').value.trim() || null,
+    endDate:     document.getElementById('adEndDate').value || null,
+    active:      document.getElementById('adActive').checked,
+  };
+  if (!dto.name || !dto.image || !dto.sellerName || !dto.sellerPhone || !dto.price) {
+    showToast('Completa nombre, imagen, precio y datos del vendedor.'); return;
+  }
+  try {
+    let res;
+    if (_editingAdId) {
+      res = await fetch(`${API_BASE}/api/promoted-ads/${_editingAdId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify(dto) });
+    } else {
+      res = await fetch(`${API_BASE}/api/promoted-ads`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify(dto) });
+    }
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const saved = await res.json();
+    if (_editingAdId) {
+      const idx = _allAds.findIndex(a => a.id === _editingAdId);
+      if (idx !== -1) _allAds[idx] = saved; else _allAds.unshift(saved);
+    } else {
+      _allAds.unshift(saved);
+    }
+    renderAds();
+    closeAdModal();
+    showToast(`Anuncio "${saved.name}" guardado.`);
+  } catch (e) { showToast('Error: ' + e.message); }
+}
+
+async function toggleAdActive(id) {
+  try {
+    const res = await fetch(`${API_BASE}/api/promoted-ads/${id}/active`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${getToken()}` } });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const saved = await res.json();
+    const idx = _allAds.findIndex(a => a.id === id);
+    if (idx !== -1) _allAds[idx] = saved;
+    renderAds();
+    showToast(`Anuncio ${saved.active ? 'activado' : 'desactivado'}.`);
+  } catch (e) { showToast('Error: ' + e.message); }
+}
+
+async function deleteAd(id) {
+  const ad = _allAds.find(a => a.id === id);
+  if (!confirm(`¿Borrar el anuncio "${ad?.name}"? Esta acción no se puede deshacer.`)) return;
+  try {
+    const dr = await fetch(`${API_BASE}/api/promoted-ads/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${getToken()}` } });
+    if (!dr.ok) throw new Error('HTTP ' + dr.status);
+    _allAds = _allAds.filter(a => a.id !== id);
+    renderAds();
+    showToast('Anuncio eliminado.');
   } catch (e) { showToast('Error: ' + e.message); }
 }
 </script>

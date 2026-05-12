@@ -61,7 +61,7 @@ function buildOrderMessage({ saludo = 'quiero hacer un pedido', itemsBlock = '',
     msg += `*Ubicación exacta:* https://maps.google.com/?q=${lat},${lng}\n`;
   }
 
-  msg += `\n✅ Acepto los Términos y Condiciones de PideFacil (pidefacil.shop/index.html#tnc)`;
+  msg += `\nAcepto los Términos y Condiciones de PideFácil: https://pidefacil.shop/tnc.html`;
   msg += `\nGracias`;
   return msg;
 }

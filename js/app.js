@@ -59,6 +59,9 @@ function show429Alert(seconds) {
 const SELLER = 'PideFácil';
 
 let PRODUCTS = [];
+const _productCache = new Map(); // id → normalizedProduct
+let _apiHasMore = false;
+let _apiPage    = 0;
 
 // ===== STATE =====
 let cart         = JSON.parse(localStorage.getItem('cy_cart')    || '[]');
@@ -231,19 +234,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   const grid = document.getElementById('productsGrid');
   grid.innerHTML = Array(PAGE_SIZE).fill(0).map(buildSkeleton).join('');
   try {
-    const res = await fetch(`${API_BASE}/api/products/pidefacil`);
+    const res = await fetch(`${API_BASE}/api/products/pidefacil/paged?page=0&size=${PAGE_SIZE}`);
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    PRODUCTS = (await res.json())
-      .filter(p => p.active !== false)
-      .map(normalizeProduct);
+    const _initData = await res.json();
+    PRODUCTS  = _cacheProducts(_initData.content);
+    _apiHasMore = _initData.hasMore;
+    _apiPage    = 0;
   } catch (e) {
     console.error('Error cargando productos:', e);
     grid.innerHTML = '<div class="no-results"><div class="no-results-icon">⚠️</div><h3>Error al cargar</h3><p>Recarga la página</p></div>';
   }
   try {
-    const rp = await fetch('promoted/products.json');
+    const rp = await fetch(`${API_BASE}/api/promoted-ads/visible`);
     if (rp.ok) PROMOTED = await rp.json();
-  } catch (_) { /* sin productos promocionados */ }
+  } catch (_) { /* sin anuncios promocionados */ }
   // Coupons validated on-demand via API — nothing to preload.
   try {
     const rb = await fetch(API_BASE + '/api/banners/visible');
@@ -329,6 +333,16 @@ function normalizeProduct(raw) {
     featured:    raw.featured || false,
     tags:        raw.tags || '',
   };
+}
+
+/**
+ * Normaliza y almacena una lista de productos crudos de la API en el cache.
+ * Devuelve el array normalizado.
+ */
+function _cacheProducts(rawList) {
+  const normalized = (rawList || []).filter(p => p.active !== false).map(normalizeProduct);
+  normalized.forEach(p => _productCache.set(p.id, p));
+  return normalized;
 }
 
 function initMapField() {
@@ -1003,16 +1017,24 @@ function weavePromoted(batch) {
   return html.join('');
 }
 
-function renderOffers() {
-  const offers = PRODUCTS
-    .filter(p => p.oldPrice && p.oldPrice > p.price)
-    .sort((a, b) => calcDiscount(b) - calcDiscount(a));
-  const hasOffers = offers.length > 0;
-  document.getElementById('offersContainer').innerHTML = offers.map(p => buildCard(p)).join('');
-  const sec = document.getElementById('offersSection');
-  const bnr = document.getElementById('bnr3El');
-  if (sec) sec.style.display = hasOffers ? '' : 'none';
-  if (bnr) bnr.style.display = hasOffers ? '' : 'none';
+async function renderOffers() {
+  try {
+    const res = await fetch(`${API_BASE}/api/products/pidefacil/offers?page=0&size=20`);
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    const offers = _cacheProducts(data.content);
+    const hasOffers = offers.length > 0;
+    document.getElementById('offersContainer').innerHTML = offers.map(p => buildCard(p)).join('');
+    const sec = document.getElementById('offersSection');
+    const bnr = document.getElementById('bnr3El');
+    if (sec) sec.style.display = hasOffers ? '' : 'none';
+    if (bnr) bnr.style.display = hasOffers ? '' : 'none';
+  } catch (_) {
+    const sec = document.getElementById('offersSection');
+    const bnr = document.getElementById('bnr3El');
+    if (sec) sec.style.display = 'none';
+    if (bnr) bnr.style.display = 'none';
+  }
 }
 
 function buildSkeleton() {
@@ -1034,7 +1056,7 @@ function fixLoadedImages(container) {
 
 function setupGridObserver() {
   if (gridObserver) { gridObserver.disconnect(); gridObserver = null; }
-  if (pageOffset >= filteredList.length) return;
+  if (!_apiHasMore) return;
   const sentinel = document.getElementById('gridSentinel');
   gridObserver = new IntersectionObserver(entries => {
     if (entries[0].isIntersecting) loadMore();
@@ -1043,17 +1065,63 @@ function setupGridObserver() {
 }
 
 function loadMore() {
-  if (isLoadingMore || pageOffset >= filteredList.length) return;
+  if (isLoadingMore || !_apiHasMore) return;
   isLoadingMore = true;
-  const grid  = document.getElementById('productsGrid');
-  const batch = filteredList.slice(pageOffset, pageOffset + PAGE_SIZE);
-  const wrap  = document.createElement('div');
-  wrap.innerHTML = weavePromoted(batch);
-  while (wrap.firstChild) grid.appendChild(wrap.firstChild);
-  fixLoadedImages(grid);
-  pageOffset += batch.length;
-  isLoadingMore = false;
-  if (pageOffset >= filteredList.length && gridObserver) { gridObserver.disconnect(); gridObserver = null; }
+  _fetchGridPage(_apiPage + 1);
+}
+
+async function _fetchGridPage(page) {
+  const grid = document.getElementById('productsGrid');
+  if (page === 0) {
+    grid.innerHTML = Array(Math.min(PAGE_SIZE, 6)).fill(0).map(buildSkeleton).join('');
+  }
+  const params = new URLSearchParams({ page, size: PAGE_SIZE });
+  if (currentCategory !== 'all') params.set('category', currentCategory);
+  if (currentSearch) params.set('search', currentSearch);
+  const sortParam = currentSort === 'price-asc' ? 'price_asc'
+    : currentSort === 'price-desc' ? 'price_desc' : 'popular';
+  params.set('sort', sortParam);
+  try {
+    const res = await fetch(`${API_BASE}/api/products/pidefacil/paged?${params}`);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    let batch = _cacheProducts(data.content);
+    if (currentPriceFilter !== 'all') {
+      const [mn, mx] = currentPriceFilter.split('-').map(Number);
+      batch = batch.filter(p => p.price >= (mn || 0) && (mx ? p.price <= mx : true));
+    }
+    _apiHasMore = data.hasMore;
+    _apiPage    = data.page;
+    PRODUCTS    = [..._productCache.values()];
+    if (page === 0) {
+      filteredList = batch;
+      pageOffset   = batch.length;
+      const total  = data.totalElements;
+      document.getElementById('productCount').textContent = `${total} producto${total !== 1 ? 's' : ''}`;
+      if (!batch.length) {
+        grid.innerHTML = `<div class="no-results"><div class="no-results-icon">🔍</div><h3>Sin resultados</h3><p>Intenta otra búsqueda o categoría</p></div>`;
+        if (gridObserver) { gridObserver.disconnect(); gridObserver = null; }
+        return;
+      }
+      grid.innerHTML = weavePromoted(batch);
+      fixLoadedImages(grid);
+      setupGridObserver();
+    } else {
+      filteredList = [...filteredList, ...batch];
+      pageOffset   = filteredList.length;
+      const wrap = document.createElement('div');
+      wrap.innerHTML = weavePromoted(batch);
+      while (wrap.firstChild) grid.appendChild(wrap.firstChild);
+      fixLoadedImages(grid);
+      setupGridObserver();
+    }
+  } catch (e) {
+    if (page === 0) {
+      grid.innerHTML = '<div class="no-results"><div class="no-results-icon">⚠️</div><h3>Error al cargar</h3><p>Recarga la página</p></div>';
+    }
+  } finally {
+    isLoadingMore = false;
+  }
 }
 
 function renderFirstBatch() {
@@ -1071,29 +1139,10 @@ function renderFirstBatch() {
 }
 
 // ===== FILTERS =====
-function applyFilters() {
-  let l = [...PRODUCTS];
-  if (currentCategory !== 'all') l = l.filter(p => p.category === currentCategory);
-  if (currentSearch) l = l.filter(p =>
-    norm(p.name).includes(norm(currentSearch)) ||
-    norm(p.tags).includes(norm(currentSearch)) ||
-    p.id.substring(0, 8).toLowerCase().includes(currentSearch)
-  );
-  if (currentPriceFilter !== 'all') {
-    const [mn, mx] = currentPriceFilter.split('-').map(Number);
-    l = l.filter(p => p.price >= (mn || 0) && (mx ? p.price <= mx : true));
-  }
-  switch (currentSort) {
-    case 'price-asc':  l.sort((a, b) => a.price - b.price); break;
-    case 'price-desc': l.sort((a, b) => b.price - a.price); break;
-    case 'newest':     l.sort((a, b) => (b.badges.includes('new') ? 1 : 0) - (a.badges.includes('new') ? 1 : 0)); break;
-    default:           l.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
-  }
-  filteredList       = l;
-  pageOffset         = 0;
+async function applyFilters() {
   _gridRenderedCount = 0;
   _promoShownCount   = 0;
-  renderFirstBatch();
+  await _fetchGridPage(0);
 }
 
 function filterCategory(cat, btn) {
@@ -1179,11 +1228,23 @@ function handleSearch() { closeSearchDropdown(); currentSearch = document.getEle
 let lastSearchQuery = '';
 let lastLoggedQuery = '';
 function norm(s) { return (s ?? '').toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, ''); }
-function renderSearchDropdown(q) {
+async function renderSearchDropdown(q) {
   const dd = document.getElementById('searchDropdown');
-  const ql = norm(q);
-  const results = PRODUCTS.filter(p => norm(p.name).includes(ql) || norm(p.category).includes(ql) || p.id.substring(0, 8).toLowerCase().includes(ql)).slice(0, 5);
-  if (!results.length) {
+  try {
+    const _sr = await fetch(`${API_BASE}/api/products/pidefacil/search/${encodeURIComponent(q.trim())}?limit=5`);
+    if (!_sr.ok) throw new Error('empty');
+    const results = await _sr.json();
+    if (!results || !results.length) throw new Error('empty');
+    results.forEach(p => { if (!_productCache.has(p.id)) _productCache.set(p.id, normalizeProduct(p)); });
+    dd.innerHTML = results.map(p =>
+      `<div class="search-drop-item" onmousedown="openProduct('${p.id}');document.getElementById('searchInput').value='';closeSearchDropdown()">
+        <img class="search-drop-img" src="${p.image}" alt="${p.name}" width="42" height="42" loading="lazy" decoding="async">
+        <div class="search-drop-info"><div class="search-drop-name">${p.name}</div><div class="search-drop-price">${fmtPrice(p.price)}</div></div>
+      </div>`
+    ).join('');
+    dd.classList.add('open');
+    document.getElementById('searchBackdrop')?.classList.add('open');
+  } catch (_) {
     lastSearchQuery = q;
     dd.innerHTML = `<div class="search-drop-empty"><span class="search-drop-empty-icon">🔍</span><div class="search-drop-empty-text"><span>No encontramos resultados para <strong>"${q}"</strong></span><button class="search-drop-request-btn" onmousedown="openRequestModal()">¿Lo conseguimos para ti? Solicítalo aquí →</button></div></div>`;
     dd.classList.add('open'); document.getElementById('searchBackdrop')?.classList.add('open');
@@ -1196,16 +1257,7 @@ function renderSearchDropdown(q) {
       }).catch(() => {});
       trackEvent('SEARCH_NO_RESULTS', { query: q });
     }
-    return;
   }
-  dd.innerHTML = results.map(p =>
-    `<div class="search-drop-item" onmousedown="openProduct('${p.id}');document.getElementById('searchInput').value='';closeSearchDropdown()">
-      <img class="search-drop-img" src="${p.image}" alt="${p.name}" width="42" height="42" loading="lazy" decoding="async">
-      <div class="search-drop-info"><div class="search-drop-name">${p.name}</div><div class="search-drop-price">${fmtPrice(p.price)}</div></div>
-    </div>`
-  ).join('');
-  dd.classList.add('open');
-  document.getElementById('searchBackdrop')?.classList.add('open');
 }
 function closeSearchDropdown() { document.getElementById('searchDropdown')?.classList.remove('open'); document.getElementById('searchBackdrop')?.classList.remove('open'); document.getElementById('searchBackdrop')?.classList.remove('open'); }
 
@@ -1214,7 +1266,7 @@ function saveCart() {
   localStorage.setItem('cy_cart',    JSON.stringify(cart));
   localStorage.setItem('cy_checked', JSON.stringify([...checkedItems]));
 }
-function getCheckedItems()  { return cart.filter(i => checkedItems.has(i.id) && PRODUCTS.some(p => p.id === i.id)); }
+function getCheckedItems()  { return cart.filter(i => checkedItems.has(i.id)); }
 function getSelectedTotal() { return getCheckedItems().reduce((s, i) => s + i.price * i.qty, 0); }
 function getCount()         { return cart.reduce((s, i) => s + i.qty, 0); }
 
@@ -1263,7 +1315,8 @@ function flyToCart(originEl) {
 
 function addToCart(id, e) {
   flyToCart(e?.currentTarget || e?.target);
-  const p = PRODUCTS.find(x => x.id === id), ex = cart.find(x => x.id === id);
+  const p = _productCache.get(id), ex = cart.find(x => x.id === id);
+  if (!p) return;
   if (ex) ex.qty++;
   else { cart.push({ ...p, qty: 1 }); checkedItems.add(id); }
   saveCart(); updateCartUI(); updateAllBtns(); bumpBadge();
@@ -1272,7 +1325,7 @@ function addToCart(id, e) {
 }
 
 function updateAllBtns() {
-  PRODUCTS.forEach(p => {
+  _productCache.forEach(p => {
     const ci = cart.find(c => c.id === p.id);
     document.querySelectorAll(`#btnCart${p.id}`).forEach(wrap => {
       wrap.innerHTML = ci
@@ -1353,7 +1406,7 @@ function renderCartPanel() {
   body.innerHTML = Object.entries(g).map(([seller, items]) => {
     return `<div class="seller-group">
       ${items.map(item => {
-        const isActive = PRODUCTS.some(p => p.id === item.id);
+        const isActive = true;
         const checked  = checkedItems.has(item.id);
         if (!isActive) {
           return `<div class="cart-item cart-item--unavailable">
@@ -1862,7 +1915,7 @@ function cancelWompiPayment() {
   if (!pending) return;
   const { od } = pending;
   setTimeout(() => {
-    buyNowProduct = od.bpId ? (PRODUCTS.find(x => x.id === od.bpId) || null) : null;
+    buyNowProduct = od.bpId ? (_productCache.get(od.bpId) || null) : null;
     openOrderPopup();
     setTimeout(() => {
       document.getElementById('inputDireccion').value = od.dir || '';
@@ -1873,7 +1926,7 @@ function cancelWompiPayment() {
 
 // ===== BUY NOW =====
 function buyNow(id) {
-  buyNowProduct = PRODUCTS.find(x => x.id === id);
+  buyNowProduct = _productCache.get(id);
   const p = buyNowProduct;
   document.getElementById('orderSummary').innerHTML = _buildOspTable([{seller: null, items: [{name: p.name, qty: 1, total: p.price, image: p.image}]}]);
   _setSummaryTotal(p.price);
@@ -1941,14 +1994,23 @@ function updateWishUI() {
   if (hb)  { hb.textContent = n;  hb.classList.toggle('visible', n > 0); }
   if (hwc) { hwc.textContent = n; hwc.classList.toggle('visible', n > 0); }
 }
-function renderWishPanel() {
+async function renderWishPanel() {
   const container = document.getElementById('wishItems');
   if (!wishlist.length) {
     container.innerHTML = `<div class="wish-empty"><div class="wish-empty-icon">🤍</div><p>Aún no tienes favoritos</p><p style="font-size:11px;text-align:center">Toca el corazón en cualquier producto para guardarlo aquí</p></div>`;
     return;
   }
+  const _wMissing = wishlist.filter(id => !_productCache.has(id));
+  if (_wMissing.length) {
+    try {
+      const _wr = await fetch(`${API_BASE}/api/products/pidefacil/by-ids`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(_wMissing)
+      });
+      if (_wr.ok) _cacheProducts(await _wr.json());
+    } catch (_) {}
+  }
   container.innerHTML = wishlist.map(id => {
-    const p      = PRODUCTS.find(x => x.id === id);
+    const p = _productCache.get(id);
     if (!p) return '';
     const inCart = cart.some(c => c.id === id);
     return `<div class="wish-item">
@@ -2005,18 +2067,29 @@ function toggleWish(e, id) {
 function _handleProductDeepLink() {
   const id = new URLSearchParams(location.search).get('p');
   if (!id) return;
-  const p = PRODUCTS.find(x => x.id === id || x.id.startsWith(id));
-  if (p) openProduct(p.id);
+  const found = _productCache.get(id) || [..._productCache.values()].find(x => x.id.startsWith(id));
+  if (found) { openProduct(found.id); return; }
+  fetch(`${API_BASE}/api/products/${id}`)
+    .then(r => r.ok ? r.json() : null)
+    .then(raw => { if (raw) { const p = normalizeProduct(raw); _productCache.set(p.id, p); openProduct(p.id); } })
+    .catch(() => {});
 }
 
-function openProduct(id) {
+async function openProduct(id) {
   closeBannerPopup();
+  let p = _productCache.get(id);
+  if (!p) {
+    try {
+      const _r = await fetch(`${API_BASE}/api/products/${id}`);
+      if (_r.ok) { p = normalizeProduct(await _r.json()); _productCache.set(p.id, p); }
+    } catch (_) {}
+  }
+  if (!p) return;
   trackRecent(id);
   history.replaceState(null, '', '?p=' + id);
-  const p      = PRODUCTS.find(x => x.id === id);
-  trackEvent('PRODUCT_VIEW', { productId: p?.id, name: p?.name, category: p?.categoryId, price: p?.price });
+  trackEvent('PRODUCT_VIEW', { productId: p.id, name: p.name, category: p.category, price: p.price });
   const inWish = wishlist.includes(id);
-  const similar = PRODUCTS.filter(x => x.category === p.category && x.id !== id).slice(0, 20);
+  const similar = [..._productCache.values()].filter(x => x.category === p.category && x.id !== id).slice(0, 20);
   document.getElementById('modalBody').innerHTML = `
     <div class="modal-grid">
       <div class="modal-gallery">
@@ -2118,7 +2191,7 @@ function switchThumb(el, src) {
 function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); document.body.style.overflow = ''; history.replaceState(null, '', location.pathname); }
 
 function shareProduct(id) {
-  const p = PRODUCTS.find(x => x.id === id);
+  const p = _productCache.get(id);
   if (!p) return;
   const base = window.location.origin + window.location.pathname;
   const link = base + '?p=' + id.substring(0, 8);
@@ -2292,13 +2365,24 @@ function openOrdersHistory() {
   _fetchAndRenderOrders();
 }
 
-function repeatOrderFromApi(idx) {
+async function repeatOrderFromApi(idx) {
   const hist = window._apiOrdersHistory || [];
   const ord  = hist[idx];
   if (!ord) return;
 
+  const _pIds     = (ord.products ?? []).map(p => p.product?.id).filter(Boolean);
+  const _rMissing = _pIds.filter(id => !_productCache.has(id));
+  if (_rMissing.length) {
+    try {
+      const _rr = await fetch(`${API_BASE}/api/products/pidefacil/by-ids`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(_rMissing)
+      });
+      if (_rr.ok) _cacheProducts(await _rr.json());
+    } catch (_) {}
+  }
+
   const items = (ord.products ?? []).reduce((acc, p) => {
-    const product = PRODUCTS.find(x => x.id === p.product?.id);
+    const product = _productCache.get(p.product?.id);
     if (product) acc.push({ product, qty: p.quantity ?? 1 });
     return acc;
   }, []);
@@ -2356,14 +2440,22 @@ function toggleTheme() {
 }
 
 // ===== BANNER POPUP =====
-function openBannerPopup(filter, title) {
-  const products = filter === 'offer'
-    ? PRODUCTS.filter(p => p.oldPrice && p.oldPrice > p.price)
-    : PRODUCTS.filter(p => p.category === filter);
+async function openBannerPopup(filter, title) {
   document.getElementById('bnrPopupTitle').textContent = title;
-  document.getElementById('bnrPopupGrid').innerHTML    = products.map(p => buildCard(p)).join('');
+  document.getElementById('bnrPopupGrid').innerHTML    = Array(4).fill(0).map(buildSkeleton).join('');
   document.getElementById('bnrPopupOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
+  let products = [];
+  try {
+    if (filter === 'offer') {
+      const _or = await fetch(`${API_BASE}/api/products/pidefacil/offers?page=0&size=50`);
+      if (_or.ok) products = _cacheProducts((await _or.json()).content);
+    } else {
+      const _cr = await fetch(`${API_BASE}/api/products/pidefacil/paged?category=${encodeURIComponent(filter)}&page=0&size=50`);
+      if (_cr.ok) products = _cacheProducts((await _cr.json()).content);
+    }
+  } catch (_) {}
+  document.getElementById('bnrPopupGrid').innerHTML = products.map(p => buildCard(p)).join('');
 }
 function closeBannerPopup() { document.getElementById('bnrPopupOverlay').classList.remove('open'); document.body.style.overflow = ''; }
 function handleBnrPopupClick(e) { if (e.target === document.getElementById('bnrPopupOverlay')) closeBannerPopup(); }
@@ -2549,17 +2641,26 @@ function promoPopCta() {
 
 // ===== RECENTLY VIEWED =====
 function trackRecent(id) {
-  if (!id || !PRODUCTS.find(p => p.id === id)) return;
+  if (!id) return;
   let recent = [];
   try { recent = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch (_) {}
   recent = [id, ...recent.filter(x => x !== id)].slice(0, RECENT_MAX);
   localStorage.setItem(RECENT_KEY, JSON.stringify(recent));
   renderRecentlyViewed();
 }
-function renderRecentlyViewed() {
+async function renderRecentlyViewed() {
   let ids = [];
   try { ids = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch (_) {}
-  const products = ids.map(id => PRODUCTS.find(p => p.id === id)).filter(Boolean);
+  const missing = ids.filter(id => !_productCache.has(id));
+  if (missing.length) {
+    try {
+      const _br = await fetch(`${API_BASE}/api/products/pidefacil/by-ids`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(missing)
+      });
+      if (_br.ok) _cacheProducts(await _br.json());
+    } catch (_) {}
+  }
+  const products = ids.map(id => _productCache.get(id)).filter(Boolean);
   const sec = document.getElementById('recentSection');
   if (!sec) return;
   if (!products.length) { sec.style.display = 'none'; return; }
