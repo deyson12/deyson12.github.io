@@ -937,7 +937,8 @@ function buildPromotedCard(p) {
   return `<div class="product-card promoted-card new-in" onclick="openPromotedProduct('${p.id}')">
     <div class="card-img-wrap">
       <img class="card-img" src="${p.image}" alt="${p.name}" width="300" height="300" loading="lazy" decoding="async" onload="this.classList.add('img-loaded')" onerror="this.classList.add('img-loaded')">
-      ${disc > 0 ? `<div class="badge-wrap"><span class="badge badge-offer">${disc}% OFF</span></div>` : p.badge ? `<div class="badge-wrap"><span class="badge badge-top">${p.badge}</span></div>` : ''}
+      ${disc > 0 ? `<div class="badge-wrap"><span class="badge badge-offer">${disc}% OFF</span></div>` : ''}
+      ${p.badge ? `<div class="badge-wrap-right"><span class="badge badge-top"><svg viewBox="0 0 24 24" width="9" height="9" fill="currentColor" style="flex-shrink:0"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>${p.badge}</span></div>` : ''}
       <div class="promo-label">Patrocinado</div>
     </div>
     <div class="card-body">
@@ -972,7 +973,7 @@ function openPromotedProduct(id) {
       <div class="modal-info">
         <div class="modal-seller" style="display:flex;align-items:center;gap:7px">
           <span class="promo-badge-modal">Patrocinado</span>
-          ${p.badge ? `<span class="badge badge-top" style="font-size:11px">${p.badge}</span>` : ''}
+          ${p.badge ? `<span class="badge badge-top" style="font-size:11px"><svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor" style="flex-shrink:0"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>${p.badge}</span>` : ''}
           <span>${p.sellerName}</span>
         </div>
         <h2 class="modal-name">${p.name}</h2>
@@ -981,6 +982,7 @@ function openPromotedProduct(id) {
           ${disc > 0 ? `<span class="modal-old">${fmtPrice(p.oldPrice)}</span><span class="modal-off">-${disc}%</span>` : ''}
         </div>
         ${buildModalDesc(p.description)}
+        ${p.badge ? `<div style="display:flex;align-items:flex-start;gap:8px;background:#FFF7ED;border-left:3px solid #F15200;border-radius:0 8px 8px 0;padding:9px 12px;margin-top:12px;font-size:12px;color:#92400E;line-height:1.5"><svg viewBox="0 0 24 24" width="14" height="14" fill="#F15200" style="flex-shrink:0;margin-top:1px"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg><span>Disponible solo en <strong>${p.badge}</strong>. Asegúrate de estar dentro de la zona de cobertura antes de realizar tu pedido.</span></div>` : ''}
         <div class="modal-actions" style="margin-top:16px">
           <a class="btn btn-promo-wa" href="${waUrl}" target="_blank" rel="noopener noreferrer" style="width:100%;padding:12px;font-size:14px;text-decoration:none">
             <svg viewBox="0 0 24 24" style="width:18px;height:18px" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12c0 2.025.507 3.967 1.399 5.671L.1 23.9l6.499-1.699A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/><path fill="#fff" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/></svg>
@@ -1026,14 +1028,14 @@ async function renderOffers() {
     const offers = _cacheProducts(data.content);
     const hasOffers = offers.length > 0;
     document.getElementById('offersContainer').innerHTML = offers.map(p => buildCard(p)).join('');
-    const sec = document.getElementById('offersSection');
+    const zone = document.getElementById('dealsZone');
     const bnr = document.getElementById('bnr3El');
-    if (sec) sec.style.display = hasOffers ? '' : 'none';
+    if (zone) zone.style.display = hasOffers ? '' : 'none';
     if (bnr) bnr.style.display = hasOffers ? '' : 'none';
   } catch (_) {
-    const sec = document.getElementById('offersSection');
+    const zone = document.getElementById('dealsZone');
     const bnr = document.getElementById('bnr3El');
-    if (sec) sec.style.display = 'none';
+    if (zone) zone.style.display = 'none';
     if (bnr) bnr.style.display = 'none';
   }
 }

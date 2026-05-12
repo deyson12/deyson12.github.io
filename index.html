@@ -318,7 +318,7 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
 </section>
 
 <!-- OFFERS ONLY (no featured section) -->
-<div class="deals-zone">
+<div class="deals-zone" id="dealsZone" style="display:none">
   <div class="deals-zone-head">
     <div class="deals-zone-title">
       <iconify-icon icon="noto:fire" width="20" height="20" style="flex-shrink:0"></iconify-icon>
@@ -342,10 +342,10 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
 <!--div class="sbnr sbnr12">
 <!-- FILTERS -->
 <div class="filters-bar">
-  <button class="filter-chip active" onclick="filterPrice('all',this)">Todos</button>
-  <button class="filter-chip" onclick="filterPrice('0-10000',this)">Hasta $10k</button>
-  <button class="filter-chip" onclick="filterPrice('10000-50000',this)">$10k–$50k</button>
-  <button class="filter-chip" onclick="filterPrice('50000-',this)">+$50k</button>
+  <!--button class="filter-chip active" onclick="filterPrice('all',this)">Todos</button>
+  <button class="filter-chip" onclick="filterPrice('0-50000',this)">Hasta $50k</button>
+  <button class="filter-chip" onclick="filterPrice('50000-100000',this)">$50k–$100k</button>
+  <button class="filter-chip" onclick="filterPrice('100000-',this)">+$100k</button-->
   <label class="sr-only" for="sortSelect">Ordenar productos</label>
   <select class="sort-select" id="sortSelect" onchange="sortProducts()">
     <option value="popular">Más populares</option>
