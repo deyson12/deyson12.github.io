@@ -3,6 +3,17 @@
 // Requiere: js/config.js, js/utils.js
 // ============================================================
 
+// ===== IN-FLIGHT REQUEST DEDUPLICATION =====
+// Prevents multiple simultaneous fetches to the same URL from hitting the network twice.
+const _inflightRequests = new Map();
+function dedupFetch(url, options) {
+  const key = (options?.method || 'GET') + ':' + url;
+  if (_inflightRequests.has(key)) return _inflightRequests.get(key);
+  const promise = fetch(url, options).finally(() => _inflightRequests.delete(key));
+  _inflightRequests.set(key, promise);
+  return promise;
+}
+
 // ===== FETCH INTERCEPTOR — 429 Too Many Requests =====
 (function () {
   const _origFetch = window.fetch;
@@ -36,8 +47,8 @@ function show429Alert(seconds) {
   const msgEl = document.getElementById('alert429Msg');
 
   if (!seconds) {
-    msgEl.textContent = 'Por favor esperá unos segundos e intentá nuevamente.';
-    setTimeout(() => location.reload(), 8000);
+    msgEl.innerHTML = 'Por favor esperá unos segundos e intentá nuevamente.<br><br>'
+      + '<button onclick="location.reload()" style="margin-top:4px;padding:8px 20px;background:#F15200;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">Intentar ahora</button>';
     return;
   }
 
@@ -83,7 +94,8 @@ const PROMO_EVERY = 6;      // inject promoted cards every N regular cards
 // ===== POPUP AD =====
 let POPUP_AD = null;
 let _promoPopAction = null;
-const POPUP_DISMISSED_KEY = 'cy_popup_id'; // single key; value = last dismissed popup id
+let _popupQueue = [];   // array of popup objects pending to show
+const POPUP_DISMISSED_PREFIX = 'cy_popup_'; // key per popup: cy_popup_{id}
 
 // ===== COUPONS =====
 // Coupons are now validated against the API — no local array needed.
@@ -234,7 +246,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const grid = document.getElementById('productsGrid');
   grid.innerHTML = Array(PAGE_SIZE).fill(0).map(buildSkeleton).join('');
   try {
-    const res = await fetch(`${API_BASE}/api/products/pidefacil/paged?page=0&size=${PAGE_SIZE}`);
+    const res = await dedupFetch(`${API_BASE}/api/products/pidefacil/paged?page=0&size=${PAGE_SIZE}`);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const _initData = await res.json();
     PRODUCTS  = _cacheProducts(_initData.content);
@@ -244,29 +256,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.error('Error cargando productos:', e);
     grid.innerHTML = '<div class="no-results"><div class="no-results-icon">⚠️</div><h3>Error al cargar</h3><p>Recarga la página</p></div>';
   }
+  // Fetch secondary resources in parallel
+  const [_rpRes, _rbRes, _rppRes] = await Promise.allSettled([
+    dedupFetch(`${API_BASE}/api/promoted-ads/visible`),
+    dedupFetch(`${API_BASE}/api/banners/visible`),
+    dedupFetch(`${API_BASE}/api/popup-ads/visible`),
+  ]);
   try {
-    const rp = await fetch(`${API_BASE}/api/promoted-ads/visible`);
-    if (rp.ok) PROMOTED = await rp.json();
-  } catch (_) { /* sin anuncios promocionados */ }
-  // Coupons validated on-demand via API — nothing to preload.
-  try {
-    const rb = await fetch(API_BASE + '/api/banners/visible');
-    if (rb.ok) renderSbnrBanners(await rb.json());
+    if (_rpRes.status === 'fulfilled' && _rpRes.value.ok) PROMOTED = await _rpRes.value.json();
   } catch (_) {}
   try {
-    const rpp = await fetch('promoted/popup.json');
-    if (rpp.ok) {
-      const d = await rpp.json();
-      if (d && d.id) {
-        if (d.idProduct) {
-          const matched = PROMOTED.find(p => p.id === d.idProduct);
-          POPUP_AD = matched
-            ? { ...matched, id: d.id, type: 'product', badge: d.badge || matched.badge || '' }
-            : d;
-        } else {
-          POPUP_AD = d;
-        }
-      }
+    if (_rbRes.status === 'fulfilled' && _rbRes.value.ok) renderSbnrBanners(await _rbRes.value.json());
+  } catch (_) {}
+  try {
+    if (_rppRes.status === 'fulfilled' && _rppRes.value.ok) {
+      const popups = await _rppRes.value.json();
+      _popupQueue = popups.filter(d => d && d.id && localStorage.getItem(POPUP_DISMISSED_PREFIX + d.id) !== '1');
     }
   } catch (_) {}
   initBanner();
@@ -283,7 +288,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initMapField();
   initCategories();
   renderRecentlyViewed();
-  if (POPUP_AD) showPromoPopup();
+  if (_popupQueue.length) _showNextPopup();
   _handleProductDeepLink();
   // Track page view (once per session)
   if (!sessionStorage.getItem('pf_pv')) {
@@ -1153,7 +1158,12 @@ function filterCategory(cat, btn) {
   document.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
   applyFilters();
   document.getElementById('gridSectionHeader').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  if (cat !== 'all') trackEvent('CATEGORY_FILTER', { category: cat });
+  if (cat !== 'all') {
+    history.replaceState(null, '', '?cat=' + encodeURIComponent(cat));
+    trackEvent('CATEGORY_FILTER', { category: cat });
+  } else {
+    history.replaceState(null, '', location.pathname);
+  }
 }
 function hamFilterCategory(cat, btn) {
   currentCategory = cat;
@@ -1162,6 +1172,8 @@ function hamFilterCategory(cat, btn) {
   applyFilters();
   closeHamDrawer();
   document.getElementById('gridSectionHeader').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (cat !== 'all') history.replaceState(null, '', '?cat=' + encodeURIComponent(cat));
+  else history.replaceState(null, '', location.pathname);
 }
 function openHamDrawer()  { document.getElementById('hamDrawer').classList.add('open'); document.getElementById('hamOverlay').classList.add('open'); document.body.style.overflow = 'hidden'; _updateUserGreeting(); }
 
@@ -1193,6 +1205,15 @@ async function initCategories() {
 
     if (navInner)    navInner.innerHTML    = todoBtnNav + cats.map(makeNavBtn).join('');
     if (hamContainer) hamContainer.innerHTML = todoBtnHam + cats.map(makeHamBtn).join('');
+
+    // Restore category from URL (?cat=UUID) after buttons are rendered
+    const _savedCat = new URLSearchParams(location.search).get('cat');
+    if (_savedCat && cats.some(c => c.id === _savedCat)) {
+      currentCategory = _savedCat;
+      document.querySelectorAll('.cat-btn,.ham-cat-btn').forEach(b =>
+        b.classList.toggle('active', b.dataset.cat === _savedCat));
+      applyFilters();
+    }
   } catch (e) {
     console.warn('No se pudieron cargar las categorías desde la API:', e);
     // Fallback: show only the "Todo" button so the UI isn't broken
@@ -2197,7 +2218,14 @@ function switchThumb(el, src) {
   img.style.opacity = '0';
   setTimeout(() => { img.src = src; img.style.opacity = '1'; }, 180);
 }
-function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); document.body.style.overflow = ''; history.replaceState(null, '', location.pathname); }
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  // Restore ?cat= if active, otherwise clean to pathname
+  const catParam = currentCategory && currentCategory !== 'all'
+    ? '?cat=' + encodeURIComponent(currentCategory) : location.pathname;
+  history.replaceState(null, '', catParam);
+}
 
 function shareProduct(id) {
   const p = _productCache.get(id);
@@ -2562,10 +2590,14 @@ function _moreMenuOutside(e) {
 }
 
 // ===== POPUP AD =====
+function _showNextPopup() {
+  if (!_popupQueue.length) return;
+  POPUP_AD = _popupQueue[0];
+  showPromoPopup();
+}
 function showPromoPopup() {
   const ad = POPUP_AD;
   if (!ad || !ad.id) return;
-  if (localStorage.getItem(POPUP_DISMISSED_KEY) === ad.id) return;
   if (ad.type === 'product') _showProductPopup(ad);
   else _showBannerPopup(ad);
 }
@@ -2585,21 +2617,24 @@ function _showBannerPopup(ad) {
   }, 800);
 }
 function _showProductPopup(ad) {
-  const disc = (ad.oldPrice && ad.oldPrice > ad.price)
-    ? Math.round((ad.oldPrice - ad.price) / ad.oldPrice * 100) : 0;
-  document.getElementById('ppProductImg').src            = ad.image || '';
-  document.getElementById('ppProductName').textContent   = ad.name || '';
-  document.getElementById('ppProductBadge').textContent  = ad.badge || '';
+  // ctaAction holds the promoted-ad UUID; look it up from the already-loaded PROMOTED cache
+  const p = (ad.ctaAction && PROMOTED.find(x => x.id === ad.ctaAction)) || null;
+  if (!p) { console.warn('popup product not found in PROMOTED:', ad.ctaAction); return; }
+  const disc = (p.oldPrice && p.oldPrice > p.price)
+    ? Math.round((p.oldPrice - p.price) / p.oldPrice * 100) : 0;
+  document.getElementById('ppProductImg').src            = p.image || '';
+  document.getElementById('ppProductName').textContent   = p.name || '';
+  document.getElementById('ppProductBadge').textContent  = p.badge || ad.badge || '';
   const descEl = document.getElementById('ppProductDesc');
-  descEl.textContent = ad.description || '';
-  descEl.style.display = ad.description ? '' : 'none';
-  document.getElementById('ppProductPrice').textContent  = fmtPrice(ad.price);
-  document.getElementById('ppProductSeller').textContent = ad.sellerName || '';
+  descEl.textContent = p.description || '';
+  descEl.style.display = p.description ? '' : 'none';
+  document.getElementById('ppProductPrice').textContent  = fmtPrice(p.price);
+  document.getElementById('ppProductSeller').textContent = p.sellerName || '';
   const oldEl  = document.getElementById('ppProductOld');
   const discEl = document.getElementById('ppProductDisc');
   const ribbon = document.getElementById('ppProductRibbon');
-  if (ad.oldPrice && disc > 0) {
-    oldEl.textContent    = fmtPrice(ad.oldPrice);
+  if (p.oldPrice && disc > 0) {
+    oldEl.textContent    = fmtPrice(p.oldPrice);
     discEl.textContent   = '-' + disc + '%';
     discEl.style.display = '';
     ribbon.style.display = '';
@@ -2608,7 +2643,7 @@ function _showProductPopup(ad) {
     discEl.style.display = 'none';
     ribbon.style.display = 'none';
   }
-  document.getElementById('ppProductWa').href = promoWaUrl(ad);
+  document.getElementById('ppProductWa').href = promoWaUrl(p);
   setTimeout(() => {
     document.getElementById('ppProductOverlay').classList.add('open');
     _lockPromoScroll();
@@ -2639,9 +2674,10 @@ function handlePromoPopClick(e) {
   if (id === 'ppBannerOverlay' || id === 'ppProductOverlay') closePromoPopup();
 }
 function dismissPromoPopupForever() {
-  // Always overwrite the single key with the current popup id
-  if (POPUP_AD && POPUP_AD.id) localStorage.setItem(POPUP_DISMISSED_KEY, POPUP_AD.id);
+  if (POPUP_AD && POPUP_AD.id) localStorage.setItem(POPUP_DISMISSED_PREFIX + POPUP_AD.id, '1');
+  _popupQueue.shift();
   closePromoPopup();
+  if (_popupQueue.length) setTimeout(_showNextPopup, 600);
 }
 function promoPopCta() {
   closePromoPopup();

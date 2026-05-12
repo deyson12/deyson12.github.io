@@ -360,6 +360,16 @@
   .an-day-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
   .an-day-bar { width: 100%; background: var(--primary); border-radius: 3px 3px 0 0; min-height: 2px; transition: height .4s; }
   .an-day-label { font-size: 9px; color: var(--text-muted); writing-mode: vertical-rl; transform: rotate(180deg); margin-top: 2px; }
+  .an-hbar-chart { display: flex; flex-direction: column; gap: 5px; }
+  .an-hbar-row { display: flex; align-items: center; gap: 8px; }
+  .an-hbar-label { font-size: 10px; color: var(--text-muted); width: 50px; text-align: right; flex-shrink: 0; }
+  .an-hbar-track { flex: 1; background: var(--border); border-radius: 3px; height: 14px; overflow: hidden; display: flex; }
+  .an-hbar-fill { height: 100%; background: var(--primary); border-radius: 3px; transition: width .4s; }
+  .an-hbar-seg { height: 100%; transition: width .4s; }
+  .an-hbar-count { font-size: 10px; color: var(--text-secondary); width: 28px; text-align: right; flex-shrink: 0; }
+  .an-hbar-legend { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-bottom: 8px; }
+  .an-hbar-legend-item { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--text-secondary); }
+  .an-hbar-legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
   .an-empty { font-size: 13px; color: var(--text-muted); text-align: center; padding: 20px 0; }
 
   /* ── PRODUCTS SECTION ── */
@@ -648,12 +658,16 @@
   <div class="section-loader" id="analyticsLoader" style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:200"><div class="spinner"></div><div class="section-loader-label">Cargando analytics…</div></div>
 
   <!-- Month navigator -->
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:8px">
     <div class="month-nav">
       <button class="month-nav-btn" onclick="shiftMonth(-1)" title="Mes anterior">‹</button>
       <span class="month-nav-label" id="monthNavLabelAnalytics">—</span>
       <button class="month-nav-btn" onclick="shiftMonth(1)" id="monthNavNextAnalytics" title="Mes siguiente">›</button>
     </div>
+    <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);cursor:pointer;user-select:none" title="Excluye eventos con IP 127.0.0.1 / ::1 / 0:0:0:0:0:0:0:1 (pruebas locales)">
+      <input type="checkbox" id="chkExcludeLocal" checked style="accent-color:#F15200;width:14px;height:14px" onchange="loadAnalytics()">
+      Ocultar pruebas locales
+    </label>
   </div>
 
   <!-- KPIs principales -->
@@ -910,6 +924,7 @@
 
 <!-- PUBLICIDAD SECTION -->
 <div class="content" id="publicidadSection" style="display:none">
+  <!-- Anuncios promocionados -->
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
     <h2 style="font-size:18px;font-weight:800;flex:1">Publicidad patrocinada</h2>
     <button class="btn-confirm" style="flex:none;padding:8px 16px;font-size:13px" onclick="openAdModal()">
@@ -920,6 +935,18 @@
   <div class="table-wrap">
     <div class="table-count" id="adCount"></div>
     <div id="adGrid"></div>
+  </div>
+  <!-- Popups -->
+  <div style="display:flex;align-items:center;gap:10px;margin:28px 0 16px;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:24px">
+    <h2 style="font-size:18px;font-weight:800;flex:1">Popups de bienvenida</h2>
+    <button class="btn-confirm" style="flex:none;padding:8px 16px;font-size:13px" onclick="openPopupModal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M12 5v14M5 12h14"/></svg>
+      Nuevo popup
+    </button>
+  </div>
+  <div class="table-wrap">
+    <div class="table-count" id="popupCount"></div>
+    <div id="popupGrid"></div>
   </div>
 </div>
 
@@ -992,6 +1019,92 @@
     <div style="display:flex;gap:8px;padding:14px 20px;border-top:1px solid var(--border)">
       <button class="btn-confirm" style="flex:1" onclick="saveAd()">Guardar</button>
       <button class="btn-drop" onclick="closeAdModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- POPUP ADS MODAL -->
+<div class="modal-overlay" id="popupModal" onclick="handlePopupModalClick(event)">
+  <div class="modal-box" style="max-width:500px">
+    <div class="modal-head">
+      <div class="modal-head-title" id="popupModalTitle">Nuevo popup</div>
+      <button class="modal-close" onclick="closePopupModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;max-height:75vh;overflow-y:auto">
+      <div class="pf-form-row">
+        <label class="pf-form-label">Tipo</label>
+        <select class="pf-form-input" id="popupType" onchange="_onPopupTypeChange(this.value)">
+          <option value="banner">Banner</option>
+          <option value="product">Producto</option>
+        </select>
+      </div>
+
+      <!-- BANNER FIELDS -->
+      <div id="popupBannerFields" style="display:flex;flex-direction:column;gap:14px">
+        <div class="pf-form-row">
+          <label class="pf-form-label">Título <span style="color:#9CA3AF;font-weight:400">opcional</span></label>
+          <input class="pf-form-input" id="popupTitle" type="text" maxlength="250" placeholder="¡Oferta especial!">
+        </div>
+        <div class="pf-form-row">
+          <label class="pf-form-label">Subtítulo <span style="color:#9CA3AF;font-weight:400">opcional</span></label>
+          <textarea class="pf-form-input" id="popupSubtitle" rows="2" placeholder="Descripción corta…" style="resize:vertical"></textarea>
+        </div>
+        <div class="pf-form-row">
+          <label class="pf-form-label">URL imagen <span style="color:#9CA3AF;font-weight:400">opcional</span></label>
+          <input class="pf-form-input" id="popupImage" type="url" placeholder="https://…">
+        </div>
+        <div class="pf-form-row">
+          <label class="pf-form-label">Texto del botón (CTA) <span style="color:#9CA3AF;font-weight:400">opcional</span></label>
+          <input class="pf-form-input" id="popupCta" type="text" maxlength="150" placeholder="Ver oferta">
+        </div>
+        <div class="pf-form-row">
+          <label class="pf-form-label">CTA action (ID categoría) <span style="color:#9CA3AF;font-weight:400">opcional</span></label>
+          <input class="pf-form-input" id="popupCtaAction" type="text" maxlength="36" placeholder="UUID de categoría">
+        </div>
+      </div>
+
+      <!-- PRODUCT SEARCH FIELD -->
+      <div id="popupProductFields" style="display:none;flex-direction:column;gap:10px">
+        <div class="pf-form-row">
+          <label class="pf-form-label">Buscar anuncio promocionado</label>
+          <input class="pf-form-input" id="popupProductSearch" type="text" placeholder="Escribe nombre del producto…" autocomplete="off" oninput="_popupProductSearch(this.value)">
+        </div>
+        <div id="popupProductResults" style="display:none;border:1px solid var(--border);border-radius:8px;overflow:hidden;max-height:200px;overflow-y:auto"></div>
+        <div id="popupProductPreview" style="display:none;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:10px;display:none;align-items:center;gap:10px">
+          <img id="popupProductPreviewImg" src="" alt="" width="48" height="48" style="border-radius:6px;object-fit:cover;flex-shrink:0;background:var(--border)">
+          <div style="flex:1;min-width:0">
+            <div id="popupProductPreviewName" style="font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+            <div id="popupProductPreviewPrice" style="font-size:12px;color:var(--text-secondary);margin-top:2px"></div>
+          </div>
+          <button onclick="_clearPopupProduct()" style="background:none;border:none;cursor:pointer;color:var(--text-secondary);font-size:18px;line-height:1;padding:2px 6px">×</button>
+        </div>
+        <!-- hidden field to store selected ID -->
+        <input type="hidden" id="popupCtaActionProduct">
+      </div>
+
+      <!-- COMMON FIELDS -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="pf-form-row">
+          <label class="pf-form-label">Zona / badge <span style="color:#9CA3AF;font-weight:400">opcional</span></label>
+          <input class="pf-form-input" id="popupBadge" type="text" maxlength="100" placeholder="Cali Sur">
+        </div>
+        <div class="pf-form-row">
+          <label class="pf-form-label">Fecha fin <span style="color:#9CA3AF;font-weight:400">opcional</span></label>
+          <input class="pf-form-input" id="popupEndDate" type="date">
+        </div>
+      </div>
+      <div class="pf-form-row">
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+          <input type="checkbox" id="popupActive" checked style="width:16px;height:16px;accent-color:#F15200">
+          Activo
+        </label>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;padding:14px 20px;border-top:1px solid var(--border)">
+      <button class="btn-confirm" style="flex:1" onclick="savePopup()">Guardar</button>
+      <button class="btn-drop" onclick="closePopupModal()">Cancelar</button>
     </div>
   </div>
 </div>
@@ -1103,7 +1216,7 @@ function showSection(section) {
   if (section === 'pedidos') loadOrders();
   if (section === 'banners')     loadBanners();
   if (section === 'cupones')     loadCoupons();
-  if (section === 'publicidad')  loadAds();
+  if (section === 'publicidad') { loadAds(); loadPopups(); }
 }
 
 function onRefresh() {
@@ -1803,7 +1916,7 @@ async function loadAnalytics() {
       if (ro.ok) allOrders = await ro.json();
     } catch (_) {}
 
-    const res = await fetch(`${API_BASE}/api/analytics/stats`, {
+    const res = await fetch(`${API_BASE}/api/analytics/stats?excludeLoopback=${document.getElementById('chkExcludeLocal')?.checked ?? true}`, {
       headers: { 'Authorization': `Bearer ${getToken()}` }
     });
     if (res.status === 401 || res.status === 403) { sessionStorage.removeItem(AUTH_KEY); location.reload(); return; }
@@ -1928,17 +2041,50 @@ function renderAnalytics(s) {
   const payList = Object.entries(payMap).sort((a,b) => b[1]-a[1]).map(([k,v]) => ({ k, v }));
   document.getElementById('anByPayment').innerHTML = barChart(payList, r => r.k, r => r.v, '#f59e0b');
 
-  // ── By Hour ───────────────────────────────────────────────────
-  const hourMap = Array(24).fill(0);
+  // ── By Hour (stacked by status) ─────────────────────────────
+  const HOUR_STATUS_COLORS = {
+    PENDIENTE: '#f59e0b',
+    CONFIRMADO: '#22c55e',
+    ENVIADO: '#3b82f6',
+    RECIBIDO: '#8b5cf6',
+    CANCELADO: '#ef4444',
+    CANCELADO_AUTOMATICAMENTE: '#b91c1c'
+  };
+  const HOUR_STATUS_LABELS = {
+    PENDIENTE: 'Pendiente',
+    CONFIRMADO: 'Confirmado',
+    ENVIADO: 'Enviado',
+    RECIBIDO: 'Recibido',
+    CANCELADO: 'Cancelado',
+    CANCELADO_AUTOMATICAMENTE: 'Canc. auto'
+  };
+  const hourStatuses = Object.keys(HOUR_STATUS_COLORS);
+  const hourMap = Array.from({length: 24}, () => Object.fromEntries(hourStatuses.map(s => [s, 0])));
+  const hourStatusSeen = new Set();
   orders.forEach(o => {
-    if (o.createdAt) hourMap[new Date(o.createdAt).getHours()]++;
+    if (!o.createdAt) return;
+    const h = new Date(o.createdAt).getHours();
+    const st = o.status ?? 'PENDIENTE';
+    if (hourMap[h][st] !== undefined) { hourMap[h][st]++; hourStatusSeen.add(st); }
   });
-  const maxH = Math.max(...hourMap, 1);
-  const hourHtml = `<div class="an-day-chart">${hourMap.map((v, h) => `
-    <div class="an-day-col" title="${String(h).padStart(2,'0')}:00 — ${v} pedidos">
-      <div class="an-day-bar" style="height:${Math.max(v?2:0, Math.round((v/maxH)*76))}px;background:#3b82f6"></div>
-      <div class="an-day-label">${h % 4 === 0 ? String(h).padStart(2,'0') : ''}</div>
-    </div>`).join('')}</div>`;
+  const hourTotals = hourMap.map(m => hourStatuses.reduce((s, k) => s + m[k], 0));
+  const maxH = Math.max(...hourTotals, 1);
+  const seenStatuses = hourStatuses.filter(s => hourStatusSeen.has(s));
+  const legendHtml = `<div class="an-hbar-legend">${seenStatuses.map(s =>
+    `<div class="an-hbar-legend-item"><div class="an-hbar-legend-dot" style="background:${HOUR_STATUS_COLORS[s]}"></div>${HOUR_STATUS_LABELS[s]}</div>`
+  ).join('')}</div>`;
+  const hourHtml = legendHtml + `<div class="an-hbar-chart">${hourMap.map((m, h) => {
+    const total = hourTotals[h];
+    const barW = Math.round((total / maxH) * 100);
+    const segments = seenStatuses.filter(s => m[s] > 0).map(s =>
+      `<div class="an-hbar-seg" style="width:${Math.round((m[s]/total)*barW)}%;background:${HOUR_STATUS_COLORS[s]}" title="${HOUR_STATUS_LABELS[s]}: ${m[s]}"></div>`
+    ).join('');
+    return `<div class="an-hbar-row" title="${String(h).padStart(2,'0')}:00 — ${total} pedidos">
+      <div class="an-hbar-label">${String(h).padStart(2,'0')}:00</div>
+      <div class="an-hbar-track">${total > 0 ? segments : ''}</div>
+      <div class="an-hbar-count">${total || ''}</div>
+    </div>`;
+  }).join('')}</div>`;
   document.getElementById('anByHour').innerHTML = orders.length ? hourHtml : '<div class="an-empty">Sin datos aún</div>';
 
   // ── Top Buyers ────────────────────────────────────────────────
@@ -2012,10 +2158,11 @@ function renderAnalytics(s) {
   const days = s.eventsByDay ?? [];
   const maxD = Math.max(...days.map(d => Number(d.total)), 1);
   document.getElementById('anByDay').innerHTML = days.length
-    ? `<div class="an-day-chart">${days.map(d => `
-        <div class="an-day-col" title="${d.day}: ${d.total} eventos">
-          <div class="an-day-bar" style="height:${Math.max(2, Math.round((d.total/maxD)*76))}px"></div>
-          <div class="an-day-label">${String(d.day).substring(5)}</div>
+    ? `<div class="an-hbar-chart">${days.map(d => `
+        <div class="an-hbar-row" title="${d.day}: ${d.total} eventos">
+          <div class="an-hbar-label">${String(d.day).substring(5)}</div>
+          <div class="an-hbar-track"><div class="an-hbar-fill" style="width:${Math.round((Number(d.total)/maxD)*100)}%"></div></div>
+          <div class="an-hbar-count">${d.total}</div>
         </div>`).join('')}</div>`
     : '<div class="an-empty">Sin datos aún</div>';
 }
@@ -3268,6 +3415,212 @@ async function saveCoupon() {
     renderCoupons();
     closeCouponModal();
     showToast(`Cupón "${saved.code}" guardado correctamente.`);
+  } catch (e) { showToast('Error: ' + e.message); }
+}
+
+// ── POPUPS ─────────────────────────────────────────────────
+let _allPopups   = [];
+let _editingPopupId = null;
+
+async function loadPopups() {
+  const grid    = document.getElementById('popupGrid');
+  const countEl = document.getElementById('popupCount');
+  grid.innerHTML = '<div class="state-box"><div class="state-sub">Cargando popups…</div></div>';
+  try {
+    const res = await fetch(`${API_BASE}/api/popup-ads`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    _allPopups = await res.json();
+    renderPopups();
+  } catch (e) {
+    grid.innerHTML = `<div class="state-box"><div class="state-sub">Error: ${e.message}</div></div>`;
+  }
+}
+
+function _popupStatus(p) {
+  const expired = p.endDate && new Date(p.endDate) < new Date();
+  if (!p.active) return { label: 'Inactivo', cls: 'osc-declined' };
+  if (expired)   return { label: 'Vencido',  cls: 'osc-declined' };
+  return           { label: 'Activo',   cls: 'osc-approved' };
+}
+
+function renderPopups() {
+  const grid    = document.getElementById('popupGrid');
+  const countEl = document.getElementById('popupCount');
+  if (countEl) countEl.textContent = `${_allPopups.length} popup${_allPopups.length !== 1 ? 's' : ''}`;
+  if (!_allPopups.length) {
+    grid.innerHTML = '<div class="state-box"><div class="state-icon">🪄</div><div class="state-sub">Sin popups. Crea el primero.</div></div>';
+    return;
+  }
+  grid.innerHTML = _allPopups.map(p => {
+    const st = _popupStatus(p);
+    return `<div class="order-card" style="display:flex;align-items:center;gap:12px;padding:12px 16px;margin-bottom:8px">
+      ${p.image ? `<img src="${p.image}" alt="" width="56" height="56" style="border-radius:8px;object-fit:cover;flex-shrink:0;background:var(--border)" onerror="this.style.display='none'">` : '<div style="width:56px;height:56px;border-radius:8px;background:var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px">🪄</div>'}
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.title || '<em style="color:var(--text-secondary)">Sin título</em>'}</div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-top:2px">Tipo: <strong>${p.type}</strong>${p.badge ? ` · 📍 ${p.badge}` : ''}${p.cta ? ` · CTA: ${p.cta}` : ''}</div>
+        ${p.subtitle ? `<div style="font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px">${p.subtitle}</div>` : ''}
+        ${p.endDate  ? `<div style="font-size:11px;color:var(--text-muted);margin-top:1px">Vence: ${p.endDate}</div>` : ''}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
+        <span class="ord-status-chip ${st.cls}" style="font-size:10px">${st.label}</span>
+        <div style="display:flex;gap:6px">
+          <button class="btn-drop" style="padding:5px 10px;font-size:11px" onclick="openPopupModal('${p.id}')">Editar</button>
+          <button class="btn-drop" style="padding:5px 10px;font-size:11px" onclick="togglePopupActive('${p.id}')">${p.active ? 'Desactivar' : 'Activar'}</button>
+          <button class="btn-drop" style="padding:5px 10px;font-size:11px;color:#b91c1c" onclick="deletePopup('${p.id}')">Borrar</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+let _popupProductSearchTimer = null;
+
+function _onPopupTypeChange(type) {
+  document.getElementById('popupBannerFields').style.display  = type === 'banner'  ? 'flex' : 'none';
+  document.getElementById('popupProductFields').style.display = type === 'product' ? 'flex' : 'none';
+}
+
+async function _popupProductSearch(q) {
+  clearTimeout(_popupProductSearchTimer);
+  const res  = document.getElementById('popupProductResults');
+  const q2   = q.trim();
+  if (!q2) { res.style.display = 'none'; return; }
+  _popupProductSearchTimer = setTimeout(async () => {
+    try {
+      const r = await fetch(`${API_BASE}/api/promoted-ads`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+      if (!r.ok) throw new Error();
+      const ads = await r.json();
+      const matches = ads.filter(a => a.name && a.name.toLowerCase().includes(q2.toLowerCase())).slice(0, 10);
+      if (!matches.length) {
+        res.innerHTML = '<div style="padding:10px 14px;font-size:13px;color:var(--text-secondary)">Sin resultados</div>';
+      } else {
+        res.innerHTML = matches.map(a => `
+          <div onclick="_selectPopupProduct(${JSON.stringify(a).replace(/"/g,'&quot;')})"
+               style="display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .15s"
+               onmouseover="this.style.background='var(--bg-card)'" onmouseout="this.style.background=''">
+            <img src="${a.image||''}" alt="" width="36" height="36" style="border-radius:6px;object-fit:cover;flex-shrink:0;background:var(--border)" onerror="this.style.display='none'">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.name}</div>
+              <div style="font-size:11px;color:var(--text-secondary)">$${Number(a.price).toLocaleString('es-CO')} · ${a.sellerName||''}</div>
+            </div>
+          </div>`).join('');
+      }
+      res.style.display = 'block';
+    } catch (_) {}
+  }, 300);
+}
+
+function _selectPopupProduct(a) {
+  document.getElementById('popupCtaActionProduct').value    = a.id;
+  document.getElementById('popupProductSearch').value       = a.name;
+  document.getElementById('popupProductResults').style.display = 'none';
+  const prev = document.getElementById('popupProductPreview');
+  document.getElementById('popupProductPreviewImg').src     = a.image || '';
+  document.getElementById('popupProductPreviewName').textContent  = a.name;
+  document.getElementById('popupProductPreviewPrice').textContent = `$${Number(a.price).toLocaleString('es-CO')} · ${a.sellerName||''}`;
+  prev.style.display = 'flex';
+}
+
+function _clearPopupProduct() {
+  document.getElementById('popupCtaActionProduct').value = '';
+  document.getElementById('popupProductSearch').value    = '';
+  document.getElementById('popupProductPreview').style.display = 'none';
+  document.getElementById('popupProductResults').style.display = 'none';
+}
+
+function openPopupModal(id) {
+  _editingPopupId = id || null;
+  const p = id ? _allPopups.find(x => x.id === id) : null;
+  document.getElementById('popupModalTitle').textContent = p ? 'Editar popup' : 'Nuevo popup';
+  const type = p?.type || 'banner';
+  document.getElementById('popupType').value    = type;
+  document.getElementById('popupBadge').value   = p?.badge   || '';
+  document.getElementById('popupEndDate').value = p?.endDate || '';
+  document.getElementById('popupActive').checked = p ? p.active : true;
+  // Banner fields
+  document.getElementById('popupTitle').value     = p?.title     || '';
+  document.getElementById('popupSubtitle').value  = p?.subtitle  || '';
+  document.getElementById('popupImage').value     = p?.image     || '';
+  document.getElementById('popupCta').value       = p?.cta       || '';
+  document.getElementById('popupCtaAction').value = (type === 'banner' ? p?.ctaAction : '') || '';
+  // Product fields
+  _clearPopupProduct();
+  if (type === 'product' && p?.ctaAction) {
+    document.getElementById('popupCtaActionProduct').value = p.ctaAction;
+    document.getElementById('popupProductSearch').value    = `ID: ${p.ctaAction}`;
+    document.getElementById('popupProductPreview').style.display = 'none';
+  }
+  _onPopupTypeChange(type);
+  document.getElementById('popupModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closePopupModal() {
+  document.getElementById('popupModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function handlePopupModalClick(e) { if (e.target === document.getElementById('popupModal')) closePopupModal(); }
+
+async function savePopup() {
+  const type = document.getElementById('popupType').value;
+  const ctaAction = type === 'product'
+    ? (document.getElementById('popupCtaActionProduct').value.trim() || null)
+    : (document.getElementById('popupCtaAction').value.trim() || null);
+  if (type === 'product' && !ctaAction) {
+    showToast('Selecciona un anuncio promocionado para el popup de producto.'); return;
+  }
+  const dto = {
+    type,
+    title:     document.getElementById('popupTitle').value.trim()     || null,
+    subtitle:  document.getElementById('popupSubtitle').value.trim()  || null,
+    image:     document.getElementById('popupImage').value.trim()     || null,
+    cta:       document.getElementById('popupCta').value.trim()       || null,
+    ctaAction,
+    badge:     document.getElementById('popupBadge').value.trim()     || null,
+    endDate:   document.getElementById('popupEndDate').value          || null,
+    active:    document.getElementById('popupActive').checked,
+  };
+  try {
+    let res;
+    if (_editingPopupId) {
+      res = await fetch(`${API_BASE}/api/popup-ads/${_editingPopupId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify(dto) });
+    } else {
+      res = await fetch(`${API_BASE}/api/popup-ads`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify(dto) });
+    }
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const saved = await res.json();
+    if (_editingPopupId) {
+      const idx = _allPopups.findIndex(x => x.id === _editingPopupId);
+      if (idx !== -1) _allPopups[idx] = saved; else _allPopups.unshift(saved);
+    } else {
+      _allPopups.unshift(saved);
+    }
+    renderPopups();
+    closePopupModal();
+    showToast(`Popup "${saved.title || saved.id}" guardado.`);
+  } catch (e) { showToast('Error: ' + e.message); }
+}
+
+async function togglePopupActive(id) {
+  try {
+    const res = await fetch(`${API_BASE}/api/popup-ads/${id}/active`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${getToken()}` } });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const saved = await res.json();
+    const idx = _allPopups.findIndex(x => x.id === id);
+    if (idx !== -1) _allPopups[idx] = saved;
+    renderPopups();
+    showToast(`Popup ${saved.active ? 'activado' : 'desactivado'}.`);
+  } catch (e) { showToast('Error: ' + e.message); }
+}
+
+async function deletePopup(id) {
+  const p = _allPopups.find(x => x.id === id);
+  if (!confirm(`¿Borrar el popup "${p?.title || id}"? Esta acción no se puede deshacer.`)) return;
+  try {
+    const res = await fetch(`${API_BASE}/api/popup-ads/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${getToken()}` } });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    _allPopups = _allPopups.filter(x => x.id !== id);
+    renderPopups();
+    showToast('Popup eliminado.');
   } catch (e) { showToast('Error: ' + e.message); }
 }
 
