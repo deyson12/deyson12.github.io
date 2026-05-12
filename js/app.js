@@ -2068,9 +2068,15 @@ function toggleWish(e, id) {
 function _handleProductDeepLink() {
   const id = new URLSearchParams(location.search).get('p');
   if (!id) return;
-  const found = _productCache.get(id) || [..._productCache.values()].find(x => x.id.startsWith(id));
+  const isShort = id.length <= 8;
+  const found = isShort
+    ? [..._productCache.values()].find(x => x.id.startsWith(id))
+    : _productCache.get(id);
   if (found) { openProduct(found.id); return; }
-  fetch(`${API_BASE}/api/products/${id}`)
+  const url = isShort
+    ? `${API_BASE}/api/products/resolve/${id}`
+    : `${API_BASE}/api/products/${id}`;
+  fetch(url)
     .then(r => r.ok ? r.json() : null)
     .then(raw => { if (raw) { const p = normalizeProduct(raw); _productCache.set(p.id, p); openProduct(p.id); } })
     .catch(() => {});
