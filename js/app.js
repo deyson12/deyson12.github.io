@@ -938,7 +938,6 @@ function buildPromotedCard(p) {
     <div class="card-img-wrap">
       <img class="card-img" src="${p.image}" alt="${p.name}" width="300" height="300" loading="lazy" decoding="async" onload="this.classList.add('img-loaded')" onerror="this.classList.add('img-loaded')">
       ${disc > 0 ? `<div class="badge-wrap"><span class="badge badge-offer">${disc}% OFF</span></div>` : ''}
-      ${p.badge ? `<div class="badge-wrap-right"><span class="badge badge-top"><svg viewBox="0 0 24 24" width="9" height="9" fill="currentColor" style="flex-shrink:0"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>${p.badge}</span></div>` : ''}
       <div class="promo-label">Patrocinado</div>
     </div>
     <div class="card-body">
@@ -949,6 +948,7 @@ function buildPromotedCard(p) {
         ${disc > 0 ? `<span class="card-old-price">${fmtPrice(p.oldPrice)}</span><span class="card-discount">-${disc}%</span>` : ''}
       </div>
       <div class="card-actions">
+        ${p.badge ? `<span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;color:#92400E;background:#FFF7ED;border-radius:6px;padding:3px 7px;margin-bottom:6px;line-height:1.4;white-space:nowrap"><svg viewBox="0 0 24 24" width="10" height="10" fill="#F15200" style="flex-shrink:0"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Solo en <strong style="margin-left:2px">${p.badge}</strong></span>` : ''}
         <a class="btn btn-promo-wa" href="${waUrl}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12c0 2.025.507 3.967 1.399 5.671L.1 23.9l6.499-1.699A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/><path fill="#fff" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/></svg>
           Contactar
