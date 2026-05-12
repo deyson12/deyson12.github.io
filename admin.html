@@ -457,6 +457,11 @@
   .pf-form-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
   .pf-form-input { padding: 9px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: var(--font); font-size: 13px; outline: none; background: var(--bg-card); color: var(--text-primary); transition: border-color .18s; width: 100%; }
   .pf-form-input:focus { border-color: var(--primary); }
+  .pf-phone-wrap { display:flex; align-items:stretch; border:1.5px solid var(--border); border-radius:var(--radius-sm); overflow:hidden; transition:border-color .18s; background:var(--bg-card); }
+  .pf-phone-wrap:focus-within { border-color: var(--primary); }
+  .pf-phone-prefix { display:flex; align-items:center; gap:5px; padding:0 10px; font-size:12px; font-weight:700; color:var(--text-secondary); background:var(--bg); border-right:1.5px solid var(--border); white-space:nowrap; flex-shrink:0; }
+  .pf-phone-prefix svg { width:18px; height:13px; display:block; }
+  .pf-phone-input { flex:1; border:none; outline:none; background:transparent; font-family:var(--font); font-size:13px; color:var(--text-primary); padding:9px 10px; width:0; }
   .pf-clear-btn { padding: 8px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: var(--font); font-size: 12px; font-weight: 600; color: var(--text-secondary); background: var(--bg-card); cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all .18s; }
   .pf-clear-btn:hover { border-color: #b91c1c; color: #b91c1c; }
 
@@ -957,7 +962,10 @@
         </div>
         <div class="pf-form-row">
           <label class="pf-form-label">WhatsApp vendedor</label>
-          <input class="pf-form-input" id="adSellerPhone" type="text" maxlength="20" placeholder="573001234567">
+          <div class="pf-phone-wrap">
+            <span class="pf-phone-prefix"><svg viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#FCD116"/><rect y="7" width="20" height="7" fill="#003893"/><rect y="9.33" width="20" height="4.67" fill="#CE1126"/></svg> +57</span>
+            <input class="pf-phone-input" id="adSellerPhone" type="tel" inputmode="numeric" maxlength="10" placeholder="3001234567" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)">
+          </div>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -969,6 +977,10 @@
           <label class="pf-form-label">Fecha fin <span style="color:#9CA3AF;font-weight:400">opcional</span></label>
           <input class="pf-form-input" id="adEndDate" type="date">
         </div>
+      </div>
+      <div class="pf-form-row">
+        <label class="pf-form-label">Categoría <span style="color:#9CA3AF;font-weight:400">opcional — vacío = muestra en todas</span></label>
+        <select class="pf-form-input" id="adCategoryId"></select>
       </div>
       <div class="pf-form-row">
         <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
@@ -3319,7 +3331,7 @@ function renderAds() {
   }).join('');
 }
 
-function openAdModal(id) {
+async function openAdModal(id) {
   _editingAdId = id || null;
   const ad = id ? _allAds.find(a => a.id === id) : null;
   document.getElementById('adModalTitle').textContent = ad ? 'Editar anuncio' : 'Nuevo anuncio';
@@ -3329,10 +3341,27 @@ function openAdModal(id) {
   document.getElementById('adOldPrice').value    = ad?.oldPrice    || '';
   document.getElementById('adImage').value       = ad?.image       || '';
   document.getElementById('adSellerName').value  = ad?.sellerName  || '';
-  document.getElementById('adSellerPhone').value = ad?.sellerPhone || '';
+  document.getElementById('adSellerPhone').value = ad?.sellerPhone ? String(ad.sellerPhone).replace(/^57/, '') : '';
   document.getElementById('adBadge').value       = ad?.badge       || '';
   document.getElementById('adEndDate').value     = ad?.endDate     || '';
+  document.getElementById('adCategoryId').value  = ad?.categoryId  != null ? ad.categoryId : '';
   document.getElementById('adActive').checked    = ad ? ad.active  : true;
+  // Populate category dropdown
+  const sel = document.getElementById('adCategoryId');
+  sel.innerHTML = '<option value="">Todas las categorías</option>';
+  try {
+    if (!allCategories.length) {
+      const rc = await fetch(`${API_BASE}/api/categories/active`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+      if (rc.ok) allCategories = await rc.json();
+    }
+    allCategories.forEach(c => {
+      const o = document.createElement('option');
+      o.value = c.id;
+      o.textContent = c.name;
+      if (ad?.categoryId === c.id) o.selected = true;
+      sel.appendChild(o);
+    });
+  } catch (_) {}
   document.getElementById('adModal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -3350,12 +3379,15 @@ async function saveAd() {
     oldPrice:    parseFloat(document.getElementById('adOldPrice').value) || null,
     image:       document.getElementById('adImage').value.trim(),
     sellerName:  document.getElementById('adSellerName').value.trim(),
-    sellerPhone: document.getElementById('adSellerPhone').value.trim(),
+    sellerPhone: '57' + document.getElementById('adSellerPhone').value.replace(/\D/g, ''),
     badge:       document.getElementById('adBadge').value.trim() || null,
     endDate:     document.getElementById('adEndDate').value || null,
+    categoryId:  document.getElementById('adCategoryId').value !== '' ? parseInt(document.getElementById('adCategoryId').value) : null,
     active:      document.getElementById('adActive').checked,
   };
-  if (!dto.name || !dto.image || !dto.sellerName || !dto.sellerPhone || !dto.price) {
+  const _phone = document.getElementById('adSellerPhone').value.replace(/\D/g, '');
+  if (!/^3\d{9}$/.test(_phone)) { showToast('El WhatsApp del vendedor debe ser un celular colombiano de 10 dígitos, ej: 3001234567'); return; }
+  if (!dto.name || !dto.image || !dto.sellerName || !dto.price) {
     showToast('Completa nombre, imagen, precio y datos del vendedor.'); return;
   }
   try {

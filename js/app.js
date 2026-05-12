@@ -937,7 +937,7 @@ function buildPromotedCard(p) {
   return `<div class="product-card promoted-card new-in" onclick="openPromotedProduct('${p.id}')">
     <div class="card-img-wrap">
       <img class="card-img" src="${p.image}" alt="${p.name}" width="300" height="300" loading="lazy" decoding="async" onload="this.classList.add('img-loaded')" onerror="this.classList.add('img-loaded')">
-      ${disc > 0 ? `<div class="badge-wrap"><span class="badge badge-offer">${disc}% OFF</span></div>` : ''}
+      ${disc > 0 ? `<div class="badge-wrap"><span class="badge badge-offer">${disc}% OFF</span></div>` : p.badge ? `<div class="badge-wrap"><span class="badge badge-top">${p.badge}</span></div>` : ''}
       <div class="promo-label">Patrocinado</div>
     </div>
     <div class="card-body">
@@ -972,6 +972,7 @@ function openPromotedProduct(id) {
       <div class="modal-info">
         <div class="modal-seller" style="display:flex;align-items:center;gap:7px">
           <span class="promo-badge-modal">Patrocinado</span>
+          ${p.badge ? `<span class="badge badge-top" style="font-size:11px">${p.badge}</span>` : ''}
           <span>${p.sellerName}</span>
         </div>
         <h2 class="modal-name">${p.name}</h2>
