@@ -561,6 +561,14 @@
       <span class="nav-item-icon">📢</span>
       Publicidad
     </button>
+    <button class="nav-item" id="navMarketing" onclick="showSection('marketing');closeNavDrawer()">
+      <span class="nav-item-icon">💬</span>
+      Marketing
+    </button>
+    <button class="nav-item" id="navQr" onclick="showSection('qr');closeNavDrawer()">
+      <span class="nav-item-icon">📷</span>
+      Generador QR
+    </button>
   </div>
   <div class="nav-drawer-footer">
     <button class="nav-item" onclick="clearCache();closeNavDrawer()">
@@ -776,6 +784,19 @@
       <div class="an-card-title">📈 Eventos por día (últimos 30 días) <span class="an-tip" data-tip="Total de eventos de analytics registrados por día (vistas, clics, búsquedas, etc.). Muestra la actividad general de la tienda.">?</span></div>
       <div id="anByDay"><div class="an-empty">Cargando…</div></div>
     </div>
+    <div class="an-card">
+      <div class="an-card-title">📣 Tráfico por fuente UTM (90 días) <span class="an-tip" data-tip="Visitantes únicos y visitas totales agrupados por utm_source. Los usuarios sin UTM se contabilizan como 'direct'. Cubre los últimos 90 días.">?</span></div>
+      <div id="anTrafficSource"><div class="an-empty">Cargando…</div></div>
+    </div>
+    <div class="an-card" style="grid-column:1/-1">
+      <div class="an-card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <span>🗺️ Mapa de visitantes (últimos 90 días) <span class="an-tip" data-tip="Ubicaciones GPS de visitantes que aceptaron compartir su ubicación. Solo aparecen usuarios que dieron permiso voluntariamente. Útil para campañas publicitarias segmentadas por zona.">?</span></span>
+        <span id="anVisMapCount" style="font-size:12px;font-weight:500;color:var(--text-muted)"></span>
+      </div>
+      <div id="anVisMapEl" style="height:380px;width:100%;background:var(--border);border-radius:var(--radius-sm);margin-top:8px;position:relative">
+        <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:13px" id="anVisMapPlaceholder">Sin datos de ubicación aún</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -920,6 +941,91 @@
     <div class="table-count" id="bnnCount"></div>
     <div id="bnnGrid"></div>
   </div>
+</div>
+
+<!-- QR GENERATOR SECTION -->
+<div class="content" id="qrSection" style="display:none">
+  <h2 style="font-size:18px;font-weight:800;margin-bottom:18px">📷 Generador de QR</h2>
+  <div style="max-width:520px">
+    <label style="font-size:13px;font-weight:600;color:var(--text-muted);display:block;margin-bottom:6px">URL destino</label>
+    <input id="qrUrlInput" type="url" placeholder="https://pidefacil.co/..." oninput="_qrGenerate()"
+      style="width:100%;box-sizing:border-box;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;font-family:var(--font);outline:none;background:var(--surface);color:var(--text-primary)"/>
+  </div>
+
+  <div style="margin-top:24px;display:flex;gap:32px;flex-wrap:wrap;align-items:flex-start">
+    <!-- Preview -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:14px">
+      <div id="qrPreviewWrap" style="width:260px;height:260px;border:2px solid var(--border);border-radius:14px;display:flex;align-items:center;justify-content:center;background:#fff;overflow:hidden">
+        <span id="qrPlaceholder" style="font-size:13px;color:var(--text-muted)">Escribe una URL para generar el QR</span>
+        <canvas id="qrCanvas" style="display:none"></canvas>
+      </div>
+      <button id="qrDownloadBtn" onclick="_qrDownload()" disabled
+        style="padding:9px 22px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);opacity:0.4;transition:opacity .2s">
+        ⬇ Descargar PNG
+      </button>
+    </div>
+
+    <!-- Options -->
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:200px">
+      <div>
+        <label style="font-size:12px;font-weight:600;color:var(--text-muted);display:block;margin-bottom:5px">Color del QR</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="qrColorDark" type="color" value="#000000" oninput="_qrGenerate()"
+            style="width:38px;height:38px;border:none;border-radius:6px;cursor:pointer;padding:2px">
+          <span style="font-size:12px;color:var(--text-muted)">Color principal</span>
+        </div>
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:600;color:var(--text-muted);display:block;margin-bottom:5px">Tamaño de descarga</label>
+        <select id="qrSizeSelect" onchange="_qrGenerate()"
+          style="padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font);background:var(--surface);color:var(--text-primary);cursor:pointer">
+          <option value="512">512 × 512 px</option>
+          <option value="800" selected>800 × 800 px</option>
+          <option value="1200">1200 × 1200 px</option>
+        </select>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input type="checkbox" id="qrLogoCheck" checked onchange="_qrGenerate()"
+          style="width:16px;height:16px;cursor:pointer;accent-color:var(--primary)">
+        <label for="qrLogoCheck" style="font-size:13px;color:var(--text-secondary);cursor:pointer">Incluir logo en el centro</label>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input type="checkbox" id="qrLogoTintCheck" onchange="_qrGenerate()"
+          style="width:16px;height:16px;cursor:pointer;accent-color:var(--primary)">
+        <label for="qrLogoTintCheck" style="font-size:13px;color:var(--text-secondary);cursor:pointer">Logo del color del QR</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- UTM Templates -->
+  <div style="margin-top:28px">
+    <p style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px">Plantillas UTM</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px" id="qrTemplates"></div>
+    <p style="font-size:11px;color:var(--text-muted);margin-top:10px">Haz clic en una plantilla para cargarla en el campo URL.</p>
+  </div>
+</div>
+
+<!-- MARKETING SECTION -->
+<div class="content" id="marketingSection" style="display:none">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+    <h2 style="font-size:18px;font-weight:800;flex:1">💬 Consentimientos de marketing</h2>
+    <span id="mktCount" style="font-size:13px;color:var(--text-muted)"></span>
+  </div>
+  <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;line-height:1.6">
+    Usuarios que aceptaron recibir promociones y novedades por WhatsApp. Puedes revocar el consentimiento en cualquier momento.
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+    <div class="toolbar-search" style="flex:1;min-width:180px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="mktSearch" placeholder="Buscar por nombre o teléfono…" oninput="renderMarketingConsents()" style="width:100%">
+    </div>
+    <div class="filter-group">
+      <button class="filter-btn active" id="mktTabAll"     onclick="setMktTab('all',this)">Todos</button>
+      <button class="filter-btn"        id="mktTabActive"  onclick="setMktTab('active',this)">Activos</button>
+      <button class="filter-btn"        id="mktTabRevoked" onclick="setMktTab('revoked',this)">Revocados</button>
+    </div>
+  </div>
+  <div id="mktGrid"><div class="state-box"><div class="state-sub">Cargando…</div></div></div>
 </div>
 
 <!-- PUBLICIDAD SECTION -->
@@ -1201,13 +1307,17 @@ function showSection(section) {
   document.getElementById('bannersSection').style.display    = section === 'banners'    ? 'block' : 'none';
   document.getElementById('cuponesSection').style.display    = section === 'cupones'    ? 'block' : 'none';
   document.getElementById('publicidadSection').style.display = section === 'publicidad' ? 'block' : 'none';
+  document.getElementById('marketingSection').style.display  = section === 'marketing'  ? 'block' : 'none';
+  document.getElementById('qrSection').style.display         = section === 'qr'         ? 'block' : 'none';
   document.getElementById('navPedidos').classList.toggle('active',    section === 'pedidos');
   document.getElementById('navAnalytics').classList.toggle('active',  section === 'analytics');
   document.getElementById('navProductos').classList.toggle('active',  section === 'productos');
   document.getElementById('navBanners').classList.toggle('active',    section === 'banners');
   document.getElementById('navCupones').classList.toggle('active',    section === 'cupones');
   document.getElementById('navPublicidad').classList.toggle('active', section === 'publicidad');
-  const sectionLabels = { pedidos: 'Pedidos', analytics: 'Analytics', productos: 'Productos', banners: 'Banners', cupones: 'Cupones & Gift Cards', publicidad: 'Publicidad' };
+  document.getElementById('navMarketing').classList.toggle('active',  section === 'marketing');
+  document.getElementById('navQr').classList.toggle('active',          section === 'qr');
+  const sectionLabels = { pedidos: 'Pedidos', analytics: 'Analytics', productos: 'Productos', banners: 'Banners', cupones: 'Cupones & Gift Cards', publicidad: 'Publicidad', marketing: 'Marketing', qr: 'Generador QR' };
   const labelEl = document.getElementById('topbarSectionLabel');
   if (labelEl) labelEl.textContent = sectionLabels[section] ?? section;
   history.replaceState(null, '', '#' + section);
@@ -1217,6 +1327,8 @@ function showSection(section) {
   if (section === 'banners')     loadBanners();
   if (section === 'cupones')     loadCoupons();
   if (section === 'publicidad') { loadAds(); loadPopups(); }
+  if (section === 'marketing')  loadMarketingConsents();
+  if (section === 'qr')         _qrRenderTemplates();
 }
 
 function onRefresh() {
@@ -1279,7 +1391,7 @@ function showDashboard() {
   document.getElementById('dashSection').style.display  = 'block';
   _updateMonthNavs();
   // Restore section from URL hash if present
-  const validSections = ['pedidos', 'analytics', 'productos', 'banners', 'publicidad'];
+  const validSections = ['pedidos', 'analytics', 'productos', 'banners', 'publicidad', 'marketing', 'qr'];
   const hashSection = location.hash.replace('#', '');
   if (validSections.includes(hashSection)) {
     showSection(hashSection);
@@ -2165,6 +2277,506 @@ function renderAnalytics(s) {
           <div class="an-hbar-count">${d.total}</div>
         </div>`).join('')}</div>`
     : '<div class="an-empty">Sin datos aún</div>';
+
+  // ── Traffic by UTM source ──────────────────────────────────────
+  const UTM_SOURCE_LABELS = {
+    direct:    '🔗 Directo',
+    instagram: '📸 Instagram',
+    whatsapp:  '💬 WhatsApp',
+    volante:   '📄 Volante',
+    qr:        '▣ QR',
+    facebook:  '👥 Facebook',
+    tiktok:    '🎵 TikTok',
+    google:    '🔍 Google',
+    email:     '✉️ Email',
+  };
+  const sources = s.trafficBySource ?? [];
+  const maxSrc = Math.max(...sources.map(r => Number(r.visitors)), 1);
+  document.getElementById('anTrafficSource').innerHTML = sources.length
+    ? `<div class="an-hbar-chart">${sources.map(r => {
+        const label = UTM_SOURCE_LABELS[String(r.source).toLowerCase()] ?? ('🔗 ' + r.source);
+        const pct   = Math.round((Number(r.visitors) / maxSrc) * 100);
+        return `<div class="an-hbar-row" title="${r.source}: ${r.visitors} visitantes únicos, ${r.visits} visitas">
+          <div class="an-hbar-label" style="width:90px;font-size:11px">${label}</div>
+          <div class="an-hbar-track"><div class="an-hbar-fill" style="width:${pct}%;background:#6366f1"></div></div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;min-width:44px">
+            <span style="font-size:10px;font-weight:700;color:var(--text-primary)">${r.visitors}</span>
+            <span style="font-size:9px;color:var(--text-muted)">${r.visits}v</span>
+          </div>
+        </div>`;
+      }).join('')}</div>`
+    : '<div class="an-empty">Sin datos aún</div>';
+
+  // ── Visitor locations map ──────────────────────────────────────
+  const locs = s.visitorLocations ?? [];
+  const countEl = document.getElementById('anVisMapCount');
+  if (countEl) countEl.textContent = locs.length ? `${locs.length} ubicación${locs.length !== 1 ? 'es' : ''} registrada${locs.length !== 1 ? 's' : ''}` : '';
+  _renderVisitorsMap(locs);
+}
+
+let _visMap = null;
+let _visInfoWindow = null;
+
+async function _renderVisitorsMap(locs) {
+  const el = document.getElementById('anVisMapEl');
+  if (!el) return;
+
+  try {
+    await _gmLoadAdmin();
+  } catch (_) {
+    const ph = document.getElementById('anVisMapPlaceholder');
+    if (ph) { ph.textContent = 'No se pudo cargar el mapa'; ph.style.display = 'flex'; }
+    return;
+  }
+
+  if (!_visMap) {
+    _visMap = new google.maps.Map(el, {
+      zoom: 6,
+      center: { lat: 4.5709, lng: -74.2973 }, // Colombia center
+      mapTypeControl: false,
+      streetViewControl: false,
+      fullscreenControl: true,
+      gestureHandling: 'cooperative',
+      mapId: 'DEMO_MAP_ID'
+    });
+    _visInfoWindow = new google.maps.InfoWindow({ maxWidth: 220 });
+  } else {
+    google.maps.event.trigger(_visMap, 'resize');
+  }
+
+  // Clear old markers
+  if (_visMap.__visMarkers) _visMap.__visMarkers.forEach(m => m.setMap(null));
+  _visMap.__visMarkers = [];
+  if (_visInfoWindow) _visInfoWindow.close();
+
+  const placeholder = document.getElementById('anVisMapPlaceholder');
+
+  if (!locs.length) {
+    if (placeholder) { placeholder.textContent = 'Sin datos de ubicación aún'; placeholder.style.display = 'flex'; }
+    return;
+  }
+  if (placeholder) placeholder.style.display = 'none';
+
+  const bounds = new google.maps.LatLngBounds();
+
+  // Deduplicate by visitor_id (keep most recent point per visitor — list is DESC sorted)
+  const byVisitor = new Map();
+  locs.forEach(loc => {
+    const vid = loc.visitorId ?? 'unknown';
+    if (!byVisitor.has(vid)) byVisitor.set(vid, loc);
+  });
+
+  // Group deduplicated points by rounded position (4dp ≈ 11m precision)
+  const posGroups = new Map();
+  byVisitor.forEach(loc => {
+    const lat = parseFloat(loc.lat);
+    const lng = parseFloat(loc.lng);
+    if (isNaN(lat) || isNaN(lng)) return;
+    const key = `${lat.toFixed(4)},${lng.toFixed(4)}`;
+    if (!posGroups.has(key)) posGroups.set(key, []);
+    posGroups.get(key).push(loc);
+  });
+
+  posGroups.forEach(group => {
+    const lat = parseFloat(group[0].lat);
+    const lng = parseFloat(group[0].lng);
+    const pos = { lat, lng };
+    bounds.extend(pos);
+    const count = group.length;
+    const city  = group[0].city ?? null;
+
+    let el;
+    if (count > 1) {
+      // Cluster: dark circle with count
+      const size = count > 9 ? 16 : 14;
+      el = document.createElement('div');
+      el.style.cssText = `width:${size*2}px;height:${size*2}px;border-radius:50%;background:#1e293b;border:2.5px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:${count>9?'10px':'11px'};box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer;box-sizing:border-box;font-family:'Plus Jakarta Sans',sans-serif`;
+      el.textContent = String(count);
+    } else {
+      // Single visitor: orange dot
+      el = document.createElement('div');
+      el.style.cssText = 'width:14px;height:14px;border-radius:50%;background:#F15200;border:2px solid #fff;opacity:.85;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer;box-sizing:border-box';
+    }
+
+    const marker = new google.maps.marker.AdvancedMarkerElement({
+      position: pos,
+      map: _visMap,
+      content: el,
+      title: city ?? '',
+      zIndex: count > 1 ? 15 : 10
+    });
+
+    marker.addListener('click', () => {
+      let html;
+      if (count > 1) {
+        const items = group.slice(0, 8).map(loc => {
+          const d = loc.createdAt ? new Date(loc.createdAt).toLocaleDateString('es-CO', { day: '2-digit', month: 'short' }) : '—';
+          return `<div style="font-size:11px;color:#374151;padding:3px 0;border-bottom:1px solid #f3f4f6">📍 ${loc.city ?? 'Ubicación'} <span style="color:#9ca3af;float:right">${d}</span></div>`;
+        }).join('');
+        const more = count > 8 ? `<div style="font-size:11px;color:#9ca3af;padding-top:4px">+${count - 8} más</div>` : '';
+        html = `<div style="padding:10px 12px;font-family:'Plus Jakarta Sans',sans-serif;min-width:170px">
+          <div style="font-weight:700;font-size:13px;color:#111827;margin-bottom:6px">📍 ${count} visitantes aquí</div>
+          ${items}${more}
+        </div>`;
+      } else {
+        const d = group[0].createdAt ? new Date(group[0].createdAt).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+        html = `<div style="padding:10px 12px;font-family:'Plus Jakarta Sans',sans-serif;min-width:140px">
+          <div style="font-weight:700;font-size:13px;color:#111827;margin-bottom:4px">📍 ${city ?? 'Ubicación'}</div>
+          <div style="font-size:11px;color:#6b7280">${lat.toFixed(4)}, ${lng.toFixed(4)}</div>
+          <div style="font-size:11px;color:#9ca3af;margin-top:3px">${d}</div>
+        </div>`;
+      }
+      _visInfoWindow.setContent(html);
+      _visInfoWindow.open(_visMap, marker);
+    });
+
+    _visMap.__visMarkers.push(marker);
+  });
+
+  if (_visMap.__visMarkers.length > 0) {
+    _visMap.fitBounds(bounds, { padding: 40 });
+    if (_visMap.__visMarkers.length === 1) _visMap.setZoom(12);
+  }
+}
+
+// ── MARKETING CONSENTS ─────────────────────────────────────
+let _allConsents = [];
+let _mktTab = 'all';
+
+function setMktTab(tab, btn) {
+  _mktTab = tab;
+  document.querySelectorAll('#mktTabAll,#mktTabActive,#mktTabRevoked').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderMarketingConsents();
+}
+
+async function loadMarketingConsents() {
+  document.getElementById('mktGrid').innerHTML = '<div class="state-box"><div class="state-sub">Cargando\u2026</div></div>';
+  try {
+    const res = await fetch(`${API_BASE}/api/marketing-consents`, {
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+    if (res.status === 401 || res.status === 403) { sessionStorage.removeItem(AUTH_KEY); location.reload(); return; }
+    if (!res.ok) throw new Error(res.statusText);
+    _allConsents = await res.json();
+    renderMarketingConsents();
+  } catch (e) {
+    showToast('Error al cargar consentimientos: ' + e.message);
+    document.getElementById('mktGrid').innerHTML = `<div class="state-box"><div class="state-icon">\u26a0\ufe0f</div><div class="state-sub">${e.message}</div></div>`;
+  }
+}
+
+function renderMarketingConsents() {
+  const active  = _allConsents.filter(c => c.active);
+  const revoked = _allConsents.filter(c => !c.active);
+  document.getElementById('mktCount').textContent = `${active.length} activo${active.length !== 1 ? 's' : ''} · ${revoked.length} revocado${revoked.length !== 1 ? 's' : ''}`;
+
+  if (!_allConsents.length) {
+    document.getElementById('mktGrid').innerHTML = '<div class="an-empty">Ningún usuario ha aceptado marketing aún.</div>';
+    return;
+  }
+
+  const q = (document.getElementById('mktSearch')?.value ?? '').toLowerCase().trim();
+  let filtered = _allConsents;
+  if (_mktTab === 'active')  filtered = filtered.filter(c => c.active);
+  if (_mktTab === 'revoked') filtered = filtered.filter(c => !c.active);
+  if (q) filtered = filtered.filter(c =>
+    (c.name  ?? '').toLowerCase().includes(q) ||
+    (c.phone ?? '').includes(q)
+  );
+
+  if (!filtered.length) {
+    document.getElementById('mktGrid').innerHTML = '<div class="an-empty">Sin resultados.</div>';
+    return;
+  }
+
+  const fmtDate = iso => iso ? new Date(iso).toLocaleString('es-CO', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';
+  const rows = filtered.map(c => `
+    <tr style="opacity:${c.active ? 1 : 0.5}">
+      <td style="padding:10px 12px;font-weight:600;color:var(--text-primary)">${c.name ?? '—'}</td>
+      <td style="padding:10px 12px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <a href="https://wa.me/57${c.phone}" target="_blank" rel="noopener"
+             style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:8px;background:#f0fdf4;color:#15803d;font-size:12px;font-weight:700;text-decoration:none;border:1px solid #bbf7d0">
+            <svg viewBox="0 0 24 24" width="13" height="13"><path fill="#25D366" d="M12 0C5.373 0 0 5.373 0 12c0 2.025.507 3.967 1.399 5.671L.1 23.9l6.499-1.699A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/><path fill="#fff" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/></svg>
+            ${c.phone}
+          </a>
+          <button onclick="navigator.clipboard.writeText('57${c.phone}').then(()=>showToast('Copiado: 57${c.phone}'))"
+                  title="Copiar 57${c.phone}"
+                  style="padding:4px 7px;border:1px solid var(--border);border-radius:7px;background:var(--bg-card);cursor:pointer;display:inline-flex;align-items:center;color:var(--text-muted)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+        </div>
+      </td>
+      <td style="padding:10px 12px">
+        <span style="font-size:11px;padding:2px 8px;border-radius:99px;font-weight:700;${c.active ? 'background:#f0fdf4;color:#15803d' : 'background:#fef2f2;color:#b91c1c'}">
+          ${c.active ? 'Activo' : 'Revocado'}
+        </span>
+      </td>
+      <td style="padding:10px 12px;font-size:12px;color:var(--text-muted)">${fmtDate(c.createdAt)}</td>
+      <td style="padding:10px 12px;font-size:12px;color:var(--text-muted)">${c.revokedAt ? fmtDate(c.revokedAt) : '—'}</td>
+      <td style="padding:10px 12px">
+        ${c.active
+          ? `<button onclick="revokeConsent('${c.id}')" style="padding:4px 12px;font-size:12px;border:1px solid #ef4444;color:#ef4444;background:transparent;border-radius:6px;cursor:pointer;font-weight:600">Revocar</button>`
+          : `<button onclick="reactivateConsent('${c.id}')" style="padding:4px 12px;font-size:12px;border:1px solid #22c55e;color:#22c55e;background:transparent;border-radius:6px;cursor:pointer;font-weight:600">Reactivar</button>`}
+      </td>
+    </tr>`).join('');
+
+  document.getElementById('mktGrid').innerHTML = `
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-family:var(--font);font-size:13px;color:var(--text-secondary)">
+        <thead>
+          <tr style="border-bottom:2px solid var(--border);text-align:left">
+            <th style="padding:8px 12px;font-weight:700;color:var(--text-muted);font-size:11px;text-transform:uppercase">Nombre</th>
+            <th style="padding:8px 12px;font-weight:700;color:var(--text-muted);font-size:11px;text-transform:uppercase">Tel\u00e9fono</th>
+            <th style="padding:8px 12px;font-weight:700;color:var(--text-muted);font-size:11px;text-transform:uppercase">Estado</th>
+            <th style="padding:8px 12px;font-weight:700;color:var(--text-muted);font-size:11px;text-transform:uppercase">Aceptó</th>
+            <th style="padding:8px 12px;font-weight:700;color:var(--text-muted);font-size:11px;text-transform:uppercase">Revocado</th>
+            <th style="padding:8px 12px"></th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+async function revokeConsent(id) {
+  if (!confirm('¿Revocar el consentimiento de este usuario? No podrá recibir mensajes de marketing.')) return;
+  try {
+    const res = await fetch(`${API_BASE}/api/marketing-consents/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+    if (!res.ok) throw new Error(res.statusText);
+    const idx = _allConsents.findIndex(c => c.id === id);
+    if (idx !== -1) {
+      _allConsents[idx] = { ..._allConsents[idx], active: false, revokedAt: new Date().toISOString() };
+    }
+    renderMarketingConsents();
+    showToast('Consentimiento revocado.');
+  } catch (e) {
+    showToast('Error al revocar: ' + e.message);
+  }
+}
+
+async function reactivateConsent(id) {
+  if (!confirm('¿Reactivar el consentimiento? El usuario volverá a recibir mensajes de marketing.')) return;
+  try {
+    const res = await fetch(`${API_BASE}/api/marketing-consents/${id}/reactivate`, {
+      method: 'PATCH',
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+    if (!res.ok) throw new Error(res.statusText);
+    const idx = _allConsents.findIndex(c => c.id === id);
+    if (idx !== -1) {
+      _allConsents[idx] = { ..._allConsents[idx], active: true, revokedAt: null };
+    }
+    renderMarketingConsents();
+    showToast('Consentimiento reactivado.');
+  } catch (e) {
+    showToast('Error al reactivar: ' + e.message);
+  }
+}
+
+// ── QR GENERATOR ──────────────────────────────────────────
+const _QR_BASE = 'https://pidefacil.shop/';
+const _QR_TEMPLATES = [
+  { label: '📷 QR físico',       emoji: '📷', source: 'qr' },
+  { label: '📸 Instagram',       emoji: '📸', source: 'instagram' },
+  { label: '💬 WhatsApp',        emoji: '💬', source: 'whatsapp' },
+  { label: '📘 Facebook',        emoji: '📘', source: 'facebook' },
+  { label: '🎵 TikTok',          emoji: '🎵', source: 'tiktok' },
+  { label: '🔍 Google',          emoji: '🔍', source: 'google' },
+  { label: '📧 Email',           emoji: '📧', source: 'email' },
+  { label: '🗺️ Volante',         emoji: '🗺️', source: 'volante' },
+  { label: '🔗 Directo',         emoji: '🔗', source: null },
+];
+
+function _qrRenderTemplates() {
+  const wrap = document.getElementById('qrTemplates');
+  if (!wrap || wrap.childElementCount) return;  // already rendered
+  wrap.innerHTML = _QR_TEMPLATES.map(t => {
+    const url = t.source ? `${_QR_BASE}?utm_source=${t.source}` : _QR_BASE;
+    return `<button onclick="_qrApplyTemplate('${url}')"
+      style="padding:7px 14px;border:1.5px solid var(--border);border-radius:20px;background:var(--surface);
+             color:var(--text-secondary);font-size:13px;font-family:var(--font);cursor:pointer;
+             transition:border-color .15s,color .15s;white-space:nowrap"
+      onmouseover="this.style.borderColor='var(--primary)';this.style.color='var(--primary)'"
+      onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-secondary)'"
+    >${t.label}</button>`;
+  }).join('');
+}
+
+function _qrApplyTemplate(url) {
+  const input = document.getElementById('qrUrlInput');
+  if (!input) return;
+  input.value = url;
+  _qrGenerate();
+}
+let _qrDebounce = null;
+let _qrLibPromise = null;
+
+function _qrLoadLib() {
+  if (_qrLibPromise) return _qrLibPromise;
+  _qrLibPromise = new Promise((resolve, reject) => {
+    if (typeof qrcode !== 'undefined') { resolve(); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js';
+    s.onload  = () => resolve();
+    s.onerror = () => reject(new Error('No se pudo cargar la librería QR'));
+    document.head.appendChild(s);
+  });
+  return _qrLibPromise;
+}
+
+function _qrGenerate() {
+  clearTimeout(_qrDebounce);
+  _qrDebounce = setTimeout(_qrRender, 250);
+}
+
+async function _qrRender() {
+  const url      = (document.getElementById('qrUrlInput')?.value ?? '').trim();
+  const canvas   = document.getElementById('qrCanvas');
+  const placeholder = document.getElementById('qrPlaceholder');
+  const dlBtn    = document.getElementById('qrDownloadBtn');
+
+  if (!url) {
+    canvas.style.display = 'none';
+    placeholder.style.display = '';
+    dlBtn.disabled = true;
+    dlBtn.style.opacity = '0.4';
+    return;
+  }
+
+  const size      = parseInt(document.getElementById('qrSizeSelect')?.value ?? '800', 10);
+  const colorDark = document.getElementById('qrColorDark')?.value ?? '#000000';
+  const withLogo  = document.getElementById('qrLogoCheck')?.checked ?? true;
+
+  try { await _qrLoadLib(); } catch (e) {
+    placeholder.textContent = 'Error cargando la librería QR. Verifica tu conexión.';
+    placeholder.style.display = ''; canvas.style.display = 'none';
+    dlBtn.disabled = true; dlBtn.style.opacity = '0.4';
+    return;
+  }
+
+  // Generate QR matrix using qrcode-generator (browser-native lib)
+  const offscreen = document.createElement('canvas');
+  try {
+    const qr = qrcode(0, 'H');  // 0 = auto type, H = high correction (survives logo)
+    qr.addData(url);
+    qr.make();
+    const moduleCount = qr.getModuleCount();
+    const margin      = 2;  // modules of quiet zone
+    const total       = moduleCount + margin * 2;
+    const cell        = size / total;
+    offscreen.width   = size;
+    offscreen.height  = size;
+    const ctx = offscreen.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = colorDark;
+    for (let row = 0; row < moduleCount; row++) {
+      for (let col = 0; col < moduleCount; col++) {
+        if (qr.isDark(row, col)) {
+          const x = Math.floor((col + margin) * cell);
+          const y = Math.floor((row + margin) * cell);
+          ctx.fillRect(x, y, Math.ceil(cell), Math.ceil(cell));
+        }
+      }
+    }
+  } catch (e) {
+    placeholder.textContent = 'Error: ' + (e?.message ?? 'no se pudo generar el QR');
+    placeholder.style.display = '';
+    canvas.style.display = 'none';
+    dlBtn.disabled = true; dlBtn.style.opacity = '0.4';
+    return;
+  }
+
+  if (withLogo) {
+    const ctx   = offscreen.getContext('2d');
+    const logo  = new Image();
+    logo.src    = 'images/icono.png';
+    await new Promise(resolve => {
+      logo.onload  = resolve;
+      logo.onerror = resolve;  // skip logo on error
+    });
+    if (logo.complete && logo.naturalWidth) {
+      const logoSize = Math.round(size * 0.18);   // 18 % of QR size
+      const pad      = Math.round(logoSize * 0.12);
+      const boxSize  = logoSize + pad * 2;
+      const x        = Math.round((size - boxSize) / 2);
+      const y        = Math.round((size - boxSize) / 2);
+      // White rounded rect background
+      ctx.save();
+      ctx.fillStyle = '#ffffff';
+      const r = Math.round(boxSize * 0.18);
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + boxSize - r, y);
+      ctx.quadraticCurveTo(x + boxSize, y, x + boxSize, y + r);
+      ctx.lineTo(x + boxSize, y + boxSize - r);
+      ctx.quadraticCurveTo(x + boxSize, y + boxSize, x + boxSize - r, y + boxSize);
+      ctx.lineTo(x + r, y + boxSize);
+      ctx.quadraticCurveTo(x, y + boxSize, x, y + boxSize - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+      ctx.drawImage(logo, x + pad, y + pad, logoSize, logoSize);
+      // Tint logo with QR dark color if requested (pixel-level: only dark pixels, not white background)
+      const withTint = document.getElementById('qrLogoTintCheck')?.checked ?? false;
+      if (withTint) {
+        // Draw logo to temp canvas to manipulate pixels
+        const tmp = document.createElement('canvas');
+        tmp.width = logoSize; tmp.height = logoSize;
+        const tmpCtx = tmp.getContext('2d');
+        tmpCtx.drawImage(logo, 0, 0, logoSize, logoSize);
+        const imgData = tmpCtx.getImageData(0, 0, logoSize, logoSize);
+        const d = imgData.data;
+        const tr = parseInt(colorDark.slice(1, 3), 16);
+        const tg = parseInt(colorDark.slice(3, 5), 16);
+        const tb = parseInt(colorDark.slice(5, 7), 16);
+        for (let i = 0; i < d.length; i += 4) {
+          // Luminance: bright/white pixels (>200) stay untouched
+          const lum = d[i] * 0.299 + d[i+1] * 0.587 + d[i+2] * 0.114;
+          if (d[i+3] > 30 && lum < 200) {
+            d[i] = tr; d[i+1] = tg; d[i+2] = tb;
+          }
+        }
+        tmpCtx.putImageData(imgData, 0, 0);
+        // Erase old logo area, restore white background, then redraw tinted version
+        ctx.clearRect(x + pad, y + pad, logoSize, logoSize);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x + pad, y + pad, logoSize, logoSize);
+        ctx.drawImage(tmp, x + pad, y + pad);
+      }
+    }
+  }
+
+  // Copy to preview canvas (scaled to 260px)
+  canvas.width  = 260;
+  canvas.height = 260;
+  const ctx2 = canvas.getContext('2d');
+  ctx2.drawImage(offscreen, 0, 0, 260, 260);
+  canvas._fullCanvas = offscreen;  // store for download
+
+  placeholder.style.display = 'none';
+  canvas.style.display = 'block';
+  dlBtn.disabled = false;
+  dlBtn.style.opacity = '1';
+}
+
+function _qrDownload() {
+  const canvas = document.getElementById('qrCanvas');
+  const full   = canvas._fullCanvas ?? canvas;
+  const url    = (document.getElementById('qrUrlInput')?.value ?? '').trim();
+  if (!url) return;
+  const a    = document.createElement('a');
+  const slug = url.replace(/^https?:\/\//, '').replace(/[^\w-]/g, '_').slice(0, 40);
+  a.download = `qr_${slug}.png`;
+  a.href     = full.toDataURL('image/png');
+  a.click();
 }
 
 // ── TOAST ──────────────────────────────────────────────────

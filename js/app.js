@@ -97,6 +97,12 @@ let _promoPopAction = null;
 let _popupQueue = [];   // array of popup objects pending to show
 const POPUP_DISMISSED_PREFIX = 'cy_popup_'; // key per popup: cy_popup_{id}
 
+// ===== GEOLOCATION PERMISSION =====
+const GEO_PREF_KEY  = 'pf_geo_pref';   // 'granted' | 'denied'
+const GEO_CACHE_KEY = 'pf_geo_cache';  // { lat, lng, city, ts }
+const GEO_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 h
+let _geoCoords = null; // { lat, lng } — set when GPS granted
+
 // ===== COUPONS =====
 // Coupons are now validated against the API — no local array needed.
 let _appliedCoupon    = null;
@@ -130,6 +136,38 @@ function trackEvent(eventType, context) {
   }).catch(() => {});
 }
 
+// ===== UTM TRACKING =====
+const UTM_KEY = 'pf_utm';
+
+function _captureUTM() {
+  const params = new URLSearchParams(location.search);
+  const source = params.get('utm_source');
+  if (source) {
+    // Fresh UTM in URL — store / overwrite
+    localStorage.setItem(UTM_KEY, source.toLowerCase().trim());
+  }
+  // Return whatever we have (url param or stored fallback)
+  return localStorage.getItem(UTM_KEY) || 'direct';
+}
+
+function _getUTMSource() {
+  return localStorage.getItem(UTM_KEY) || 'direct';
+}
+
+function _trackUTMEntry() {
+  const params = new URLSearchParams(location.search);
+  const source = params.get('utm_source');
+  if (!source) return; // no UTM in URL — nothing to track
+  const clean = source.toLowerCase().trim();
+  // Store/overwrite in localStorage for future sessions
+  localStorage.setItem(UTM_KEY, clean);
+  // Deduplicate per session+source so refreshing the same link doesn't spam the DB
+  const sessionKey = 'pf_utm_' + clean;
+  if (sessionStorage.getItem(sessionKey)) return;
+  sessionStorage.setItem(sessionKey, '1');
+  trackEvent('UTM_ENTRY', { utm_source: clean, url: location.href, referrer: document.referrer || 'directo' });
+}
+
 // ===== MAP STATE =====
 let _leafletLoaded  = false;
 let _mapInstance    = null;
@@ -148,6 +186,158 @@ const MAP_Q_DEFAULT = '¿Aquí te entregamos el pedido?';
 
 // Auto-detect city via IP geolocation (no permission required).
 // Updates DELIVERY_CITY silently; runs concurrently with product fetch.
+
+// ── Geolocation modal ──────────────────────────────────────────────────────
+function _initGeoPermission() {
+  const pref = localStorage.getItem(GEO_PREF_KEY);
+
+  if (pref === 'granted') {
+    // Restore cached coords if still fresh
+    try {
+      const cached = JSON.parse(localStorage.getItem(GEO_CACHE_KEY) || 'null');
+      if (cached && Date.now() - cached.ts < GEO_CACHE_TTL) {
+        _geoCoords = { lat: cached.lat, lng: cached.lng };
+        if (cached.city) { DELIVERY_CITY = cached.city; _updateCityGreeting(); }
+        return;
+      }
+    } catch (_) {}
+    // Cache expired — silently refresh coords
+    _requestGPS(/*silent*/ true);
+    return;
+  }
+
+  if (pref === 'denied') return; // user already said no — use IP fallback
+
+  // No decision yet — show modal after a short delay so the page feels loaded
+  setTimeout(_showGeoModal, 1800);
+}
+
+function _showGeoModal() {
+  if (document.getElementById('pfGeoModal')) return; // already open
+  const overlay = document.createElement('div');
+  overlay.id = 'pfGeoModal';
+  overlay.style.cssText = [
+    'position:fixed', 'inset:0', 'z-index:99990',
+    'background:rgba(0,0,0,.45)',
+    'display:flex', 'align-items:flex-end', 'justify-content:center',
+    'padding:0 0 env(safe-area-inset-bottom,0)',
+    'backdrop-filter:blur(2px)', '-webkit-backdrop-filter:blur(2px)',
+    'animation:pfGeoFadeIn .25s ease',
+  ].join(';');
+
+  overlay.innerHTML = `
+    <style>
+      @keyframes pfGeoFadeIn { from { opacity:0 } to { opacity:1 } }
+      @keyframes pfGeoSlideUp { from { transform:translateY(40px);opacity:0 } to { transform:translateY(0);opacity:1 } }
+      #pfGeoBox {
+        background: var(--bg-card, #fff);
+        border-radius: 20px 20px 0 0;
+        padding: 28px 24px 32px;
+        max-width: 480px;
+        width: 100%;
+        box-shadow: 0 -4px 32px rgba(0,0,0,.15);
+        animation: pfGeoSlideUp .3s cubic-bezier(.4,0,.2,1);
+        font-family: var(--font-body, 'DM Sans', sans-serif);
+      }
+      #pfGeoBox .geo-icon { font-size: 40px; text-align: center; margin-bottom: 12px; }
+      #pfGeoBox h3 {
+        font-family: var(--font-head, 'Plus Jakarta Sans', sans-serif);
+        font-size: 17px; font-weight: 800;
+        color: var(--text-primary, #111827);
+        margin: 0 0 10px; text-align: center;
+      }
+      #pfGeoBox p {
+        font-size: 13px; line-height: 1.6;
+        color: var(--text-secondary, #4B5563);
+        margin: 0 0 22px; text-align: center;
+      }
+      #pfGeoBox .geo-btn-primary {
+        width: 100%; padding: 14px;
+        background: var(--primary, #F15200); color: #fff;
+        border: none; border-radius: 12px;
+        font-family: var(--font-head, sans-serif);
+        font-size: 15px; font-weight: 700;
+        cursor: pointer; margin-bottom: 10px;
+        transition: background .18s;
+      }
+      #pfGeoBox .geo-btn-primary:hover { background: var(--primary-dark, #CC4500); }
+      #pfGeoBox .geo-btn-secondary {
+        width: 100%; padding: 12px;
+        background: transparent; color: var(--text-muted, #767676);
+        border: 1.5px solid var(--border, #E5E7EB); border-radius: 12px;
+        font-family: var(--font-body, sans-serif);
+        font-size: 14px; font-weight: 600;
+        cursor: pointer; transition: border-color .18s;
+      }
+      #pfGeoBox .geo-btn-secondary:hover { border-color: var(--text-muted, #767676); }
+    </style>
+    <div id="pfGeoBox">
+      <div class="geo-icon">📍</div>
+      <h3>¿Usamos tu ubicación?</h3>
+      <p>Para mostrarte algunos productos y servicios disponibles en tu zona, necesitaremos usar tu ubicación. Si prefieres no compartirla, podrás seguir navegando con resultados generales, pero algunos productos y/o servicios no estarán disponibles.</p>
+      <button class="geo-btn-primary" id="pfGeoBtnAccept">Usar mi ubicación</button>
+      <button class="geo-btn-secondary" id="pfGeoBtnDeny">Continuar sin ubicación</button>
+    </div>`;
+
+  document.body.appendChild(overlay);
+
+  document.getElementById('pfGeoBtnAccept').addEventListener('click', () => {
+    _closeGeoModal();
+    _requestGPS(/*silent*/ false);
+  });
+  document.getElementById('pfGeoBtnDeny').addEventListener('click', () => {
+    localStorage.setItem(GEO_PREF_KEY, 'denied');
+    _closeGeoModal();
+  });
+}
+
+function _closeGeoModal() {
+  const el = document.getElementById('pfGeoModal');
+  if (el) el.remove();
+}
+
+async function _reverseGeocodeCity(lat, lng) {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=es`,
+      { headers: { 'Accept-Language': 'es' } }
+    );
+    if (!res.ok) return null;
+    const d = await res.json();
+    return d.address?.city || d.address?.town || d.address?.village || d.address?.county || null;
+  } catch (_) { return null; }
+}
+
+function _requestGPS(silent) {
+  if (!('geolocation' in navigator)) return; // browser doesn't support — IP fallback already runs
+
+  navigator.geolocation.getCurrentPosition(
+    async pos => {
+      const { latitude: lat, longitude: lng } = pos.coords;
+      _geoCoords = { lat, lng };
+      localStorage.setItem(GEO_PREF_KEY, 'granted');
+
+      const city = await _reverseGeocodeCity(lat, lng);
+      localStorage.setItem(GEO_CACHE_KEY, JSON.stringify({ lat, lng, city, ts: Date.now() }));
+
+      if (city) {
+        DELIVERY_CITY = city;
+        _updateCityGreeting();
+        console.log('%c📍 GPS Geolocation →', 'color:#22c55e;font-weight:700', city, `(${lat.toFixed(4)}, ${lng.toFixed(4)})`);
+      }
+
+      // Track the GPS consent + location for analytics/marketing
+      trackEvent('GEO_ACCEPT', { lat: +lat.toFixed(5), lng: +lng.toFixed(5), city: city ?? null });
+    },
+    err => {
+      // User denied browser prompt or error — treat as denied
+      if (!silent) localStorage.setItem(GEO_PREF_KEY, 'denied');
+      console.warn('📍 GPS error:', err.message);
+    },
+    { timeout: 10000, maximumAge: GEO_CACHE_TTL, enableHighAccuracy: false }
+  );
+}
+// ── End Geolocation modal ──────────────────────────────────────────────────
 function _showCountryBlock(countryName) {
   const el = document.createElement('div');
   el.id = 'countryBlockOverlay';
@@ -289,12 +479,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   initCategories();
   renderRecentlyViewed();
   if (_popupQueue.length) _showNextPopup();
+  _initGeoPermission();
   _handleProductDeepLink();
   // Track page view (once per session)
   if (!sessionStorage.getItem('pf_pv')) {
     sessionStorage.setItem('pf_pv', '1');
-    trackEvent('PAGE_VIEW', { referrer: document.referrer || 'directo', url: location.href });
+    const utmSource = _captureUTM();
+    trackEvent('PAGE_VIEW', { referrer: document.referrer || 'directo', url: location.href, utm_source: utmSource });
   }
+  // Track UTM entry — fires whenever utm_source is in the URL, once per session+source
+  // Independent of pf_pv so mid-session campaign links are always recorded
+  _trackUTMEntry();
   // Scroll-to-top button visibility
   const _scrollBtn = document.getElementById('btnScrollTop');
   if (_scrollBtn) {
@@ -1792,6 +1987,15 @@ async function sendWhatsappOrder() {
   // Record coupon use (fire-and-forget)
   if (_appliedCoupon?.code) {
     fetch(`${API_BASE}/api/coupons/use/${encodeURIComponent(_appliedCoupon.code)}`, { method: 'POST' }).catch(() => {});
+  }
+
+  // Marketing consent (fire-and-forget — async, never blocks checkout)
+  if (document.getElementById('chkMarketing')?.checked) {
+    fetch(`${API_BASE}/api/marketing-consents`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, name: nom, channel: 'WHATSAPP' })
+    }).catch(() => {});
   }
 
   buyNowProduct = null;
