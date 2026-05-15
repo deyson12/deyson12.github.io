@@ -207,9 +207,9 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
               <div id="moreMenuGreetAvatar" style="width:36px;height:36px;border-radius:50%;background:#F15200;color:#fff;font-family:var(--font-head);font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">?</div>
               <div style="min-width:0">
                 <div style="font-size:14px;font-weight:800;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="moreMenuGreetName"></div>
-                <div id="moreMenuGreetCity" style="display:none;align-items:center;gap:4px;margin-top:3px">
+                <div id="moreMenuGreetCity" style="display:none;align-items:center;gap:4px;margin-top:3px;cursor:pointer" onclick="openAddrPopover(event)" title="Ver / cambiar dirección de entrega">
                   <svg viewBox="0 0 24 24" fill="none" stroke="#F15200" stroke-width="2.5" width="11" height="11"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                  <span id="moreMenuGreetCityText" style="font-size:11px;font-weight:600;color:#F15200"></span>
+                  <span id="moreMenuGreetCityText" style="font-size:11px;font-weight:600;color:#F15200;text-decoration:underline dotted"></span>
                 </div>
               </div>
             </div>
@@ -266,9 +266,9 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
         <div id="hamGreetAvatar" style="width:44px;height:44px;border-radius:50%;background:#F15200;color:#fff;font-family:var(--font-head);font-size:18px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">?</div>
         <div style="min-width:0">
           <div style="font-size:16px;font-weight:800;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="hamGreetName"></div>
-          <div id="hamGreetCity" style="display:none;align-items:center;gap:4px;margin-top:4px">
+          <div id="hamGreetCity" style="display:none;align-items:center;gap:4px;margin-top:4px;cursor:pointer" onclick="openAddrPopover(event)" title="Ver / cambiar dirección de entrega">
             <svg viewBox="0 0 24 24" fill="none" stroke="#F15200" stroke-width="2.5" width="12" height="12"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            <span id="hamGreetCityText" style="font-size:12px;font-weight:600;color:#F15200"></span>
+            <span id="hamGreetCityText" style="font-size:12px;font-weight:600;color:#F15200;text-decoration:underline dotted"></span>
           </div>
         </div>
       </div>
@@ -756,6 +756,30 @@ function _tncAccept() {
   closeTnc();
 }
 </script>
+
+<!-- ADDRESS MODAL -->
+<div id="addrModalOverlay" style="display:none;position:fixed;inset:0;z-index:89998;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);align-items:center;justify-content:center;padding:16px" onclick="_addrModalOverlayClick(event)">
+  <div id="addrPopoverCard" style="background:var(--bg-card,#fff);border-radius:20px;box-shadow:0 12px 40px rgba(0,0,0,.22);padding:22px 20px 20px;width:100%;max-width:400px;font-family:var(--font-body,'DM Sans',sans-serif);max-height:90dvh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <span style="font-family:var(--font-head,'Plus Jakarta Sans',sans-serif);font-size:15px;font-weight:800;color:var(--text-primary,#111827)">📍 Dirección de entrega</span>
+      <button onclick="closeAddrPopover()" style="background:none;border:none;cursor:pointer;padding:4px 6px;font-size:20px;color:var(--text-muted,#9ca3af);line-height:1;border-radius:8px">×</button>
+    </div>
+    <div id="addrPopoverCurrent" style="font-size:13px;color:var(--text-secondary,#4B5563);background:var(--bg,#f9fafb);border-radius:10px;padding:10px 12px;margin-bottom:14px;line-height:1.5"></div>
+    <div style="display:flex;gap:8px;margin-bottom:0">
+      <input id="addrPopoverInput" type="text" placeholder="Nueva dirección…" autocomplete="street-address"
+        style="flex:1;padding:11px 13px;border:1.5px solid var(--border,#E5E7EB);border-radius:10px;font-size:14px;color:var(--text-primary,#111827);background:var(--bg,#f9fafb);outline:none;transition:border-color .18s"
+        onfocus="this.style.borderColor='var(--primary,#F15200)'" onblur="this.style.borderColor='var(--border,#E5E7EB)'"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();_addrPopoverSearch()}">
+      <button onclick="_addrPopoverSearch()" id="addrPopoverSearchBtn"
+        style="padding:11px 14px;background:var(--primary,#F15200);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .18s">Buscar</button>
+    </div>
+    <div id="addrPopoverStatus" style="font-size:12px;color:var(--primary,#F15200);margin-top:8px;min-height:18px"></div>
+    <div id="addrPopoverMapEl" style="display:none;width:100%;height:200px;border-radius:12px;overflow:hidden;margin-top:4px;border:1.5px solid var(--border,#E5E7EB)"></div>
+    <p id="addrPopoverMapHint" style="display:none;font-size:11px;color:var(--text-muted,#9ca3af);text-align:center;margin:6px 0 0">📌 Mueve el pin para ajustar la ubicación exacta</p>
+    <button id="addrPopoverConfirmBtn" onclick="_addrPopoverConfirm()" disabled
+      style="display:none;width:100%;margin-top:14px;padding:13px;background:var(--primary,#F15200);color:#fff;border:none;border-radius:12px;font-family:var(--font-head,sans-serif);font-size:15px;font-weight:700;cursor:pointer;transition:background .18s,opacity .18s;opacity:.45">Confirmar dirección</button>
+  </div>
+</div>
 
 <script src="js/config.js" defer></script>
 <script src="js/utils.js" defer></script>

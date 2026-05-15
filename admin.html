@@ -389,6 +389,20 @@
   .prod-card-active { font-size: 11px; font-weight: 700; background: #f0fdf4; color: #15803d; padding: 2px 8px; border-radius: var(--radius-full); border: 1px solid #bbf7d0; }
   .prod-card-inactive { font-size: 11px; font-weight: 700; background: #fef2f2; color: #b91c1c; padding: 2px 8px; border-radius: var(--radius-full); border: 1px solid #fecaca; }
   .prod-card-actions { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+  /* zone chip on product card */
+  .prod-zone-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: var(--radius-full); font-family: var(--font); font-size: 11px; font-weight: 700; cursor: pointer; border: 1.5px solid #bae6fd; background: #f0f9ff; color: #0369a1; transition: all .18s; white-space: nowrap; }
+  .prod-zone-chip:hover { background: #0369a1; color: #fff; border-color: #0369a1; }
+  .prod-zone-chip.nationwide { border-color: #bbf7d0; background: #f0fdf4; color: #15803d; }
+  .prod-zone-chip.nationwide:hover { background: #15803d; color: #fff; border-color: #15803d; }
+  /* zones picker modal */
+  .zpk-list { display: flex; flex-direction: column; gap: 6px; max-height: 340px; overflow-y: auto; padding-right: 2px; }
+  .zpk-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; transition: border-color .15s, background .15s; user-select: none; }
+  .zpk-item:hover { border-color: var(--primary); background: #fff7ed; }
+  .zpk-item.checked { border-color: #0369a1; background: #f0f9ff; }
+  .zpk-swatch { width: 18px; height: 18px; border-radius: 5px; flex-shrink: 0; opacity: .85; }
+  .zpk-name { flex: 1; font-size: 13px; font-weight: 600; color: var(--text-primary); }
+  .zpk-meta { font-size: 11px; color: var(--text-muted); }
+  .zpk-cb { width: 16px; height: 16px; accent-color: #0369a1; flex-shrink: 0; cursor: pointer; }
   /* ── PRICE BOX ── */
   .prod-price-box { margin-top: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; }
   .prod-price-box-header { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: #f1f5f9; border-bottom: 1px solid #e2e8f0; }
@@ -501,6 +515,33 @@
   .omap-popup-badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 700; margin-top: 4px; }
   .omap-popup-open { display: inline-block; margin-top: 6px; padding: 4px 10px; background: var(--primary); color: #fff; border-radius: 99px; font-size: 11px; font-weight: 700; cursor: pointer; border: none; font-family: var(--font); }
   .omap-popup-open:hover { background: var(--primary-dark); }
+
+  /* ── ZONAS COBERTURA ── */
+  .z-list { display: flex; flex-direction: column; gap: 8px; }
+  .z-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); display: flex; align-items: center; gap: 14px; padding: 14px 16px; transition: box-shadow .18s; }
+  .z-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.1); }
+  .z-color-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; border: 2px solid rgba(0,0,0,.12); }
+  .z-swatch { width: 42px; height: 42px; border-radius: 10px; flex-shrink: 0; opacity: .85; border: 1.5px solid rgba(0,0,0,.08); }
+  .z-info { flex: 1; min-width: 0; }
+  .z-name { font-size: 14px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .z-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .z-desc { font-size: 12px; color: var(--text-secondary); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .z-toggle-btn { padding: 6px 14px; border-radius: var(--radius-full); font-family: var(--font); font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid; transition: all .18s; white-space: nowrap; flex-shrink: 0; }
+  .z-toggle-visible   { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+  .z-toggle-visible:hover { background: #15803d; color: #fff; border-color: #15803d; }
+  .z-toggle-hidden  { background: #f3f4f6; color: var(--text-muted); border-color: var(--border); }
+  .z-toggle-hidden:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .z-map-wrap { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 16px; }
+  #zonasMapEl { height: 480px; width: 100%; background: #e5e7eb; }
+  /* draw mode */
+  .z-draw-bar { display: none; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px; background: #fff7ed; border-bottom: 1px solid #fed7aa; flex-wrap: wrap; }
+  .z-draw-bar.active { display: flex; }
+  .z-draw-hint { font-size: 13px; font-weight: 600; color: #c2410c; display: flex; align-items: center; gap: 7px; }
+  .z-draw-cancel { padding: 6px 14px; border-radius: var(--radius-full); font-family: var(--font); font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid #fed7aa; background: #fff; color: #c2410c; transition: all .18s; }
+  .z-draw-cancel:hover { background: #c2410c; color: #fff; border-color: #c2410c; }
+  .z-create-btn { display: flex; align-items: center; gap: 6px; padding: 8px 16px; background: var(--primary); color: #fff; border: none; border-radius: var(--radius-sm); font-family: var(--font); font-size: 13px; font-weight: 700; cursor: pointer; transition: background .2s; white-space: nowrap; flex-shrink: 0; }
+  .z-create-btn:hover { background: var(--primary-dark); }
+  .z-create-btn:disabled { opacity: .5; cursor: not-allowed; background: var(--primary); }
 </style>
 </head>
 <body>
@@ -568,6 +609,10 @@
     <button class="nav-item" id="navQr" onclick="showSection('qr');closeNavDrawer()">
       <span class="nav-item-icon">📷</span>
       Generador QR
+    </button>
+    <button class="nav-item" id="navZonas" onclick="showSection('zonas');closeNavDrawer()">
+      <span class="nav-item-icon">🗺️</span>
+      Zonas cobertura
     </button>
   </div>
   <div class="nav-drawer-footer">
@@ -1005,6 +1050,128 @@
   </div>
 </div>
 
+<!-- ZONAS COBERTURA SECTION -->
+<div class="content" id="zonasSection" style="display:none">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap">
+    <h2 style="font-size:18px;font-weight:800;flex:1">🗺️ Zonas de cobertura</h2>
+    <button class="btn-refresh" onclick="loadZonas()" title="Actualizar zonas">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      <span class="btn-refresh-text">Actualizar</span>
+    </button>
+    <button class="z-create-btn" id="btnImportGeoJson" onclick="_openGeoJsonModal()" style="background:#1d4ed8">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Importar GeoJSON
+    </button>
+    <button class="z-create-btn" id="btnCrearZona" onclick="_startDrawZona()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M12 5v14M5 12h14"/></svg>
+      Crear zona
+    </button>
+  </div>
+  <!-- Map -->
+  <div class="z-map-wrap" id="zonasMapWrap">
+    <div class="z-draw-bar" id="zonaDrawBar">
+      <div class="z-draw-hint">✏️ Haz clic en el mapa para agregar vértices. Cierra la figura haciendo clic sobre el primer punto.</div>
+      <button class="z-draw-cancel" onclick="_cancelDraw()">Cancelar</button>
+    </div>
+    <div id="zonasMapEl"></div>
+  </div>
+  <!-- List -->
+  <div id="zonasListWrap">
+    <div class="state-box"><div class="spinner"></div><div class="state-sub">Cargando zonas…</div></div>
+  </div>
+</div>
+
+<!-- PRODUCT ZONES PICKER MODAL -->
+<div class="modal-overlay" id="zpkModal" onclick="_zpkHandleOverlayClick(event)">
+  <div class="modal-box" style="max-width:460px">
+    <div class="modal-head">
+      <div class="modal-head-title" id="zpkModalTitle">Zonas del producto</div>
+      <button class="modal-close" onclick="_zpkClose()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="gap:14px">
+      <p style="font-size:13px;color:var(--text-secondary);line-height:1.6;margin:0">
+        Selecciona las zonas donde este producto está disponible.<br>
+        <strong>Si no marcas ninguna, el producto se muestra en todo el país.</strong>
+      </p>
+      <div class="zpk-list" id="zpkList"><div class="state-box"><div class="spinner"></div></div></div>
+      <div class="modal-actions" style="margin-top:4px">
+        <button class="btn-cancel-order" style="flex:none;padding:10px 20px" onclick="_zpkClose()">Cancelar</button>
+        <button class="btn-confirm" id="zpkSaveBtn" onclick="_zpkSave()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ZONA GEOJSON IMPORT MODAL -->
+<div class="modal-overlay" id="zonaGeoJsonModal" onclick="_handleGeoJsonModalClick(event)">
+  <div class="modal-box" style="max-width:520px">
+    <div class="modal-head">
+      <div class="modal-head-title">Importar zona desde GeoJSON</div>
+      <button class="modal-close" onclick="_closeGeoJsonModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;line-height:1.6">
+        Pega un GeoJSON de tipo <code style="background:#f3f4f6;padding:1px 5px;border-radius:4px">Feature</code>,
+        <code style="background:#f3f4f6;padding:1px 5px;border-radius:4px">Polygon</code> o
+        <code style="background:#f3f4f6;padding:1px 5px;border-radius:4px">MultiPolygon</code>.
+        Se usará el primer anillo exterior.
+      </p>
+      <textarea id="geoJsonInput" class="pf-form-input" rows="10"
+        placeholder='{ "type": "Feature", "geometry": { "type": "MultiPolygon", ... } }'
+        style="font-family:monospace;font-size:12px;resize:vertical"></textarea>
+      <div id="geoJsonError" style="font-size:12px;color:#b91c1c;margin-top:6px;display:none"></div>
+      <div class="modal-actions" style="margin-top:16px">
+        <button class="btn-cancel-order" style="flex:none;padding:10px 20px" onclick="_closeGeoJsonModal()">Cancelar</button>
+        <button class="btn-confirm" onclick="_importGeoJson()">Siguiente →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ZONA CREATE MODAL -->
+<div class="modal-overlay" id="zonaCreateModal" onclick="_handleZonaModalClick(event)">
+  <div class="modal-box" style="max-width:460px">
+    <div class="modal-head">
+      <div class="modal-head-title">Nueva zona de cobertura</div>
+      <button class="modal-close" onclick="_closeZonaModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div id="zonaMiniMapEl" style="width:100%;height:200px;border-radius:var(--radius-sm);background:#e5e7eb;overflow:hidden;margin-bottom:4px"></div>
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px" id="zonaVerticesLabel"></div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="pf-form-row">
+          <label class="pf-form-label">Nombre <span style="color:#b91c1c">*</span></label>
+          <input class="pf-form-input" id="zonaName" type="text" maxlength="100" placeholder="Ej: Zona Norte">
+        </div>
+        <div class="pf-form-row">
+          <label class="pf-form-label">Descripción <span style="color:#9ca3af;font-weight:400">opcional</span></label>
+          <textarea class="pf-form-input" id="zonaDesc" rows="2" placeholder="Descripción corta…" style="resize:vertical"></textarea>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="pf-form-row">
+            <label class="pf-form-label">Prioridad</label>
+            <input class="pf-form-input" id="zonaPriority" type="number" min="1" max="999" placeholder="99" value="99">
+          </div>
+          <div class="pf-form-row">
+            <label class="pf-form-label">Precio domicilio (COP)</label>
+            <input class="pf-form-input" id="zonaDomicilio" type="number" min="0" placeholder="0" value="0">
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions" style="margin-top:18px">
+        <button class="btn-cancel-order" style="flex:none;padding:10px 20px" onclick="_closeZonaModal()">Cancelar</button>
+        <button class="btn-confirm" id="btnZonaSave" onclick="_saveNewZona()">Guardar zona</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- MARKETING SECTION -->
 <div class="content" id="marketingSection" style="display:none">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
@@ -1309,6 +1476,7 @@ function showSection(section) {
   document.getElementById('publicidadSection').style.display = section === 'publicidad' ? 'block' : 'none';
   document.getElementById('marketingSection').style.display  = section === 'marketing'  ? 'block' : 'none';
   document.getElementById('qrSection').style.display         = section === 'qr'         ? 'block' : 'none';
+  document.getElementById('zonasSection').style.display      = section === 'zonas'      ? 'block' : 'none';
   document.getElementById('navPedidos').classList.toggle('active',    section === 'pedidos');
   document.getElementById('navAnalytics').classList.toggle('active',  section === 'analytics');
   document.getElementById('navProductos').classList.toggle('active',  section === 'productos');
@@ -1317,7 +1485,8 @@ function showSection(section) {
   document.getElementById('navPublicidad').classList.toggle('active', section === 'publicidad');
   document.getElementById('navMarketing').classList.toggle('active',  section === 'marketing');
   document.getElementById('navQr').classList.toggle('active',          section === 'qr');
-  const sectionLabels = { pedidos: 'Pedidos', analytics: 'Analytics', productos: 'Productos', banners: 'Banners', cupones: 'Cupones & Gift Cards', publicidad: 'Publicidad', marketing: 'Marketing', qr: 'Generador QR' };
+  document.getElementById('navZonas').classList.toggle('active',       section === 'zonas');
+  const sectionLabels = { pedidos: 'Pedidos', analytics: 'Analytics', productos: 'Productos', banners: 'Banners', cupones: 'Cupones & Gift Cards', publicidad: 'Publicidad', marketing: 'Marketing', qr: 'Generador QR', zonas: 'Zonas cobertura' };
   const labelEl = document.getElementById('topbarSectionLabel');
   if (labelEl) labelEl.textContent = sectionLabels[section] ?? section;
   history.replaceState(null, '', '#' + section);
@@ -1329,6 +1498,7 @@ function showSection(section) {
   if (section === 'publicidad') { loadAds(); loadPopups(); }
   if (section === 'marketing')  loadMarketingConsents();
   if (section === 'qr')         _qrRenderTemplates();
+  if (section === 'zonas')      loadZonas();
 }
 
 function onRefresh() {
@@ -2976,6 +3146,7 @@ function renderProdGrid(list) {
           ${dropUrl
             ? `<a class="btn-drop" href="${dropUrl}" target="_blank" rel="noopener noreferrer">🔗 Drop</a>`
             : `<button class="btn-drop" disabled style="opacity:.35;cursor:not-allowed" title="Sin URL de dropshipping">🔗 Drop</button>`}
+          <button class="prod-zone-chip nationwide" id="zpchip-${p.id}" onclick="openZonesPicker('${p.id}')">🗺️ Todas las zonas</button>
         </div>
       </div>
     </div>`;
@@ -3540,7 +3711,7 @@ function _gmLoadAdmin() {
     window._gmAdminReady = () => { _gmapAdminLoaded = true; resolve(); };
     const s  = document.createElement('script');
     s.id     = 'gm-admin-js';
-    s.src    = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&loading=async&libraries=marker&callback=_gmAdminReady`;
+    s.src    = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&loading=async&libraries=marker,drawing&callback=_gmAdminReady`;
     s.async  = true;
     s.defer  = true;
     s.onerror = reject;
@@ -4401,6 +4572,553 @@ async function deleteAd(id) {
     renderAds();
     showToast('Anuncio eliminado.');
   } catch (e) { showToast('Error: ' + e.message); }
+}
+
+// ── ZONAS COBERTURA ───────────────────────────────────────
+let _allZones          = [];          // raw ZoneDto[]
+let _zonaVisible       = {};          // { [id]: boolean }
+let _zonaPolygons      = {};          // { [id]: google.maps.Polygon }
+let _zonaMap           = null;        // google.maps.Map
+let _zonaInfoWindow    = null;
+
+// Palette of distinct fill colors for zones
+const _ZONA_COLORS = [
+  '#F15200', '#1d4ed8', '#15803d', '#7c3aed', '#b45309',
+  '#0e7490', '#be185d', '#065f46', '#92400e', '#1e40af'
+];
+
+function _zonaColor(index) {
+  return _ZONA_COLORS[index % _ZONA_COLORS.length];
+}
+
+async function loadZonas() {
+  const listWrap = document.getElementById('zonasListWrap');
+  listWrap.innerHTML = '<div class="state-box"><div class="spinner"></div><div class="state-sub">Cargando zonas…</div></div>';
+
+  try {
+    await _gmLoadAdmin();
+  } catch (e) {
+    listWrap.innerHTML = '<div class="state-box"><div class="state-icon">⚠️</div><div class="state-sub">Error al cargar Google Maps.</div></div>';
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/zones`, {
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+    if (res.status === 401 || res.status === 403) { sessionStorage.removeItem(AUTH_KEY); location.reload(); return; }
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    _allZones = await res.json();
+  } catch (e) {
+    listWrap.innerHTML = `<div class="state-box"><div class="state-icon">⚠️</div><div class="state-sub">Error al cargar zonas: ${e.message}</div></div>`;
+    return;
+  }
+
+  // Default all zones hidden
+  _allZones.forEach(z => {
+    if (_zonaVisible[z.id] === undefined) _zonaVisible[z.id] = false;
+  });
+
+  _initZonaMap();
+  _renderZonaList();
+}
+
+function _initZonaMap() {
+  const el = document.getElementById('zonasMapEl');
+
+  if (!_zonaMap) {
+    _zonaMap = new google.maps.Map(el, {
+      zoom: 12,
+      center: { lat: 6.2476, lng: -75.5658 }, // Medellín por defecto
+      mapTypeControl: false,
+      streetViewControl: false,
+      fullscreenControl: true,
+      gestureHandling: 'cooperative',
+      mapId: 'DEMO_MAP_ID'
+    });
+    _zonaInfoWindow = new google.maps.InfoWindow({ maxWidth: 260 });
+  } else {
+    google.maps.event.trigger(_zonaMap, 'resize');
+  }
+
+  // Clear existing polygons
+  Object.values(_zonaPolygons).forEach(p => p.setMap(null));
+  _zonaPolygons = {};
+
+  const bounds = new google.maps.LatLngBounds();
+  let hasPoints = false;
+
+  _allZones.forEach((zone, idx) => {
+    if (!zone.polygon || !zone.polygon.length) return;
+    const color = _zonaColor(idx);
+    const path  = zone.polygon.map(pt => ({ lat: pt.lat, lng: pt.lng }));
+
+    const poly = new google.maps.Polygon({
+      paths: path,
+      strokeColor:   color,
+      strokeWeight:  2.5,
+      strokeOpacity: 0.9,
+      fillColor:     color,
+      fillOpacity:   0.2,
+      map: _zonaVisible[zone.id] ? _zonaMap : null,
+      clickable: true
+    });
+
+    poly.addListener('click', () => {
+      const center = _polyCenter(path);
+      _zonaInfoWindow.setContent(_zonaPopupHtml(zone, color));
+      _zonaInfoWindow.setPosition(center);
+      _zonaInfoWindow.open(_zonaMap);
+    });
+
+    _zonaPolygons[zone.id] = poly;
+    path.forEach(pt => { bounds.extend(pt); hasPoints = true; });
+  });
+
+  if (hasPoints) _zonaMap.fitBounds(bounds, 40);
+}
+
+function _polyCenter(path) {
+  const lat = path.reduce((s, p) => s + p.lat, 0) / path.length;
+  const lng = path.reduce((s, p) => s + p.lng, 0) / path.length;
+  return { lat, lng };
+}
+
+function _zonaPopupHtml(zone, color) {
+  const pts = zone.polygon?.length ?? 0;
+  const price = zone.deliveryPrice > 0
+    ? `<div style="font-size:12px;color:#0369a1;font-weight:700;margin-top:3px">Domicilio: $${zone.deliveryPrice.toLocaleString('es-CO')}</div>`
+    : '';
+  return `<div style="padding:10px 12px;min-width:160px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <div style="width:12px;height:12px;border-radius:50%;background:${color};flex-shrink:0;border:2px solid rgba(0,0,0,.15)"></div>
+      <strong style="font-size:13px;color:#111">${_esc(zone.name)}</strong>
+    </div>
+    ${zone.description ? `<div style="font-size:12px;color:#6b7280;margin-bottom:4px">${_esc(zone.description)}</div>` : ''}
+    <div style="font-size:11px;color:#9ca3af">Prioridad: ${zone.priority} · ${pts} vértices</div>
+    ${price}
+  </div>`;
+}
+
+function _esc(s) {
+  return (s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function _renderZonaList() {
+  const wrap = document.getElementById('zonasListWrap');
+  if (!_allZones.length) {
+    wrap.innerHTML = '<div class="state-box"><div class="state-icon">🗺️</div><div class="state-title">Sin zonas</div><div class="state-sub">No hay zonas de cobertura configuradas.</div></div>';
+    return;
+  }
+
+  const sorted = [..._allZones].sort((a, b) => a.priority - b.priority);
+  wrap.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+      <span style="font-size:12px;color:var(--text-muted);font-weight:500">${sorted.length} zona${sorted.length !== 1 ? 's' : ''} configurada${sorted.length !== 1 ? 's' : ''}</span>
+      <div style="display:flex;gap:8px">
+        <button class="filter-btn" onclick="_zonaShowAll()">Mostrar todas</button>
+        <button class="filter-btn" onclick="_zonaHideAll()">Ocultar todas</button>
+      </div>
+    </div>
+    <div class="z-list" id="zonaList">
+      ${sorted.map((z, idx) => _zonaCardHtml(z, idx)).join('')}
+    </div>`;
+}
+
+function _zonaCardHtml(zone, idx) {
+  const color   = _zonaColor(_allZones.indexOf(zone));
+  const visible = _zonaVisible[zone.id] !== false;
+  const pts     = zone.polygon?.length ?? 0;
+  const price   = zone.deliveryPrice > 0 ? ` · $${zone.deliveryPrice.toLocaleString('es-CO')} domicilio` : '';
+  return `<div class="z-card" id="zcard-${zone.id}">
+    <div class="z-swatch" style="background:${color}40;border-color:${color}"></div>
+    <div class="z-info">
+      <div class="z-name">${_esc(zone.name)}</div>
+      <div class="z-meta">Prioridad: ${zone.priority} · ${pts} vértices${price}</div>
+      ${zone.description ? `<div class="z-desc">${_esc(zone.description)}</div>` : ''}
+    </div>
+    <button class="z-toggle-btn ${visible ? 'z-toggle-visible' : 'z-toggle-hidden'}"
+      id="ztoggle-${zone.id}"
+      onclick="_toggleZona('${zone.id}')">
+      ${visible ? '👁 Visible' : '🚫 Oculto'}
+    </button>
+  </div>`;
+}
+
+function _toggleZona(zoneId) {
+  _zonaVisible[zoneId] = !_zonaVisible[zoneId];
+  const poly = _zonaPolygons[zoneId];
+  if (poly) poly.setMap(_zonaVisible[zoneId] ? _zonaMap : null);
+
+  const btn = document.getElementById('ztoggle-' + zoneId);
+  if (btn) {
+    const vis = _zonaVisible[zoneId];
+    btn.className = `z-toggle-btn ${vis ? 'z-toggle-visible' : 'z-toggle-hidden'}`;
+    btn.textContent = vis ? '👁 Visible' : '🚫 Oculto';
+  }
+}
+
+function _zonaShowAll() {
+  _allZones.forEach(z => {
+    _zonaVisible[z.id] = true;
+    const poly = _zonaPolygons[z.id];
+    if (poly) poly.setMap(_zonaMap);
+    const btn = document.getElementById('ztoggle-' + z.id);
+    if (btn) { btn.className = 'z-toggle-btn z-toggle-visible'; btn.textContent = '👁 Visible'; }
+  });
+}
+
+function _zonaHideAll() {
+  _allZones.forEach(z => {
+    _zonaVisible[z.id] = false;
+    const poly = _zonaPolygons[z.id];
+    if (poly) poly.setMap(null);
+    const btn = document.getElementById('ztoggle-' + z.id);
+    if (btn) { btn.className = 'z-toggle-btn z-toggle-hidden'; btn.textContent = '🚫 Oculto'; }
+  });
+}
+
+// ── PRODUCT ZONES PICKER ──────────────────────────────────
+let _zpkProductId    = null;   // product UUID being edited
+let _zpkAllZones     = [];     // all zones from API
+let _zpkSelected     = new Set(); // currently checked zone IDs
+
+async function openZonesPicker(productId) {
+  _zpkProductId = productId;
+  _zpkSelected  = new Set();
+  const p = _prodRawMap[productId];
+  const title = document.getElementById('zpkModalTitle');
+  if (title && p) title.textContent = `Zonas — ${p.name.length > 40 ? p.name.slice(0, 40) + '…' : p.name}`;
+
+  document.getElementById('zpkList').innerHTML = '<div class="state-box"><div class="spinner"></div></div>';
+  document.getElementById('zpkModal').classList.add('open');
+
+  try {
+    // Load all zones if not cached yet
+    if (!_zpkAllZones.length) {
+      const rz = await fetch(`${API_BASE}/api/zones`, { headers: { Authorization: `Bearer ${getToken()}` } });
+      if (rz.ok) _zpkAllZones = await rz.json();
+    }
+    // Load current product zones
+    const rp = await fetch(`${API_BASE}/api/products/${productId}/zones`, {
+      headers: { Authorization: `Bearer ${getToken()}` }
+    });
+    if (rp.ok) {
+      const currentZones = await rp.json();
+      currentZones.forEach(z => _zpkSelected.add(z.id));
+    }
+    _zpkRenderList();
+  } catch (e) {
+    document.getElementById('zpkList').innerHTML =
+      `<div class="state-box"><div class="state-sub">Error: ${e.message}</div></div>`;
+  }
+}
+
+function _zpkRenderList() {
+  const list = document.getElementById('zpkList');
+  if (!_zpkAllZones.length) {
+    list.innerHTML = '<div class="state-box"><div class="state-icon">🗺️</div><div class="state-sub">No hay zonas creadas todavía.</div></div>';
+    return;
+  }
+  const sorted = [..._zpkAllZones].sort((a, b) => a.priority - b.priority);
+  list.innerHTML = sorted.map((z, idx) => {
+    const color   = _ZONA_COLORS[idx % _ZONA_COLORS.length];
+    const checked = _zpkSelected.has(z.id);
+    return `<label class="zpk-item${checked ? ' checked' : ''}" id="zpkitem-${z.id}">
+      <input type="checkbox" class="zpk-cb" id="zpkcb-${z.id}"
+        ${checked ? 'checked' : ''}
+        onchange="_zpkToggle('${z.id}')">
+      <div class="zpk-swatch" style="background:${color}55;border:2px solid ${color}"></div>
+      <span class="zpk-name">${_esc(z.name)}</span>
+      <span class="zpk-meta">P${z.priority}</span>
+    </label>`;
+  }).join('');
+}
+
+function _zpkToggle(zoneId) {
+  if (_zpkSelected.has(zoneId)) {
+    _zpkSelected.delete(zoneId);
+  } else {
+    _zpkSelected.add(zoneId);
+  }
+  const item = document.getElementById('zpkitem-' + zoneId);
+  if (item) item.classList.toggle('checked', _zpkSelected.has(zoneId));
+}
+
+async function _zpkSave() {
+  const btn = document.getElementById('zpkSaveBtn');
+  btn.disabled = true;
+  btn.textContent = 'Guardando…';
+  try {
+    const res = await fetch(`${API_BASE}/api/products/${_zpkProductId}/zones`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+      body: JSON.stringify([..._zpkSelected])
+    });
+    if (res.status === 401 || res.status === 403) { sessionStorage.removeItem(AUTH_KEY); location.reload(); return; }
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    // Update chip label on the product card
+    _zpkUpdateChip(_zpkProductId);
+    _zpkClose();
+    showToast('✅ Zonas actualizadas.');
+  } catch (e) {
+    showToast('Error al guardar: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Guardar';
+  }
+}
+
+function _zpkUpdateChip(productId) {
+  const chip = document.getElementById('zpchip-' + productId);
+  if (!chip) return;
+  const count = _zpkSelected.size;
+  if (count === 0) {
+    chip.className = 'prod-zone-chip nationwide';
+    chip.textContent = '🗺️ Todas las zonas';
+  } else {
+    chip.className = 'prod-zone-chip';
+    chip.textContent = `🗺️ ${count} zona${count !== 1 ? 's' : ''}`;
+  }
+}
+
+function _zpkClose() {
+  document.getElementById('zpkModal').classList.remove('open');
+  _zpkProductId = null;
+}
+
+function _zpkHandleOverlayClick(e) {
+  if (e.target === document.getElementById('zpkModal')) _zpkClose();
+}
+
+// ── ZONA DRAWING ──────────────────────────────────────────
+let _zonaDrawMgr  = null;   // google.maps.drawing.DrawingManager
+let _zonaDrawPoly = null;   // [{lat, lng}] of the drawn polygon
+let _zonaMiniMap  = null;   // mini-map inside the create modal
+
+function _startDrawZona() {
+  if (!_zonaMap) { showToast('Carga las zonas primero.'); return; }
+  const btn = document.getElementById('btnCrearZona');
+  if (btn) btn.disabled = true;
+  document.getElementById('zonaDrawBar').classList.add('active');
+
+  if (!_zonaDrawMgr) {
+    _zonaDrawMgr = new google.maps.drawing.DrawingManager({
+      drawingMode: google.maps.drawing.OverlayType.POLYGON,
+      drawingControl: false,
+      polygonOptions: {
+        strokeColor: '#F15200',
+        strokeWeight: 2.5,
+        strokeOpacity: 0.9,
+        fillColor: '#F15200',
+        fillOpacity: 0.18,
+        clickable: false,
+        editable: true
+      }
+    });
+    google.maps.event.addListener(_zonaDrawMgr, 'polygoncomplete', (polygon) => {
+      _zonaDrawMgr.setDrawingMode(null);
+      _zonaDrawMgr.setMap(null);
+      _zonaDrawPoly = polygon.getPath().getArray().map(ll => ({ lat: ll.lat(), lng: ll.lng() }));
+      polygon.setMap(null);
+      document.getElementById('zonaDrawBar').classList.remove('active');
+      _openZonaModal();
+    });
+  }
+  _zonaDrawMgr.setMap(_zonaMap);
+  _zonaDrawMgr.setDrawingMode(google.maps.drawing.OverlayType.POLYGON);
+}
+
+function _cancelDraw() {
+  if (_zonaDrawMgr) {
+    _zonaDrawMgr.setDrawingMode(null);
+    _zonaDrawMgr.setMap(null);
+  }
+  _zonaDrawPoly = null;
+  document.getElementById('zonaDrawBar').classList.remove('active');
+  const btn = document.getElementById('btnCrearZona');
+  if (btn) btn.disabled = false;
+}
+
+function _openZonaModal() {
+  document.getElementById('zonaName').value      = '';
+  document.getElementById('zonaDesc').value      = '';
+  document.getElementById('zonaPriority').value  = '99';
+  document.getElementById('zonaDomicilio').value = '0';
+  const vLabel = document.getElementById('zonaVerticesLabel');
+  if (vLabel) vLabel.textContent = _zonaDrawPoly ? `${_zonaDrawPoly.length} vértices trazados` : '';
+
+  // Render mini-map preview
+  const miniEl = document.getElementById('zonaMiniMapEl');
+  if (miniEl && _zonaDrawPoly && _zonaDrawPoly.length) {
+    if (!_zonaMiniMap) {
+      _zonaMiniMap = new google.maps.Map(miniEl, {
+        zoom: 13,
+        center: _polyCenter(_zonaDrawPoly),
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: false,
+        zoomControl: false,
+        gestureHandling: 'none',
+        disableDefaultUI: true,
+        mapId: 'DEMO_MAP_ID'
+      });
+    } else {
+      _zonaMiniMap.setCenter(_polyCenter(_zonaDrawPoly));
+      google.maps.event.trigger(_zonaMiniMap, 'resize');
+    }
+    new google.maps.Polygon({
+      paths: _zonaDrawPoly,
+      strokeColor: '#F15200',
+      strokeWeight: 2.5,
+      fillColor: '#F15200',
+      fillOpacity: 0.2,
+      map: _zonaMiniMap
+    });
+    const bounds = new google.maps.LatLngBounds();
+    _zonaDrawPoly.forEach(p => bounds.extend(p));
+    _zonaMiniMap.fitBounds(bounds, 30);
+  }
+
+  const modal = document.getElementById('zonaCreateModal');
+  modal.classList.add('open');
+  setTimeout(() => document.getElementById('zonaName').focus(), 80);
+}
+
+function _closeZonaModal() {
+  document.getElementById('zonaCreateModal').classList.remove('open');
+  _zonaDrawPoly = null;
+  _zonaMiniMap  = null;
+  document.getElementById('zonaMiniMapEl').innerHTML = '';
+  const btn = document.getElementById('btnCrearZona');
+  if (btn) btn.disabled = false;
+}
+
+// ── GEOJSON IMPORT ────────────────────────────────────────
+function _openGeoJsonModal() {
+  document.getElementById('geoJsonInput').value = '';
+  const err = document.getElementById('geoJsonError');
+  err.style.display = 'none';
+  document.getElementById('zonaGeoJsonModal').classList.add('open');
+  setTimeout(() => document.getElementById('geoJsonInput').focus(), 80);
+}
+
+function _closeGeoJsonModal() {
+  document.getElementById('zonaGeoJsonModal').classList.remove('open');
+}
+
+function _handleGeoJsonModalClick(e) {
+  if (e.target === document.getElementById('zonaGeoJsonModal')) _closeGeoJsonModal();
+}
+
+async function _importGeoJson() {
+  const raw = document.getElementById('geoJsonInput').value.trim();
+  const errEl = document.getElementById('geoJsonError');
+  errEl.style.display = 'none';
+
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    errEl.textContent = 'JSON inválido. Revisa que esté bien formado.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  // Extract coordinates array [[lng,lat],...] from Feature / Polygon / MultiPolygon
+  let ring;
+  try {
+    const geom = parsed.geometry ?? parsed;  // Feature or raw geometry
+    if (geom.type === 'Polygon') {
+      ring = geom.coordinates[0];            // exterior ring
+    } else if (geom.type === 'MultiPolygon') {
+      ring = geom.coordinates[0][0];         // first polygon, exterior ring
+    } else {
+      throw new Error(`Tipo no soportado: ${geom.type}`);
+    }
+    if (!ring || ring.length < 3) throw new Error('El polígono tiene menos de 3 vértices.');
+  } catch (e) {
+    errEl.textContent = 'No se pudo leer la geometría: ' + e.message;
+    errEl.style.display = 'block';
+    return;
+  }
+
+  // GeoJSON coords are [lng, lat] → convert to {lat, lng}
+  _zonaDrawPoly = ring.map(([lng, lat]) => ({ lat, lng }));
+  // Remove duplicate closing point if present (JTS adds it; we don't need it)
+  const first = _zonaDrawPoly[0], last = _zonaDrawPoly[_zonaDrawPoly.length - 1];
+  if (first.lat === last.lat && first.lng === last.lng) _zonaDrawPoly.pop();
+
+  // Pre-fill name from properties if available
+  const props = parsed.properties ?? {};
+  const suggestedName = props.NAME_2 ?? props.name ?? props.NAME ?? '';
+
+  _closeGeoJsonModal();
+
+  // Make sure Google Maps is loaded before opening the modal
+  try {
+    await _gmLoadAdmin();
+    if (!_zonaMap) {
+      const el = document.getElementById('zonasMapEl');
+      _zonaMap = new google.maps.Map(el, {
+        zoom: 12,
+        center: _polyCenter(_zonaDrawPoly),
+        mapTypeControl: false, streetViewControl: false,
+        fullscreenControl: true, gestureHandling: 'cooperative',
+        mapId: 'DEMO_MAP_ID'
+      });
+      _zonaInfoWindow = new google.maps.InfoWindow({ maxWidth: 260 });
+    }
+  } catch {
+    showToast('Error al cargar Google Maps.');
+    return;
+  }
+
+  _openZonaModal();
+  if (suggestedName) document.getElementById('zonaName').value = suggestedName;
+}
+
+function _handleZonaModalClick(e) {
+  if (e.target === document.getElementById('zonaCreateModal')) _closeZonaModal();
+}
+
+async function _saveNewZona() {
+  const name = document.getElementById('zonaName').value.trim();
+  if (!name) { showToast('El nombre de la zona es obligatorio.'); document.getElementById('zonaName').focus(); return; }
+  if (!_zonaDrawPoly || _zonaDrawPoly.length < 3) { showToast('El polígono debe tener al menos 3 vértices.'); return; }
+
+  const btn = document.getElementById('btnZonaSave');
+  btn.disabled = true;
+  btn.textContent = 'Guardando…';
+
+  const payload = {
+    name,
+    description: document.getElementById('zonaDesc').value.trim() || null,
+    priority:    parseInt(document.getElementById('zonaPriority').value, 10) || 99,
+    deliveryPrice: parseFloat(document.getElementById('zonaDomicilio').value) || 0,
+    polygon:     _zonaDrawPoly
+  };
+
+  try {
+    const res = await fetch(`${API_BASE}/api/zones`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+      body: JSON.stringify(payload)
+    });
+    if (res.status === 401 || res.status === 403) { sessionStorage.removeItem(AUTH_KEY); location.reload(); return; }
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    _closeZonaModal();
+    showToast('✅ Zona creada correctamente.');
+    // Reset polygons map so _initZonaMap redraws all
+    Object.values(_zonaPolygons).forEach(p => p.setMap(null));
+    _zonaPolygons = {};
+    loadZonas();
+  } catch (e) {
+    showToast('Error al guardar la zona: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Guardar zona';
+  }
 }
 </script>
 </body>

@@ -187,81 +187,127 @@ const MAP_Q_DEFAULT = '¿Aquí te entregamos el pedido?';
 // Auto-detect city via IP geolocation (no permission required).
 // Updates DELIVERY_CITY silently; runs concurrently with product fetch.
 
-// ── Geolocation modal ──────────────────────────────────────────────────────
-function _initGeoPermission() {
+// ── Delivery address modal ────────────────────────────────────────────────
+// Instead of asking for GPS permission, we ask the user to enter their
+// delivery address up-front. This gives us the correct lat/lng for product
+// zone filtering AND pre-fills the order form later.
+
+let _pfGeoMap    = null;  // google.maps.Map inside the address modal
+let _pfGeoMarker = null;  // draggable AdvancedMarkerElement inside the modal
+let _pfGeoLat    = null;  // lat confirmed in the modal
+let _pfGeoLng    = null;  // lng confirmed in the modal
+
+/**
+ * Returns a Promise that resolves once the delivery address is known or skipped:
+ *   - Immediately when the user already confirmed an address in a prior session.
+ *   - After the user confirms/skips the address modal for first-time visitors.
+ *   - Immediately if the user already skipped this session (sessionStorage flag).
+ */
+function _waitForGeoDecision() {
   const pref = localStorage.getItem(GEO_PREF_KEY);
 
   if (pref === 'granted') {
-    // Restore cached coords if still fresh
     try {
       const cached = JSON.parse(localStorage.getItem(GEO_CACHE_KEY) || 'null');
       if (cached && Date.now() - cached.ts < GEO_CACHE_TTL) {
         _geoCoords = { lat: cached.lat, lng: cached.lng };
-        if (cached.city) { DELIVERY_CITY = cached.city; _updateCityGreeting(); }
-        return;
+        return Promise.resolve();
       }
     } catch (_) {}
-    // Cache expired — silently refresh coords
-    _requestGPS(/*silent*/ true);
-    return;
+    // Cache expired — show modal so user can confirm address again
+    localStorage.removeItem(GEO_PREF_KEY);
   }
 
-  if (pref === 'denied') return; // user already said no — use IP fallback
+  // If user already skipped this browser session, don't nag again
+  if (sessionStorage.getItem('pf_geo_skip')) return Promise.resolve();
 
-  // No decision yet — show modal after a short delay so the page feels loaded
-  setTimeout(_showGeoModal, 1800);
+  return new Promise(resolve => _showAddressModal(resolve));
 }
 
-function _showGeoModal() {
-  if (document.getElementById('pfGeoModal')) return; // already open
+function _showAddressModal(onDecision) {
+  if (document.getElementById('pfGeoModal')) return;
   const overlay = document.createElement('div');
   overlay.id = 'pfGeoModal';
   overlay.style.cssText = [
     'position:fixed', 'inset:0', 'z-index:99990',
-    'background:rgba(0,0,0,.45)',
+    'background:rgba(0,0,0,.52)',
     'display:flex', 'align-items:flex-end', 'justify-content:center',
     'padding:0 0 env(safe-area-inset-bottom,0)',
-    'backdrop-filter:blur(2px)', '-webkit-backdrop-filter:blur(2px)',
-    'animation:pfGeoFadeIn .25s ease',
+    'backdrop-filter:blur(3px)', '-webkit-backdrop-filter:blur(3px)',
+    'animation:pfGeoFadeIn .22s ease',
   ].join(';');
 
   overlay.innerHTML = `
     <style>
-      @keyframes pfGeoFadeIn { from { opacity:0 } to { opacity:1 } }
-      @keyframes pfGeoSlideUp { from { transform:translateY(40px);opacity:0 } to { transform:translateY(0);opacity:1 } }
+      @keyframes pfGeoFadeIn  { from{opacity:0}   to{opacity:1} }
+      @keyframes pfGeoSlideUp { from{transform:translateY(40px);opacity:0} to{transform:translateY(0);opacity:1} }
       #pfGeoBox {
         background: var(--bg-card, #fff);
         border-radius: 20px 20px 0 0;
-        padding: 28px 24px 32px;
-        max-width: 480px;
-        width: 100%;
-        box-shadow: 0 -4px 32px rgba(0,0,0,.15);
+        padding: 24px 20px 28px;
+        max-width: 520px; width: 100%;
+        box-shadow: 0 -4px 32px rgba(0,0,0,.18);
         animation: pfGeoSlideUp .3s cubic-bezier(.4,0,.2,1);
         font-family: var(--font-body, 'DM Sans', sans-serif);
+        max-height: 92dvh; overflow-y: auto;
       }
-      #pfGeoBox .geo-icon { font-size: 40px; text-align: center; margin-bottom: 12px; }
+      #pfGeoBox .ga-icon { font-size: 36px; text-align:center; margin-bottom:10px; }
       #pfGeoBox h3 {
         font-family: var(--font-head, 'Plus Jakarta Sans', sans-serif);
         font-size: 17px; font-weight: 800;
         color: var(--text-primary, #111827);
-        margin: 0 0 10px; text-align: center;
+        margin: 0 0 6px; text-align: center;
       }
-      #pfGeoBox p {
-        font-size: 13px; line-height: 1.6;
-        color: var(--text-secondary, #4B5563);
-        margin: 0 0 22px; text-align: center;
+      #pfGeoBox .ga-sub {
+        font-size: 13px; color: var(--text-secondary, #4B5563);
+        text-align: center; margin: 0 0 18px; line-height: 1.5;
       }
-      #pfGeoBox .geo-btn-primary {
+      #pfGeoBox .ga-row {
+        display: flex; gap: 8px; margin-bottom: 12px;
+      }
+      #pfGeoAddrInput {
+        flex: 1; padding: 12px 14px;
+        border: 1.5px solid var(--border, #E5E7EB); border-radius: 12px;
+        font-family: var(--font-body, sans-serif); font-size: 14px;
+        color: var(--text-primary, #111827); background: var(--bg, #f9fafb);
+        outline: none; transition: border-color .18s;
+      }
+      #pfGeoAddrInput:focus { border-color: var(--primary, #F15200); }
+      #pfGeoBtnSearch {
+        padding: 12px 16px;
+        background: var(--primary, #F15200); color: #fff;
+        border: none; border-radius: 12px;
+        font-size: 14px; font-weight: 700; cursor: pointer;
+        white-space: nowrap; transition: background .18s;
+      }
+      #pfGeoBtnSearch:hover { background: var(--primary-dark, #CC4500); }
+      #pfGeoBtnSearch:disabled { background: #d1d5db; cursor: default; }
+      #pfGeoMapEl {
+        display: none; width: 100%; height: 220px;
+        border-radius: 14px; overflow: hidden;
+        margin-bottom: 12px; border: 1.5px solid var(--border, #E5E7EB);
+      }
+      #pfGeoMapHint {
+        display: none; font-size: 12px;
+        color: var(--text-secondary, #6B7280);
+        text-align: center; margin-bottom: 14px;
+      }
+      #pfGeoStatus {
+        font-size: 13px; color: var(--primary, #F15200);
+        text-align: center; min-height: 20px; margin-bottom: 10px;
+      }
+      #pfGeoBtnConfirm {
         width: 100%; padding: 14px;
         background: var(--primary, #F15200); color: #fff;
         border: none; border-radius: 12px;
         font-family: var(--font-head, sans-serif);
         font-size: 15px; font-weight: 700;
         cursor: pointer; margin-bottom: 10px;
-        transition: background .18s;
+        transition: background .18s, opacity .18s;
       }
-      #pfGeoBox .geo-btn-primary:hover { background: var(--primary-dark, #CC4500); }
-      #pfGeoBox .geo-btn-secondary {
+      #pfGeoBtnConfirm:hover:not(:disabled) { background: var(--primary-dark, #CC4500); }
+      #pfGeoBtnConfirm:disabled { opacity: .45; cursor: default; }
+      #pfGeoBtnSkip {
         width: 100%; padding: 12px;
         background: transparent; color: var(--text-muted, #767676);
         border: 1.5px solid var(--border, #E5E7EB); border-radius: 12px;
@@ -269,75 +315,126 @@ function _showGeoModal() {
         font-size: 14px; font-weight: 600;
         cursor: pointer; transition: border-color .18s;
       }
-      #pfGeoBox .geo-btn-secondary:hover { border-color: var(--text-muted, #767676); }
+      #pfGeoBtnSkip:hover { border-color: var(--text-muted, #9ca3af); }
     </style>
     <div id="pfGeoBox">
-      <div class="geo-icon">📍</div>
-      <h3>¿Usamos tu ubicación?</h3>
-      <p>Para mostrarte algunos productos y servicios disponibles en tu zona, necesitaremos usar tu ubicación. Si prefieres no compartirla, podrás seguir navegando con resultados generales, pero algunos productos y/o servicios no estarán disponibles.</p>
-      <button class="geo-btn-primary" id="pfGeoBtnAccept">Usar mi ubicación</button>
-      <button class="geo-btn-secondary" id="pfGeoBtnDeny">Continuar sin ubicación</button>
+      <div class="ga-icon">🏠</div>
+      <h3>¿A dónde te enviamos?</h3>
+      <p class="ga-sub">Algunos productos solo están disponibles en ciertas zonas. Ingresa tu dirección ahora para ver el catálogo completo, o hazlo más tarde y algunos productos podrían no aparecer.</p>
+      <div class="ga-row">
+        <input id="pfGeoAddrInput" type="text" placeholder="Ej: Calle 10 #5-23, El Prado"
+          autocomplete="street-address" enterkeyhint="search">
+        <button id="pfGeoBtnSearch">Buscar</button>
+      </div>
+      <div id="pfGeoStatus"></div>
+      <div id="pfGeoMapEl"></div>
+      <p id="pfGeoMapHint">📌 Mueve el pin para ajustar la ubicación exacta</p>
+      <button id="pfGeoBtnConfirm" disabled>Confirmar dirección</button>
+      <button id="pfGeoBtnSkip">Ahora no, lo elijo al pedir</button>
     </div>`;
 
   document.body.appendChild(overlay);
 
-  document.getElementById('pfGeoBtnAccept').addEventListener('click', () => {
+  const inp        = document.getElementById('pfGeoAddrInput');
+  const btnSearch  = document.getElementById('pfGeoBtnSearch');
+  const btnConfirm = document.getElementById('pfGeoBtnConfirm');
+  const btnSkip    = document.getElementById('pfGeoBtnSkip');
+  const statusEl   = document.getElementById('pfGeoStatus');
+  const mapHint    = document.getElementById('pfGeoMapHint');
+
+  // Restore previously saved address (if any) as placeholder
+  const prevDir = getCyUser().dir || '';
+  if (prevDir) inp.value = prevDir;
+
+  async function _doSearch() {
+    const addr = inp.value.trim();
+    if (!addr) { inp.focus(); return; }
+    btnSearch.disabled = true;
+    btnConfirm.disabled = true;
+    statusEl.textContent = 'Buscando dirección…';
+    _pfGeoLat = null; _pfGeoLng = null;
+    try {
+      const found = await geocodeGoogle(addr);
+      if (!found) { statusEl.textContent = '⚠️ No encontramos esa dirección. Intenta ser más específico.'; btnSearch.disabled = false; return; }
+      _pfGeoLat = found.lat; _pfGeoLng = found.lng;
+      statusEl.textContent = found.precision === 'city' ? '⚠️ Solo encontramos la ciudad. Ajusta el pin.' : '✅ Dirección encontrada. Confirma el pin.';
+      await _renderAddressModalMap(_pfGeoLat, _pfGeoLng);
+      btnConfirm.disabled = false;
+    } catch (e) {
+      statusEl.textContent = '⚠️ Error al buscar. Verifica tu conexión.';
+    }
+    btnSearch.disabled = false;
+  }
+
+  btnSearch.addEventListener('click', _doSearch);
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); _doSearch(); } });
+
+  btnConfirm.addEventListener('click', () => {
+    if (!_pfGeoLat) return;
+    // Read final pin position (user may have dragged it)
+    if (_pfGeoMarker) {
+      const pos = _pfGeoMarker.position;
+      if (pos) { _pfGeoLat = +pos.lat; _pfGeoLng = +pos.lng; }
+    }
+    const addr = inp.value.trim();
+    _geoCoords = { lat: _pfGeoLat, lng: _pfGeoLng };
+    localStorage.setItem(GEO_PREF_KEY, 'granted');
+    localStorage.setItem(GEO_CACHE_KEY, JSON.stringify({ lat: _pfGeoLat, lng: _pfGeoLng, address: addr, ts: Date.now() }));
+    setCyUser({ dir: addr, lat: _pfGeoLat, lng: _pfGeoLng });
+    trackEvent('GEO_ADDRESS_SET', { lat: +_pfGeoLat.toFixed(5), lng: +_pfGeoLng.toFixed(5), address: addr });
     _closeGeoModal();
-    _requestGPS(/*silent*/ false);
+    if (onDecision) onDecision();
   });
-  document.getElementById('pfGeoBtnDeny').addEventListener('click', () => {
-    localStorage.setItem(GEO_PREF_KEY, 'denied');
+
+  btnSkip.addEventListener('click', () => {
+    sessionStorage.setItem('pf_geo_skip', '1');
     _closeGeoModal();
+    if (onDecision) onDecision();
+  });
+
+  // Auto-search if we had a saved address
+  if (prevDir) setTimeout(_doSearch, 200);
+
+  setTimeout(() => inp.focus(), 120);
+}
+
+async function _renderAddressModalMap(lat, lng) {
+  const container = document.getElementById('pfGeoMapEl');
+  const hint      = document.getElementById('pfGeoMapHint');
+  if (!container) return;
+  await loadGoogleMaps();
+  container.style.display = 'block';
+  if (hint) hint.style.display = 'block';
+  if (_pfGeoMap) {
+    _pfGeoMap.setCenter({ lat, lng });
+    if (_pfGeoMarker) _pfGeoMarker.position = { lat, lng };
+    return;
+  }
+  _pfGeoMap = new google.maps.Map(container, {
+    center: { lat, lng }, zoom: 16,
+    mapTypeControl: false, streetViewControl: false,
+    fullscreenControl: false, gestureHandling: 'cooperative',
+    mapId: 'DEMO_MAP_ID'
+  });
+  const _pin = document.createElement('div');
+  _pin.style.cssText = 'width:20px;height:20px;border-radius:50%;background:#F15200;border:3px solid #fff;box-sizing:border-box;cursor:grab';
+  _pfGeoMarker = new google.maps.marker.AdvancedMarkerElement({
+    position: { lat, lng }, map: _pfGeoMap,
+    content: _pin, gmpDraggable: true, title: 'Tu dirección de entrega'
+  });
+  _pfGeoMarker.addListener('dragend', e => {
+    _pfGeoLat = e.latLng.lat();
+    _pfGeoLng = e.latLng.lng();
   });
 }
 
 function _closeGeoModal() {
   const el = document.getElementById('pfGeoModal');
   if (el) el.remove();
+  // Clean up map instance so it can be recreated fresh if shown again
+  _pfGeoMap = null; _pfGeoMarker = null; _pfGeoLat = null; _pfGeoLng = null;
 }
-
-async function _reverseGeocodeCity(lat, lng) {
-  try {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=es`,
-      { headers: { 'Accept-Language': 'es' } }
-    );
-    if (!res.ok) return null;
-    const d = await res.json();
-    return d.address?.city || d.address?.town || d.address?.village || d.address?.county || null;
-  } catch (_) { return null; }
-}
-
-function _requestGPS(silent) {
-  if (!('geolocation' in navigator)) return; // browser doesn't support — IP fallback already runs
-
-  navigator.geolocation.getCurrentPosition(
-    async pos => {
-      const { latitude: lat, longitude: lng } = pos.coords;
-      _geoCoords = { lat, lng };
-      localStorage.setItem(GEO_PREF_KEY, 'granted');
-
-      const city = await _reverseGeocodeCity(lat, lng);
-      localStorage.setItem(GEO_CACHE_KEY, JSON.stringify({ lat, lng, city, ts: Date.now() }));
-
-      if (city) {
-        DELIVERY_CITY = city;
-        _updateCityGreeting();
-        console.log('%c📍 GPS Geolocation →', 'color:#22c55e;font-weight:700', city, `(${lat.toFixed(4)}, ${lng.toFixed(4)})`);
-      }
-
-      // Track the GPS consent + location for analytics/marketing
-      trackEvent('GEO_ACCEPT', { lat: +lat.toFixed(5), lng: +lng.toFixed(5), city: city ?? null });
-    },
-    err => {
-      // User denied browser prompt or error — treat as denied
-      if (!silent) localStorage.setItem(GEO_PREF_KEY, 'denied');
-      console.warn('📍 GPS error:', err.message);
-    },
-    { timeout: 10000, maximumAge: GEO_CACHE_TTL, enableHighAccuracy: false }
-  );
-}
-// ── End Geolocation modal ──────────────────────────────────────────────────
+// ── End delivery address modal ─────────────────────────────────────────────
 function _showCountryBlock(countryName) {
   const el = document.createElement('div');
   el.id = 'countryBlockOverlay';
@@ -435,8 +532,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   _detectCity(); // fire-and-forget; resolves before user finishes typing address
   const grid = document.getElementById('productsGrid');
   grid.innerHTML = Array(PAGE_SIZE).fill(0).map(buildSkeleton).join('');
+  // Wait for the user's geo decision before loading products so the correct
+  // lat/lng (or no coords) is sent with the very first product request.
+  await _waitForGeoDecision();
   try {
-    const res = await dedupFetch(`${API_BASE}/api/products/pidefacil/paged?page=0&size=${PAGE_SIZE}`);
+    const _geoSuffix = _geoCoords ? `&lat=${_geoCoords.lat}&lng=${_geoCoords.lng}` : '';
+    const res = await dedupFetch(`${API_BASE}/api/products/pidefacil/paged?page=0&size=${PAGE_SIZE}${_geoSuffix}`);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const _initData = await res.json();
     PRODUCTS  = _cacheProducts(_initData.content);
@@ -479,7 +580,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   initCategories();
   renderRecentlyViewed();
   if (_popupQueue.length) _showNextPopup();
-  _initGeoPermission();
   _handleProductDeepLink();
   // Track page view (once per session)
   if (!sessionStorage.getItem('pf_pv')) {
@@ -1222,7 +1322,8 @@ function weavePromoted(batch) {
 
 async function renderOffers() {
   try {
-    const res = await fetch(`${API_BASE}/api/products/pidefacil/offers?page=0&size=20`);
+    const _geoSuffix = _geoCoords ? `&lat=${_geoCoords.lat}&lng=${_geoCoords.lng}` : '';
+    const res = await fetch(`${API_BASE}/api/products/pidefacil/offers?page=0&size=20${_geoSuffix}`);
     if (!res.ok) throw new Error();
     const data = await res.json();
     const offers = _cacheProducts(data.content);
@@ -1284,6 +1385,7 @@ async function _fetchGridPage(page) {
   const sortParam = currentSort === 'price-asc' ? 'price_asc'
     : currentSort === 'price-desc' ? 'price_desc' : 'popular';
   params.set('sort', sortParam);
+  if (_geoCoords) { params.set('lat', _geoCoords.lat); params.set('lng', _geoCoords.lng); }
   try {
     const res = await fetch(`${API_BASE}/api/products/pidefacil/paged?${params}`);
     if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -2689,10 +2791,12 @@ async function openBannerPopup(filter, title) {
   let products = [];
   try {
     if (filter === 'offer') {
-      const _or = await fetch(`${API_BASE}/api/products/pidefacil/offers?page=0&size=50`);
+      const _geoOffer = _geoCoords ? `&lat=${_geoCoords.lat}&lng=${_geoCoords.lng}` : '';
+      const _or = await fetch(`${API_BASE}/api/products/pidefacil/offers?page=0&size=50${_geoOffer}`);
       if (_or.ok) products = _cacheProducts((await _or.json()).content);
     } else {
-      const _cr = await fetch(`${API_BASE}/api/products/pidefacil/paged?category=${encodeURIComponent(filter)}&page=0&size=50`);
+      const _geoCat = _geoCoords ? `&lat=${_geoCoords.lat}&lng=${_geoCoords.lng}` : '';
+      const _cr = await fetch(`${API_BASE}/api/products/pidefacil/paged?category=${encodeURIComponent(filter)}&page=0&size=50${_geoCat}`);
       if (_cr.ok) products = _cacheProducts((await _cr.json()).content);
     }
   } catch (_) {}
@@ -2753,12 +2857,14 @@ function _updateCityGreeting() {
   if (!DELIVERY_CITY) return;
   const cu        = getCyUser();
   const hasName   = !!(cu?.name);
+  // Prefer the saved address shortname over the raw city
+  const label = cu?.dir ? cu.dir.split(',')[0].trim() : DELIVERY_CITY;
   // More-menu city
   const mmCityWrap = document.getElementById('moreMenuGreetCity');
   const mmCityText = document.getElementById('moreMenuGreetCityText');
   const mmWrap     = document.getElementById('moreMenuUserGreeting');
   if (mmCityWrap && mmCityText) {
-    mmCityText.textContent  = DELIVERY_CITY;
+    mmCityText.textContent  = label;
     mmCityText.style.fontSize = hasName ? '11px' : '13px';
     mmCityText.style.fontWeight = hasName ? '600' : '700';
     mmCityWrap.style.display = 'flex';
@@ -2769,13 +2875,154 @@ function _updateCityGreeting() {
   const hamCityText = document.getElementById('hamGreetCityText');
   const hamWrap     = document.getElementById('hamUserGreeting');
   if (hamCityWrap && hamCityText) {
-    hamCityText.textContent   = DELIVERY_CITY;
+    hamCityText.textContent   = label;
     hamCityText.style.fontSize = hasName ? '12px' : '15px';
     hamCityText.style.fontWeight = hasName ? '600' : '700';
     hamCityWrap.style.display = 'flex';
     if (hamWrap) hamWrap.style.display = 'block';
   }
 }
+
+// ===== ADDRESS POPOVER CARD ==========================================
+let _addrPopoverMap    = null;
+let _addrPopoverMarker = null;
+let _addrPopoverLat    = null;
+let _addrPopoverLng    = null;
+
+function openAddrPopover(evt) {
+  evt && evt.stopPropagation();
+  closeMoreMenu();
+
+  const current    = document.getElementById('addrPopoverCurrent');
+  const input      = document.getElementById('addrPopoverInput');
+  const status     = document.getElementById('addrPopoverStatus');
+  const mapEl      = document.getElementById('addrPopoverMapEl');
+  const mapHint    = document.getElementById('addrPopoverMapHint');
+  const confirmBtn = document.getElementById('addrPopoverConfirmBtn');
+  if (!current) return;
+
+  // Reset state
+  _addrPopoverLat = null; _addrPopoverLng = null;
+  _addrPopoverMap = null; _addrPopoverMarker = null;
+  input.value = '';
+  status.textContent = '';
+  mapEl.style.display = 'none';
+  if (mapHint) mapHint.style.display = 'none';
+  mapEl.innerHTML = '';
+  confirmBtn.style.display = 'none';
+  confirmBtn.disabled = true; confirmBtn.style.opacity = '.45';
+
+  // Show current address (or prompt)
+  const cu = getCyUser();
+  const savedAddr = cu.dir || '';
+  const MAX_ADDR_CHARS = 48;
+  const addrDisplay = savedAddr.length > MAX_ADDR_CHARS ? savedAddr.slice(0, MAX_ADDR_CHARS) + '…' : savedAddr;
+  if (savedAddr) {
+    current.innerHTML = `<strong style="display:block;margin-bottom:2px;color:var(--text-primary,#111827);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${savedAddr}">${addrDisplay}</strong><span style="font-size:11px;color:var(--text-muted,#9ca3af)">Toca "Buscar" para cambiarla</span>`;
+    input.placeholder = 'Nueva dirección…';
+  } else {
+    current.innerHTML = `<span style="color:var(--text-muted,#9ca3af)">No tienes una dirección guardada todavía.</span>`;
+    input.placeholder = 'Ej: Calle 10 #5-23, El Prado';
+  }
+
+  const overlay = document.getElementById('addrModalOverlay');
+  overlay.style.display = 'flex';
+  setTimeout(() => input.focus(), 120);
+}
+
+function closeAddrPopover() {
+  const overlay = document.getElementById('addrModalOverlay');
+  if (overlay) overlay.style.display = 'none';
+  _addrPopoverMap = null; _addrPopoverMarker = null;
+  _addrPopoverLat = null; _addrPopoverLng = null;
+}
+function _addrModalOverlayClick(e) {
+  if (e.target === document.getElementById('addrModalOverlay')) closeAddrPopover();
+}
+
+async function _addrPopoverSearch() {
+  const input      = document.getElementById('addrPopoverInput');
+  const status     = document.getElementById('addrPopoverStatus');
+  const searchBtn  = document.getElementById('addrPopoverSearchBtn');
+  const confirmBtn = document.getElementById('addrPopoverConfirmBtn');
+  const addr = input.value.trim();
+  if (!addr) { input.focus(); return; }
+
+  searchBtn.disabled = true;
+  confirmBtn.disabled = true; confirmBtn.style.opacity = '.45';
+  status.textContent = 'Buscando…';
+  _addrPopoverLat = null; _addrPopoverLng = null;
+
+  try {
+    const found = await geocodeGoogle(addr);
+    if (!found) {
+      status.textContent = '⚠️ No encontramos esa dirección. Intenta ser más específico.';
+      searchBtn.disabled = false;
+      return;
+    }
+    _addrPopoverLat = found.lat; _addrPopoverLng = found.lng;
+    status.textContent = found.precision === 'city'
+      ? '⚠️ Solo encontramos la ciudad. Ajusta el pin.'
+      : '✅ Encontrada. Confirma o ajusta el pin.';
+    await _addrPopoverRenderMap(_addrPopoverLat, _addrPopoverLng);
+    confirmBtn.style.display = 'block';
+    confirmBtn.disabled = false; confirmBtn.style.opacity = '1';
+  } catch (e) {
+    status.textContent = '⚠️ Error al buscar. Verifica tu conexión.';
+  }
+  searchBtn.disabled = false;
+}
+
+async function _addrPopoverRenderMap(lat, lng) {
+  const el   = document.getElementById('addrPopoverMapEl');
+  const hint = document.getElementById('addrPopoverMapHint');
+  if (!el) return;
+  await loadGoogleMaps();
+  el.style.display = 'block';
+  if (hint) hint.style.display = 'block';
+  if (_addrPopoverMap) {
+    _addrPopoverMap.setCenter({ lat, lng });
+    if (_addrPopoverMarker) _addrPopoverMarker.position = { lat, lng };
+    return;
+  }
+  _addrPopoverMap = new google.maps.Map(el, {
+    center: { lat, lng }, zoom: 16,
+    mapTypeControl: false, streetViewControl: false,
+    fullscreenControl: false, gestureHandling: 'cooperative',
+    mapId: 'DEMO_MAP_ID',
+  });
+  const _pin = document.createElement('div');
+  _pin.style.cssText = 'width:18px;height:18px;border-radius:50%;background:#F15200;border:3px solid #fff;box-sizing:border-box;cursor:grab';
+  _addrPopoverMarker = new google.maps.marker.AdvancedMarkerElement({
+    position: { lat, lng }, map: _addrPopoverMap,
+    content: _pin, gmpDraggable: true, title: 'Tu dirección de entrega',
+  });
+  _addrPopoverMarker.addListener('dragend', e => {
+    _addrPopoverLat = e.latLng.lat();
+    _addrPopoverLng = e.latLng.lng();
+  });
+}
+
+function _addrPopoverConfirm() {
+  if (!_addrPopoverLat) return;
+  // Read final dragged position
+  if (_addrPopoverMarker) {
+    const pos = _addrPopoverMarker.position;
+    if (pos) { _addrPopoverLat = +pos.lat; _addrPopoverLng = +pos.lng; }
+  }
+  const addr = document.getElementById('addrPopoverInput').value.trim();
+  _geoCoords = { lat: _addrPopoverLat, lng: _addrPopoverLng };
+  localStorage.setItem(GEO_PREF_KEY, 'granted');
+  localStorage.setItem(GEO_CACHE_KEY, JSON.stringify({ lat: _addrPopoverLat, lng: _addrPopoverLng, address: addr, ts: Date.now() }));
+  setCyUser({ dir: addr, lat: _addrPopoverLat, lng: _addrPopoverLng });
+  trackEvent('GEO_ADDRESS_CHANGED', { lat: +_addrPopoverLat.toFixed(5), lng: +_addrPopoverLng.toFixed(5), address: addr });
+  DELIVERY_CITY = addr.split(',')[0].trim() || DELIVERY_CITY;
+  _updateCityGreeting();
+  closeAddrPopover();
+  // Reload first page of products with new coords
+  applyFilters();
+}
+// ===== END ADDRESS POPOVER ==========================================
 
 function toggleMoreMenu() {
   const dd = document.getElementById('moreMenuDropdown');
