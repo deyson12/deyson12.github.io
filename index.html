@@ -491,14 +491,8 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
               </div>
               <div id="mapEl"></div>
               <div class="map-confirm-bar">
-                <div class="map-confirm-question" id="mapQuestion"></div>
-                <div class="map-confirmed-badge" id="mapConfirmedBadge">✅ Ubicación confirmada</div>
-                <div class="map-confirm-btns" id="mapConfirmBtns">
-                  <button class="btn-map-yes" onclick="confirmMapLocation()">✅ Sí, es correcto</button>
-                  <button class="btn-map-move" onclick="enableMapDrag()">📍 Mover pin</button>
-                </div>
-                <div class="map-confirm-hint" id="mapConfirmHint">Arrastra el pin hasta la ubicación exacta</div>
-                <button class="btn-map-confirm" id="btnMapConfirm" onclick="confirmMapLocation()">Confirmar ubicación</button>
+                <div class="map-confirm-question" id="mapQuestion">Arrastra el pin para ajustar la ubicación exacta</div>
+                <div class="map-confirmed-badge" id="mapConfirmedBadge">✅ Ubicación guardada</div>
                 <a class="map-view-link" href="#" onclick="collapseMap();return false;" style="margin-top:6px;justify-content:center">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M18 15l-6-6-6 6"/></svg>
                   Ocultar mapa
@@ -764,20 +758,25 @@ function _tncAccept() {
       <span style="font-family:var(--font-head,'Plus Jakarta Sans',sans-serif);font-size:15px;font-weight:800;color:var(--text-primary,#111827)">📍 Dirección de entrega</span>
       <button onclick="closeAddrPopover()" style="background:none;border:none;cursor:pointer;padding:4px 6px;font-size:20px;color:var(--text-muted,#9ca3af);line-height:1;border-radius:8px">×</button>
     </div>
-    <div id="addrPopoverCurrent" style="font-size:13px;color:var(--text-secondary,#4B5563);background:var(--bg,#f9fafb);border-radius:10px;padding:10px 12px;margin-bottom:14px;line-height:1.5"></div>
-    <div style="display:flex;gap:8px;margin-bottom:0">
-      <input id="addrPopoverInput" type="text" placeholder="Nueva dirección…" autocomplete="street-address"
-        style="flex:1;padding:11px 13px;border:1.5px solid var(--border,#E5E7EB);border-radius:10px;font-size:14px;color:var(--text-primary,#111827);background:var(--bg,#f9fafb);outline:none;transition:border-color .18s"
-        onfocus="this.style.borderColor='var(--primary,#F15200)'" onblur="this.style.borderColor='var(--border,#E5E7EB)'"
-        onkeydown="if(event.key==='Enter'){event.preventDefault();_addrPopoverSearch()}">
-      <button onclick="_addrPopoverSearch()" id="addrPopoverSearchBtn"
-        style="padding:11px 14px;background:var(--primary,#F15200);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .18s">Buscar</button>
+    <!-- current address row with "Cambiar" link -->
+    <div id="addrPopoverCurrent" style="font-size:13px;color:var(--text-secondary,#4B5563);background:var(--bg,#f9fafb);border-radius:10px;padding:10px 12px;margin-bottom:10px;line-height:1.5;display:flex;align-items:baseline;justify-content:space-between;gap:10px"></div>
+    <!-- map shown immediately when coords are saved -->
+    <div id="addrPopoverMapEl" style="display:none;width:100%;height:260px;border-radius:12px;overflow:hidden;margin-bottom:6px;border:1.5px solid var(--border,#E5E7EB)"></div>
+    <p id="addrPopoverMapHint" style="display:none;font-size:11px;color:var(--text-muted,#9ca3af);text-align:center;margin:0 0 10px">📌 Arrastra el pin para ajustar la ubicación exacta</p>
+    <!-- edit row — hidden until "Cambiar" is tapped -->
+    <div id="addrEditRow" style="display:none;flex-direction:column;gap:8px;margin-bottom:0">
+      <div style="display:flex;gap:8px">
+        <input id="addrPopoverInput" type="text" placeholder="Ej: Calle 10 #5-23, El Prado" autocomplete="street-address"
+          style="flex:1;padding:11px 13px;border:1.5px solid var(--border,#E5E7EB);border-radius:10px;font-size:14px;color:var(--text-primary,#111827);background:var(--bg,#f9fafb);outline:none;transition:border-color .18s"
+          onfocus="this.style.borderColor='var(--primary,#F15200)'" onblur="this.style.borderColor='var(--border,#E5E7EB)'"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();_addrPopoverSearch()}">
+        <button onclick="_addrPopoverSearch()" id="addrPopoverSearchBtn"
+          style="padding:11px 14px;background:var(--primary,#F15200);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .18s">Buscar</button>
+      </div>
+      <div id="addrPopoverStatus" style="font-size:12px;color:var(--primary,#F15200);min-height:16px"></div>
     </div>
-    <div id="addrPopoverStatus" style="font-size:12px;color:var(--primary,#F15200);margin-top:8px;min-height:18px"></div>
-    <div id="addrPopoverMapEl" style="display:none;width:100%;height:200px;border-radius:12px;overflow:hidden;margin-top:4px;border:1.5px solid var(--border,#E5E7EB)"></div>
-    <p id="addrPopoverMapHint" style="display:none;font-size:11px;color:var(--text-muted,#9ca3af);text-align:center;margin:6px 0 0">📌 Mueve el pin para ajustar la ubicación exacta</p>
     <button id="addrPopoverConfirmBtn" onclick="_addrPopoverConfirm()" disabled
-      style="display:none;width:100%;margin-top:14px;padding:13px;background:var(--primary,#F15200);color:#fff;border:none;border-radius:12px;font-family:var(--font-head,sans-serif);font-size:15px;font-weight:700;cursor:pointer;transition:background .18s,opacity .18s;opacity:.45">Confirmar dirección</button>
+      style="display:none;width:100%;margin-top:10px;padding:13px;background:var(--primary,#F15200);color:#fff;border:none;border-radius:12px;font-family:var(--font-head,sans-serif);font-size:15px;font-weight:700;cursor:pointer;transition:background .18s,opacity .18s;opacity:.45">Guardar nueva dirección</button>
   </div>
 </div>
 

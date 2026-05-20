@@ -1459,6 +1459,7 @@ let allCategories = [];
 let _prodRawMap = {};
 let _prodFilter = 'all';
 let _prodSort = '';
+let _prodZoneCache = {}; // productId → zone count (-1 = not loaded yet)
 
 function _buildProdRawMap() {
   _prodRawMap = {};
@@ -3096,6 +3097,8 @@ function renderProdGrid(list) {
   allCategories.forEach(c => { catMap[c.id] = c.name; });
 
   grid.innerHTML = `<div class="prod-grid">${list.map(p => {
+    // pre-populate chip from cache if already loaded
+    // (actual async fetch happens below in _loadZoneChips)
     const active = p.active !== false;
     const dropUrl = p.dropshippingUrl || p.dropshipping_url || null;
     const dropPrice = p.dropshippingPrice ?? p.dropshipping_price ?? null;
@@ -3146,11 +3149,53 @@ function renderProdGrid(list) {
           ${dropUrl
             ? `<a class="btn-drop" href="${dropUrl}" target="_blank" rel="noopener noreferrer">🔗 Drop</a>`
             : `<button class="btn-drop" disabled style="opacity:.35;cursor:not-allowed" title="Sin URL de dropshipping">🔗 Drop</button>`}
-          <button class="prod-zone-chip nationwide" id="zpchip-${p.id}" onclick="openZonesPicker('${p.id}')">🗺️ Todas las zonas</button>
+          <button class="prod-zone-chip${(_prodZoneCache[p.id] > 0) ? '' : ' nationwide'}" id="zpchip-${p.id}" onclick="openZonesPicker('${p.id}')">${_zpkChipLabel(p.id)}</button>
         </div>
       </div>
     </div>`;
   }).join('')}</div>`;
+
+  // Zone counts load lazily when the user clicks a chip (openZonesPicker)
+}
+
+/** Returns label text for the zone chip from cache */
+function _zpkChipLabel(productId) {
+  const n = _prodZoneCache[productId];
+  if (n === undefined) return '🗺️ Ver zonas';
+  if (!n || n <= 0) return '🗺️ Todas las zonas';
+  return `🗺️ ${n} zona${n !== 1 ? 's' : ''}`;
+}
+
+/** Batch-loads zone counts for all products that aren't cached yet, then updates chips */
+async function _loadZoneChips(list) {
+  const uncached = list.filter(p => !(_prodZoneCache[p.id] >= 0));
+  if (!uncached.length) return;
+  // Mark as in-flight so parallel calls don't double-fetch
+  uncached.forEach(p => { _prodZoneCache[p.id] = -1; });
+  await Promise.all(uncached.map(async p => {
+    try {
+      const r = await fetch(`${API_BASE}/api/products/${p.id}/zones`, {
+        headers: { Authorization: `Bearer ${getToken()}` }
+      });
+      if (!r.ok) return;
+      const zones = await r.json();
+      _prodZoneCache[p.id] = zones.length;
+      _zpkRefreshChipEl(p.id, zones.length);
+    } catch (_) {}
+  }));
+}
+
+/** Updates the chip DOM element from a known count */
+function _zpkRefreshChipEl(productId, count) {
+  const chip = document.getElementById('zpchip-' + productId);
+  if (!chip) return;
+  if (count > 0) {
+    chip.className = 'prod-zone-chip';
+    chip.textContent = `🗺️ ${count} zona${count !== 1 ? 's' : ''}`;
+  } else {
+    chip.className = 'prod-zone-chip nationwide';
+    chip.textContent = '🗺️ Todas las zonas';
+  }
 }
 
 function openProdEdit(id) {
@@ -4806,6 +4851,9 @@ async function openZonesPicker(productId) {
     if (rp.ok) {
       const currentZones = await rp.json();
       currentZones.forEach(z => _zpkSelected.add(z.id));
+      // Update cache so chip is accurate even if user cancels
+      _prodZoneCache[productId] = currentZones.length;
+      _zpkRefreshChipEl(productId, currentZones.length);
     }
     _zpkRenderList();
   } catch (e) {
@@ -4857,7 +4905,8 @@ async function _zpkSave() {
     });
     if (res.status === 401 || res.status === 403) { sessionStorage.removeItem(AUTH_KEY); location.reload(); return; }
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    // Update chip label on the product card
+    // Update cache and chip label on the product card
+    _prodZoneCache[_zpkProductId] = _zpkSelected.size;
     _zpkUpdateChip(_zpkProductId);
     _zpkClose();
     showToast('✅ Zonas actualizadas.');
@@ -4870,16 +4919,7 @@ async function _zpkSave() {
 }
 
 function _zpkUpdateChip(productId) {
-  const chip = document.getElementById('zpchip-' + productId);
-  if (!chip) return;
-  const count = _zpkSelected.size;
-  if (count === 0) {
-    chip.className = 'prod-zone-chip nationwide';
-    chip.textContent = '🗺️ Todas las zonas';
-  } else {
-    chip.className = 'prod-zone-chip';
-    chip.textContent = `🗺️ ${count} zona${count !== 1 ? 's' : ''}`;
-  }
+  _zpkRefreshChipEl(productId, _zpkSelected.size);
 }
 
 function _zpkClose() {

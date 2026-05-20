@@ -78,6 +78,7 @@ let _apiPage    = 0;
 let cart         = JSON.parse(localStorage.getItem('cy_cart')    || '[]');
 let wishlist     = JSON.parse(localStorage.getItem('cy_wish')    || '[]');
 let checkedItems = new Set(JSON.parse(localStorage.getItem('cy_checked') || 'null') || cart.map(i => i.id));
+let _cartZoneUnavailIds = new Set(); // IDs in cart that can't be ordered from current zone
 let currentCategory = 'all', currentPriceFilter = 'all', currentSearch = '', currentSort = 'popular';
 let bannerIdx = 0;
 let buyNowProduct = null;
@@ -99,8 +100,7 @@ const POPUP_DISMISSED_PREFIX = 'cy_popup_'; // key per popup: cy_popup_{id}
 
 // ===== GEOLOCATION PERMISSION =====
 const GEO_PREF_KEY  = 'pf_geo_pref';   // 'granted' | 'denied'
-const GEO_CACHE_KEY = 'pf_geo_cache';  // { lat, lng, city, ts }
-const GEO_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 h
+const GEO_CACHE_KEY = 'pf_geo_cache';  // { lat, lng, address }
 let _geoCoords = null; // { lat, lng } — set when GPS granted
 
 // ===== COUPONS =====
@@ -117,7 +117,33 @@ function _setSummaryTotal(val) {
 const RECENT_KEY = 'cy_recent';
 const RECENT_MAX = 7;
 
-// ===== ANALYTICS TRACKING =====
+// ===== ZONE AVAILABILITY =====
+/**
+ * Calls backend to find which of the given product IDs are NOT available
+ * at the user's current delivery location.
+ * Returns a Set of unavailable IDs (empty Set if no geo coords or on error).
+ * Results are cached for the current JS session to avoid redundant requests.
+ */
+const _zoneAvailCache = new Map(); // key: sorted-ids+lat+lng → Set of unavail IDs
+async function _checkZoneAvail(ids) {
+  if (!ids || !ids.length || !_geoCoords) return new Set();
+  const { lat, lng } = _geoCoords;
+  const key = ids.slice().sort().join(',') + '|' + lat.toFixed(5) + ',' + lng.toFixed(5);
+  if (_zoneAvailCache.has(key)) return _zoneAvailCache.get(key);
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/products/pidefacil/zone-available?lat=${lat}&lng=${lng}`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(ids) }
+    );
+    if (!res.ok) return new Set();
+    const available = new Set(await res.json());
+    const unavail = new Set(ids.filter(id => !available.has(id)));
+    _zoneAvailCache.set(key, unavail);
+    return unavail;
+  } catch (_) { return new Set(); }
+}
+/** Clears zone availability cache (call when user changes delivery address) */
+function _clearZoneAvailCache() { _zoneAvailCache.clear(); }
 function _getVisitorId() {
   let vid = localStorage.getItem('pf_vid');
   if (!vid) { vid = crypto.randomUUID(); localStorage.setItem('pf_vid', vid); }
@@ -209,12 +235,12 @@ function _waitForGeoDecision() {
   if (pref === 'granted') {
     try {
       const cached = JSON.parse(localStorage.getItem(GEO_CACHE_KEY) || 'null');
-      if (cached && Date.now() - cached.ts < GEO_CACHE_TTL) {
+      if (cached) {
         _geoCoords = { lat: cached.lat, lng: cached.lng };
         return Promise.resolve();
       }
     } catch (_) {}
-    // Cache expired — show modal so user can confirm address again
+    // No valid cache — show modal
     localStorage.removeItem(GEO_PREF_KEY);
   }
 
@@ -379,9 +405,10 @@ function _showAddressModal(onDecision) {
     const addr = inp.value.trim();
     _geoCoords = { lat: _pfGeoLat, lng: _pfGeoLng };
     localStorage.setItem(GEO_PREF_KEY, 'granted');
-    localStorage.setItem(GEO_CACHE_KEY, JSON.stringify({ lat: _pfGeoLat, lng: _pfGeoLng, address: addr, ts: Date.now() }));
+    localStorage.setItem(GEO_CACHE_KEY, JSON.stringify({ lat: _pfGeoLat, lng: _pfGeoLng, address: addr }));
     setCyUser({ dir: addr, lat: _pfGeoLat, lng: _pfGeoLng });
     trackEvent('GEO_ADDRESS_SET', { lat: +_pfGeoLat.toFixed(5), lng: +_pfGeoLng.toFixed(5), address: addr });
+    _clearZoneAvailCache();
     _closeGeoModal();
     if (onDecision) onDecision();
   });
@@ -394,8 +421,7 @@ function _showAddressModal(onDecision) {
 
   // Auto-search if we had a saved address
   if (prevDir) setTimeout(_doSearch, 200);
-
-  setTimeout(() => inp.focus(), 120);
+  // No auto-focus: on mobile it opens the keyboard and hides the field
 }
 
 async function _renderAddressModalMap(lat, lng) {
@@ -766,16 +792,31 @@ async function geocodeAddress(address) {
   }
 }
 
+/**
+ * If the user previously confirmed an address (with pin adjustment), use those
+ * exact saved coords directly — no re-geocoding needed.
+ * Returns true when saved coords were applied, false when caller must geocode.
+ */
+function _useSavedCoordsForMap() {
+  if (!MAPS_ENABLED) return false;
+  try {
+    const cached = JSON.parse(localStorage.getItem(GEO_CACHE_KEY) || 'null');
+    if (!cached || !cached.lat || !cached.lng) return false;
+    _lastGeoDir  = document.getElementById('inputDireccion')?.value.trim() || '';
+    _deliveryLat = cached.lat;
+    _deliveryLng = cached.lng;
+    const viewLink = document.getElementById('mapViewLink');
+    if (viewLink) { viewLink.style.display = 'inline-flex'; viewLink.dataset.precision = 'address'; }
+    return true;
+  } catch (_) { return false; }
+}
+
 // Llamado al hacer clic en "Ver mapa (opcional)"
 async function expandMap() {
   const wrap      = document.getElementById('mapConfirmWrap');
   const loadingEl = document.getElementById('mapLoadingEl');
   const mapEl     = document.getElementById('mapEl');
   const badge     = document.getElementById('mapConfirmedBadge');
-  const confirmBtns = document.getElementById('mapConfirmBtns');
-  const hint      = document.getElementById('mapConfirmHint');
-  const btnConfirm = document.getElementById('btnMapConfirm');
-  const question  = document.getElementById('mapQuestion');
   const viewLink  = document.getElementById('mapViewLink');
   if (!wrap || _deliveryLat === null) return;
 
@@ -787,12 +828,7 @@ async function expandMap() {
   loadingEl.innerHTML     = '<div class="spin"></div> Cargando mapa…';
   mapEl.style.display     = 'none';
   badge.classList.remove('visible');
-  confirmBtns.style.display = 'flex';
-  hint.classList.remove('visible');
-  btnConfirm.classList.remove('visible');
-  question.textContent    = MAP_Q_DEFAULT;
 
-  const precision = document.getElementById('mapViewLink')?.dataset.precision || 'address';
   const useGoogle = (typeof MAPS_PROVIDER !== 'undefined' && MAPS_PROVIDER === 'google');
   try {
     if (useGoogle) {
@@ -800,25 +836,13 @@ async function expandMap() {
       loadingEl.style.display = 'none';
       mapEl.style.display     = 'block';
       renderGoogleMap(_deliveryLat, _deliveryLng);
-      if (precision === 'city') {
-        question.textContent = 'No encontramos la dirección exacta. Mueve el pin a tu ubicación:';
-        enableMapDrag();
-      } else {
-        question.textContent = MAP_Q_DEFAULT;
-      }
+      enableMapDrag();
     } else {
       await loadLeaflet();
       loadingEl.style.display = 'none';
       mapEl.style.display     = 'block';
       renderDeliveryMap(_deliveryLat, _deliveryLng);
-      if (precision === 'address') {
-        question.textContent = MAP_Q_DEFAULT;
-      } else if (precision === 'street') {
-        question.textContent = 'Encontramos la calle. ¿El pin está en el lugar correcto?';
-      } else {
-        question.textContent = 'No encontramos la dirección exacta. Mueve el pin a tu ubicación:';
-        enableMapDrag();
-      }
+      enableMapDrag();
     }
   } catch (e) {
     loadingEl.innerHTML = '⚠️ No se pudo cargar el mapa. Puedes continuar sin él.';
@@ -980,40 +1004,6 @@ function enableMapDrag() {
     const el = _mapMarker.getElement();
     if (el) { el.style.cursor = 'grab'; el.style.transition = 'transform .2s'; }
   }
-  document.getElementById('mapConfirmBtns').style.display = 'none';
-  document.getElementById('mapConfirmHint').classList.add('visible');
-  document.getElementById('btnMapConfirm').classList.add('visible');
-  document.getElementById('mapQuestion').textContent = 'Arrastra el pin a tu ubicación exacta:';
-}
-
-function confirmMapLocation() {
-  if (!_deliveryLat) return;
-  const useGoogle = (typeof MAPS_PROVIDER !== 'undefined' && MAPS_PROVIDER === 'google');
-  if (useGoogle) {
-    if (_googleMarker) {
-      const pos = _googleMarker.position;
-      if (pos) {
-        _deliveryLat = typeof pos.lat === 'function' ? pos.lat() : +pos.lat;
-        _deliveryLng = typeof pos.lng === 'function' ? pos.lng() : +pos.lng;
-      }
-      _googleMarker.gmpDraggable = false;
-    }
-  } else {
-    if (_mapMarker) {
-      const pos    = _mapMarker.getLatLng();
-      _deliveryLat = pos.lat;
-      _deliveryLng = pos.lng;
-      _mapMarker.dragging.disable();
-    }
-  }
-  _mapConfirmed = true;
-  setCyUser({ lat: _deliveryLat, lng: _deliveryLng });
-
-  document.getElementById('mapConfirmBtns').style.display = 'none';
-  document.getElementById('mapConfirmHint').classList.remove('visible');
-  document.getElementById('btnMapConfirm').classList.remove('visible');
-  document.getElementById('mapConfirmedBadge').classList.add('visible');
-  document.getElementById('mapQuestion').textContent = '';
 }
 
 function resetMapState() {
@@ -1162,7 +1152,7 @@ function buildCard(p, extra = '') {
         </div>
         <button class="btn btn-buy-now" onclick="buyNow('${p.id}')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          Comprar ya
+          Pedir ahora
         </button>
       </div>
     </div>
@@ -1210,7 +1200,7 @@ function buildRecentCard(p) {
         </div>
         <button class="btn btn-buy-now" onclick="buyNow('${p.id}')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          Comprar ya
+          Pedir ahora
         </button>
       </div>
     </div>
@@ -1341,6 +1331,23 @@ async function renderOffers() {
   }
 }
 
+const SKEL_LOAD_MORE_COUNT = 4; // skeleton cards shown while fetching next page
+
+function _appendSkeletons(grid, count) {
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < count; i++) {
+    const div = document.createElement('div');
+    div.className = 'skel-more-item';
+    div.innerHTML = buildSkeleton();
+    frag.appendChild(div);
+  }
+  grid.appendChild(frag);
+}
+
+function _removeSkeletons(grid) {
+  grid.querySelectorAll('.skel-more-item').forEach(el => el.remove());
+}
+
 function buildSkeleton() {
   return `<div class="skel-card">
     <div class="skel-img"></div>
@@ -1371,6 +1378,8 @@ function setupGridObserver() {
 function loadMore() {
   if (isLoadingMore || !_apiHasMore) return;
   isLoadingMore = true;
+  // Show skeleton cards immediately so the user sees feedback while fetching
+  _appendSkeletons(document.getElementById('productsGrid'), SKEL_LOAD_MORE_COUNT);
   _fetchGridPage(_apiPage + 1);
 }
 
@@ -1414,13 +1423,15 @@ async function _fetchGridPage(page) {
     } else {
       filteredList = [...filteredList, ...batch];
       pageOffset   = filteredList.length;
+      _removeSkeletons(grid);
       const wrap = document.createElement('div');
       wrap.innerHTML = weavePromoted(batch);
       while (wrap.firstChild) grid.appendChild(wrap.firstChild);
       fixLoadedImages(grid);
-      setupGridObserver();
+      setupGridObserver(); // re-observe only if hasMore
     }
   } catch (e) {
+    _removeSkeletons(grid);
     if (page === 0) {
       grid.innerHTML = '<div class="no-results"><div class="no-results-icon">⚠️</div><h3>Error al cargar</h3><p>Recarga la página</p></div>';
     }
@@ -1729,6 +1740,7 @@ function renderCartPanel() {
       ${items.map(item => {
         const isActive = true;
         const checked  = checkedItems.has(item.id);
+        const zoneUnavail = _cartZoneUnavailIds.has(item.id);
         if (!isActive) {
           return `<div class="cart-item cart-item--unavailable">
           <div class="cart-item-check"><input type="checkbox" disabled style="opacity:0;pointer-events:none"></div>
@@ -1736,6 +1748,22 @@ function renderCartPanel() {
           <div class="cart-item-info">
             <div class="cart-item-name">${item.name}</div>
             <div class="cart-item-unavailable-badge">⚠️ Ya no está disponible</div>
+            <div class="cart-item-controls">
+              <button class="btn-remove" onclick="removeFromCart('${item.id}')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>Quitar
+              </button>
+            </div>
+          </div>
+        </div>`;
+        }
+        if (zoneUnavail) {
+          return `<div class="cart-item cart-item--zone-unavail">
+          <div class="cart-item-check"><input type="checkbox" disabled title="No disponible en tu zona"></div>
+          <img class="cart-item-img" src="${item.image}" alt="${item.name}" width="58" height="58" loading="lazy" decoding="async">
+          <div class="cart-item-info">
+            <div class="cart-item-name">${item.name}</div>
+            <div class="cart-item-price" style="color:var(--text-muted)">${fmtPrice(item.price * item.qty)}</div>
+            <div class="cart-item-zone-badge">📍 No disponible en tu zona</div>
             <div class="cart-item-controls">
               <button class="btn-remove" onclick="removeFromCart('${item.id}')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>Quitar
@@ -1822,12 +1850,12 @@ function openOrderPopup() {
   document.getElementById('orderOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 
-  // Auto-geocode saved address
+  // Use saved confirmed coords if available, otherwise fall back to geocoding the address text
+  const savedDir = _cu0.dir || '';
   resetMapState();
   const mapWrap = document.getElementById('mapConfirmWrap');
   if (mapWrap) mapWrap.style.display = MAPS_ENABLED ? '' : 'none';
-  const savedDir = _cu0.dir || '';
-  if (MAPS_ENABLED && savedDir) { _lastGeoDir = ''; setTimeout(() => geocodeAddress(savedDir), 400); }
+  if (!_useSavedCoordsForMap() && savedDir) { _lastGeoDir = ''; setTimeout(() => geocodeAddress(savedDir), 400); }
 }
 
 function closeOrderPopup() {
@@ -1937,11 +1965,11 @@ function _toApiProduct(p) {
  * pero no bloquean el flujo de WhatsApp/Wompi.
  * @param {{ fullItems: Array<{product, qty}>, address: string, paymentType: string }} opts
  */
-async function postOrderToApi({ fullItems, address, paymentType, couponCode, discountAmount }) {
+async function postOrderToApi({ fullItems, address, paymentType, couponCode, discountAmount, lat, lng }) {
   try {
     const _cu   = getCyUser();
-    const lat    = parseFloat(_cu.lat) || 0;
-    const lng    = parseFloat(_cu.lng) || 0;
+    const orderLat = lat || parseFloat(_cu.lat) || 0;
+    const orderLng = lng || parseFloat(_cu.lng) || 0;
     const userId = _cu.id || _FIXED_SELLER_ID;
     const body = {
       id:             crypto.randomUUID(),
@@ -1956,7 +1984,7 @@ async function postOrderToApi({ fullItems, address, paymentType, couponCode, dis
       address,
       paymentType,
       changeFrom:     0,
-      location:       [lat, lng],
+      location:       [orderLat, orderLng],
       deliveryPrice:  0,
       couponCode:     couponCode || null,
       discountAmount: discountAmount || null,
@@ -1977,10 +2005,19 @@ function _orderLoading(show) {
   if (!el) return;
   el.style.display = show ? 'flex' : 'none';
   const btn = document.getElementById('btnSendOrder');
-  if (btn) btn.disabled = show;
+  if (btn) {
+    const tncOk = document.getElementById('chkTnc')?.checked ?? true;
+    btn.disabled = show || !tncOk;
+  }
 }
 
 async function sendWhatsappOrder() {
+  if (!(document.getElementById('chkTnc')?.checked)) {
+    showToast('Debes aceptar los Términos y Condiciones para continuar', '');
+    document.getElementById('chkTnc')?.focus();
+    return;
+  }
+
   const dir    = document.getElementById('inputDireccion').value.trim();
   const nom    = document.getElementById('inputNombre').value.trim();
   const phone  = document.getElementById('inputCelular').value.replace(/\D/g, '');
@@ -2024,11 +2061,10 @@ async function sendWhatsappOrder() {
     if (_deliveryLat && _deliveryLng) {
       _mapConfirmed = true;
       setCyUser({ lat: _deliveryLat, lng: _deliveryLng });
-      document.getElementById('mapConfirmBtns').style.display = 'none';
-      document.getElementById('mapConfirmHint').classList.remove('visible');
-      document.getElementById('btnMapConfirm').classList.remove('visible');
-      document.getElementById('mapConfirmedBadge').classList.add('visible');
-      document.getElementById('mapQuestion').textContent = '';
+      const badge = document.getElementById('mapConfirmedBadge');
+      if (badge) badge.classList.add('visible');
+      const q = document.getElementById('mapQuestion');
+      if (q) q.textContent = '';
     }
   }
 
@@ -2084,7 +2120,7 @@ async function sendWhatsappOrder() {
     wompiRef: null, wompiId: null, wompiStatus: null,
   });
 
-  postOrderToApi({ fullItems, address: dir, paymentType: 'TRANSFERENCIA', couponCode: _appliedCoupon?.code || null, discountAmount: cuponDisc || null });
+  postOrderToApi({ fullItems, address: dir, paymentType: 'TRANSFERENCIA', couponCode: _appliedCoupon?.code || null, discountAmount: cuponDisc || null, lat: _deliveryLat, lng: _deliveryLng });
 
   // Record coupon use (fire-and-forget)
   if (_appliedCoupon?.code) {
@@ -2279,16 +2315,40 @@ function buyNow(id) {
   document.getElementById('orderOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 
-  // Auto-geocode saved address
+  // Use saved confirmed coords if available, otherwise fall back to geocoding the address text
+  const savedDir2 = _cu2.dir || '';
   resetMapState();
   const mapWrap2 = document.getElementById('mapConfirmWrap');
   if (mapWrap2) mapWrap2.style.display = MAPS_ENABLED ? '' : 'none';
-  const savedDir2 = _cu2.dir || '';
-  if (MAPS_ENABLED && savedDir2) { _lastGeoDir = ''; setTimeout(() => geocodeAddress(savedDir2), 400); }
+  if (!_useSavedCoordsForMap() && savedDir2) { _lastGeoDir = ''; setTimeout(() => geocodeAddress(savedDir2), 400); }
 }
 
 // ===== CART PANEL =====
-function openCart()  { document.getElementById('cartOverlay').classList.add('open');    document.getElementById('cartPanel').classList.add('open');    document.body.style.overflow = 'hidden'; }
+function openCart()  {
+  document.getElementById('cartOverlay').classList.add('open');
+  document.getElementById('cartPanel').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  // Async zone check — re-renders panel once we know which items are unavailable
+  _refreshCartZoneUnavail();
+}
+async function _refreshCartZoneUnavail() {
+  if (!cart.length || !_geoCoords) {
+    // All available: restore any previously-unchecked zone items
+    cart.forEach(i => checkedItems.add(i.id));
+    _cartZoneUnavailIds = new Set();
+    saveCart(); renderCartPanel(); return;
+  }
+  const ids = cart.map(i => i.id);
+  const unavail = await _checkZoneAvail(ids);
+  const prev = _cartZoneUnavailIds;
+  // Items that just became available again → re-check them
+  prev.forEach(id => { if (!unavail.has(id)) checkedItems.add(id); });
+  // Items that just became unavailable → uncheck so they don’t slip into the order
+  unavail.forEach(id => checkedItems.delete(id));
+  _cartZoneUnavailIds = unavail;
+  saveCart();
+  renderCartPanel();
+}
 function closeCart() { document.getElementById('cartOverlay').classList.remove('open'); document.getElementById('cartPanel').classList.remove('open'); document.body.style.overflow = ''; }
 
 // ===== WISH PANEL =====
@@ -2339,10 +2399,29 @@ async function renderWishPanel() {
       if (_wr.ok) _cacheProducts(await _wr.json());
     } catch (_) {}
   }
+  // Check zone availability for all wishlist items at once
+  const unavailIds = await _checkZoneAvail([...wishlist]);
   container.innerHTML = wishlist.map(id => {
     const p = _productCache.get(id);
     if (!p) return '';
     const inCart = cart.some(c => c.id === id);
+    const zoneUnavail = unavailIds.has(id);
+    if (zoneUnavail) {
+      return `<div class="wish-item wish-item--zone-unavail">
+      <img class="wish-item-img" src="${p.image}" alt="${p.name}" width="80" height="80" loading="lazy" decoding="async" onclick="closeWish();openProduct('${p.id}')">
+      <div class="wish-item-info">
+        <div class="wish-item-name" onclick="closeWish();openProduct('${p.id}')">${p.name}</div>
+        <div style="display:flex;align-items:baseline;gap:4px;flex-wrap:wrap">
+          <span class="wish-item-price">${fmtPrice(p.price)}</span>
+          ${p.oldPrice ? `<span class="wish-item-old">${fmtPrice(p.oldPrice)}</span>` : ''}
+        </div>
+        <div class="wish-item-zone-badge">📍 No disponible en tu zona</div>
+        <div class="wish-item-actions">
+          <button class="wish-btn-remove" title="Quitar de favoritos" aria-label="Quitar de favoritos" onclick="toggleWish(event,'${p.id}');">💔</button>
+        </div>
+      </div>
+    </div>`;
+    }
     return `<div class="wish-item">
       <img class="wish-item-img" src="${p.image}" alt="${p.name}" width="80" height="80" loading="lazy" decoding="async" onclick="closeWish();openProduct('${p.id}')">
       <div class="wish-item-info">
@@ -2353,7 +2432,7 @@ async function renderWishPanel() {
         </div>
         <div class="wish-item-actions">
           <button class="wish-btn-buy" onclick="closeWish();buyNow('${p.id}')">
-            ⚡ Comprar ahora
+            ⚡ Pedir ahora
           </button>
           <button class="wish-btn-cart ${inCart ? 'added' : ''}" onclick="addToCart('${p.id}', event);renderWishPanel()">
             ${inCart ? '✓ En carrito' : '🛒 Al carrito'}
@@ -2896,38 +2975,64 @@ function openAddrPopover(evt) {
   const current    = document.getElementById('addrPopoverCurrent');
   const input      = document.getElementById('addrPopoverInput');
   const status     = document.getElementById('addrPopoverStatus');
+  const editRow    = document.getElementById('addrEditRow');
   const mapEl      = document.getElementById('addrPopoverMapEl');
   const mapHint    = document.getElementById('addrPopoverMapHint');
   const confirmBtn = document.getElementById('addrPopoverConfirmBtn');
   if (!current) return;
 
-  // Reset state
+  // Reset edit state
   _addrPopoverLat = null; _addrPopoverLng = null;
   _addrPopoverMap = null; _addrPopoverMarker = null;
   input.value = '';
-  status.textContent = '';
+  if (status) status.textContent = '';
   mapEl.style.display = 'none';
-  if (mapHint) mapHint.style.display = 'none';
   mapEl.innerHTML = '';
+  if (mapHint) mapHint.style.display = 'none';
   confirmBtn.style.display = 'none';
   confirmBtn.disabled = true; confirmBtn.style.opacity = '.45';
+  editRow.style.display = 'none';
 
-  // Show current address (or prompt)
+  // Show current address with "Cambiar" link
   const cu = getCyUser();
   const savedAddr = cu.dir || '';
-  const MAX_ADDR_CHARS = 48;
-  const addrDisplay = savedAddr.length > MAX_ADDR_CHARS ? savedAddr.slice(0, MAX_ADDR_CHARS) + '…' : savedAddr;
+  const MAX_ADDR_CHARS = 52;
   if (savedAddr) {
-    current.innerHTML = `<strong style="display:block;margin-bottom:2px;color:var(--text-primary,#111827);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${savedAddr}">${addrDisplay}</strong><span style="font-size:11px;color:var(--text-muted,#9ca3af)">Toca "Buscar" para cambiarla</span>`;
-    input.placeholder = 'Nueva dirección…';
+    const addrDisplay = savedAddr.length > MAX_ADDR_CHARS ? savedAddr.slice(0, MAX_ADDR_CHARS) + '…' : savedAddr;
+    current.innerHTML =
+      `<span style="font-size:13px;color:var(--text-primary,#111827);font-weight:600;flex:1;min-width:0;word-break:break-word" title="${savedAddr}">${addrDisplay}</span>` +
+      `<a href="#" id="addrPopoverChangeLnk" onclick="_addrPopoverShowEdit(event)"
+         style="font-size:12px;font-weight:700;color:var(--primary,#F15200);text-decoration:underline;white-space:nowrap;flex-shrink:0;margin-left:6px">Cambiar</a>`;
+    // Render saved map immediately (non-blocking)
+    try {
+      const cached = JSON.parse(localStorage.getItem(GEO_CACHE_KEY) || 'null');
+      if (cached && cached.lat && cached.lng) {
+        _addrPopoverLat = cached.lat; _addrPopoverLng = cached.lng;
+        loadGoogleMaps().then(() => _addrPopoverRenderMap(cached.lat, cached.lng));
+      }
+    } catch (_) {}
   } else {
-    current.innerHTML = `<span style="color:var(--text-muted,#9ca3af)">No tienes una dirección guardada todavía.</span>`;
+    current.innerHTML = `<span style="color:var(--text-muted,#9ca3af);font-size:13px">No tienes una dirección guardada todavía.</span>`;
+    // Auto-show edit row when no address
+    editRow.style.display = 'flex';
     input.placeholder = 'Ej: Calle 10 #5-23, El Prado';
   }
 
   const overlay = document.getElementById('addrModalOverlay');
   overlay.style.display = 'flex';
-  setTimeout(() => input.focus(), 120);
+  // No auto-focus: on mobile it opens the keyboard and hides the field
+}
+
+function _addrPopoverShowEdit(evt) {
+  if (evt) { evt.preventDefault(); evt.stopPropagation(); }
+  const editRow = document.getElementById('addrEditRow');
+  const input   = document.getElementById('addrPopoverInput');
+  if (!editRow) return;
+  editRow.style.display = 'flex';
+  const cu = getCyUser();
+  input.value = cu.dir || '';
+  input.placeholder = 'Nueva dirección…';
+  setTimeout(() => { input.focus(); input.select(); }, 80);
 }
 
 function closeAddrPopover() {
@@ -2963,7 +3068,7 @@ async function _addrPopoverSearch() {
     _addrPopoverLat = found.lat; _addrPopoverLng = found.lng;
     status.textContent = found.precision === 'city'
       ? '⚠️ Solo encontramos la ciudad. Ajusta el pin.'
-      : '✅ Encontrada. Confirma o ajusta el pin.';
+      : '✅ Encontrada. Ajusta el pin si quierés ↓';
     await _addrPopoverRenderMap(_addrPopoverLat, _addrPopoverLng);
     confirmBtn.style.display = 'block';
     confirmBtn.disabled = false; confirmBtn.style.opacity = '1';
@@ -3000,6 +3105,9 @@ async function _addrPopoverRenderMap(lat, lng) {
   _addrPopoverMarker.addListener('dragend', e => {
     _addrPopoverLat = e.latLng.lat();
     _addrPopoverLng = e.latLng.lng();
+    // Allow confirming the pin-dragged position even without a text search
+    const confirmBtn = document.getElementById('addrPopoverConfirmBtn');
+    if (confirmBtn) { confirmBtn.style.display = 'block'; confirmBtn.disabled = false; confirmBtn.style.opacity = '1'; }
   });
 }
 
@@ -3008,16 +3116,20 @@ function _addrPopoverConfirm() {
   // Read final dragged position
   if (_addrPopoverMarker) {
     const pos = _addrPopoverMarker.position;
-    if (pos) { _addrPopoverLat = +pos.lat; _addrPopoverLng = +pos.lng; }
+    if (pos) {
+      _addrPopoverLat = typeof pos.lat === 'function' ? pos.lat() : +pos.lat;
+      _addrPopoverLng = typeof pos.lng === 'function' ? pos.lng() : +pos.lng;
+    }
   }
-  const addr = document.getElementById('addrPopoverInput').value.trim();
+  const addr = document.getElementById('addrPopoverInput').value.trim() || getCyUser().dir || '';
   _geoCoords = { lat: _addrPopoverLat, lng: _addrPopoverLng };
   localStorage.setItem(GEO_PREF_KEY, 'granted');
-  localStorage.setItem(GEO_CACHE_KEY, JSON.stringify({ lat: _addrPopoverLat, lng: _addrPopoverLng, address: addr, ts: Date.now() }));
+  localStorage.setItem(GEO_CACHE_KEY, JSON.stringify({ lat: _addrPopoverLat, lng: _addrPopoverLng, address: addr }));
   setCyUser({ dir: addr, lat: _addrPopoverLat, lng: _addrPopoverLng });
   trackEvent('GEO_ADDRESS_CHANGED', { lat: +_addrPopoverLat.toFixed(5), lng: +_addrPopoverLng.toFixed(5), address: addr });
   DELIVERY_CITY = addr.split(',')[0].trim() || DELIVERY_CITY;
   _updateCityGreeting();
+  _clearZoneAvailCache();   // coords changed — invalidate all zone checks
   closeAddrPopover();
   // Reload first page of products with new coords
   applyFilters();
@@ -3156,7 +3268,11 @@ async function renderRecentlyViewed() {
       if (_br.ok) _cacheProducts(await _br.json());
     } catch (_) {}
   }
-  const products = ids.map(id => _productCache.get(id)).filter(Boolean);
+  // Hide products not available in the user's delivery zone
+  const unavail = await _checkZoneAvail(ids);
+  const products = ids
+    .filter(id => !unavail.has(id))
+    .map(id => _productCache.get(id)).filter(Boolean);
   const sec = document.getElementById('recentSection');
   if (!sec) return;
   if (!products.length) { sec.style.display = 'none'; return; }
