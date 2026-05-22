@@ -99,6 +99,12 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
   .search-wrap{order:10;width:100%;flex:none;padding-bottom:10px;}
   .search-btn{left:4px;right:auto;top:0;bottom:10px;transform:none;margin:auto 0;}
 }
+/* Header — Dark mode */
+[data-theme="dark"] .header{background:#000;}
+[data-theme="dark"] .logo-text .logo-full>span,
+[data-theme="dark"] .logo-text .logo-short>span,
+[data-theme="dark"] .header-top .logo .logo-text .logo-full>span,
+[data-theme="dark"] .header-top .logo .logo-text .logo-short>span{color:#F15200;}
 /* Banner dimensions — reserve space to prevent CLS */
 .hero{max-width:1400px;margin:16px auto 0;padding:0 16px;}
 .banner-slider{border-radius:var(--radius-xl);overflow:hidden;position:relative;height:190px;background:var(--border);}
