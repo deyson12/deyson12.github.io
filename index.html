@@ -25,7 +25,7 @@
 <body>
 
 <!-- Preload critical resources -->
-<link rel="preload" href="css/app.css" as="style">
+<link rel="preload" href="css/app.css?v=2" as="style">
 <link rel="preload" href="js/config.js" as="script">
 <link rel="preload" href="js/app.js" as="script">
 
@@ -37,8 +37,8 @@
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&family=Baloo+2:wght@800&display=swap"></noscript>
 
 <!-- app.css — non-blocking with preload -->
-<link rel="stylesheet" href="css/app.css" media="print" onload="this.media='all'">
-<noscript><link rel="stylesheet" href="css/app.css"></noscript>
+<link rel="stylesheet" href="css/app.css?v=2" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="css/app.css?v=2"></noscript>
 
 <!-- Critical CSS (above-the-fold) — inline -->
 <style>
