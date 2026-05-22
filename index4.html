@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Logotipos PideFácil</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Montserrat:wght@600;700;800&family=Outfit:wght@600;700;800&family=Manrope:wght@600;700;800&family=Nunito+Sans:wght@700;800;900&family=Urbanist:wght@600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&family=DM+Sans:wght@600;700;800&family=Space+Grotesk:wght@600;700&family=Inter:wght@700;800;900&family=Raleway:wght@700;800;900&family=Bebas+Neue&family=Syne:wght@700;800&family=Lexend:wght@600;700;800&family=Figtree:wght@700;800;900&family=Quicksand:wght@600;700&family=Comfortaa:wght@700&family=Josefin+Sans:wght@600;700&family=Exo+2:wght@700;800&family=Righteous&family=Work+Sans:wght@700;800&family=Barlow:wght@700;800&family=Barlow+Condensed:wght@700;800&family=Red+Hat+Display:wght@700;800;900&family=IBM+Plex+Sans:wght@600;700&family=Epilogue:wght@700;800;900&family=Mulish:wght@700;800;900&family=Karla:wght@700;800&family=Rubik:wght@500;700;800&family=Titillium+Web:wght@600;700&family=Jost:wght@700;800&family=Be+Vietnam+Pro:wght@700;800&family=Oswald:wght@600;700&family=Anton&family=Big+Shoulders+Display:wght@700;800;900&family=Yanone+Kaffeesatz:wght@600;700&family=Albert+Sans:wght@700;800&family=Hanken+Grotesk:wght@700;800;900&family=Kumbh+Sans:wght@700;800&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --color-primary: #FF5C00;
+      --color-black: #18181B;
+      --color-white: #FAFAFA;
+      --color-gray: #E5E7EB;
+      --color-text-muted: #6B7280;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--color-white);
+      color: var(--color-black);
+      padding: 40px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 32px;
+    }
+
+    p {
+      text-align: center;
+      color: var(--color-text-muted);
+      margin-bottom: 40px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid var(--color-gray);
+      border-radius: 24px;
+      padding: 36px 24px;
+      text-align: center;
+    }
+
+    .logo {
+      font-size: 48px;
+      line-height: 1;
+      letter-spacing: -2px;
+      margin-bottom: 18px;
+    }
+
+    .black {
+      color: var(--color-black);
+    }
+
+    .orange {
+      color: var(--color-primary);
+    }
+
+    .name {
+      font-size: 14px;
+      color: var(--color-text-muted);
+    }
+
+    .poppins {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+    }
+
+    .outfit {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+    }
+
+    .manrope {
+      font-family: 'Manrope', sans-serif;
+      font-weight: 800;
+    }
+
+    .montserrat {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+    }
+
+    .nunito {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 900;
+    }
+
+    .urbanist {
+      font-family: 'Urbanist', sans-serif;
+      font-weight: 800;
+    }
+
+    .uppercase {
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-size: 42px;
+    }
+
+    .soft {
+      letter-spacing: -1px;
+    }
+
+    /* ── NEW FONTS ── */
+    .jakarta { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; }
+    .dmsans  { font-family: 'DM Sans', sans-serif; font-weight: 800; }
+    .space   { font-family: 'Space Grotesk', sans-serif; font-weight: 700; }
+    .inter   { font-family: 'Inter', sans-serif; font-weight: 900; }
+    .raleway { font-family: 'Raleway', sans-serif; font-weight: 900; }
+    .bebas   { font-family: 'Bebas Neue', sans-serif; font-weight: 400; letter-spacing: 3px; }
+    .syne    { font-family: 'Syne', sans-serif; font-weight: 800; }
+    .lexend  { font-family: 'Lexend', sans-serif; font-weight: 800; }
+    .figtree { font-family: 'Figtree', sans-serif; font-weight: 900; }
+    .quicksand { font-family: 'Quicksand', sans-serif; font-weight: 700; }
+    .comfortaa { font-family: 'Comfortaa', sans-serif; font-weight: 700; }
+    .josefin { font-family: 'Josefin Sans', sans-serif; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; }
+    .exo2    { font-family: 'Exo 2', sans-serif; font-weight: 800; }
+    .righteous { font-family: 'Righteous', sans-serif; font-weight: 400; }
+
+    /* ── STYLE VARIANTS ── */
+    .tight   { letter-spacing: -3px; }
+    .tracked { letter-spacing: 6px; text-transform: uppercase; font-size: 34px; }
+    .italic  { font-style: italic; }
+    .slash::after { content: '/'; color: var(--color-primary); margin: 0 2px; font-style: normal; }
+    .dot-sep > span + span::before { content: '·'; color: var(--color-primary); margin: 0 4px; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 10px;
+    }
+    .badge-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 46px; height: 46px; border-radius: 14px;
+      background: var(--color-primary); color: #fff;
+      font-size: 26px; font-weight: 900; font-family: 'Plus Jakarta Sans', sans-serif;
+      flex-shrink: 0;
+    }
+    .wordmark { font-size: 40px; line-height: 1; }
+    .stacked  { display: flex; flex-direction: column; line-height: 1.05; align-items: center; }
+    .stacked .sub { font-size: 13px; letter-spacing: 5px; text-transform: uppercase; color: var(--color-primary); font-weight: 600; margin-top: 4px; }
+    .outlined { -webkit-text-stroke: 2px var(--color-black); color: transparent; }
+    .outlined .orange { -webkit-text-stroke: 2px var(--color-primary); color: transparent; }
+    .two-weight .light { font-weight: 400; }
+    .two-weight .bold  { font-weight: 800; }
+
+    /* ── BLOCK 3 FONTS ── */
+    .worksans  { font-family: 'Work Sans', sans-serif; font-weight: 800; }
+    .barlow    { font-family: 'Barlow', sans-serif; font-weight: 800; }
+    .barlowc   { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; }
+    .redhat    { font-family: 'Red Hat Display', sans-serif; font-weight: 900; }
+    .ibmplex   { font-family: 'IBM Plex Sans', sans-serif; font-weight: 700; }
+    .epilogue  { font-family: 'Epilogue', sans-serif; font-weight: 900; }
+    .mulish    { font-family: 'Mulish', sans-serif; font-weight: 900; }
+    .karla     { font-family: 'Karla', sans-serif; font-weight: 800; }
+    .rubik     { font-family: 'Rubik', sans-serif; font-weight: 700; }
+    .titillium { font-family: 'Titillium Web', sans-serif; font-weight: 700; }
+    .jost      { font-family: 'Jost', sans-serif; font-weight: 800; }
+    .beviet    { font-family: 'Be Vietnam Pro', sans-serif; font-weight: 800; }
+    .oswald    { font-family: 'Oswald', sans-serif; font-weight: 700; }
+    .anton     { font-family: 'Anton', sans-serif; font-weight: 400; }
+    .bigsh     { font-family: 'Big Shoulders Display', sans-serif; font-weight: 900; }
+    .yanone    { font-family: 'Yanone Kaffeesatz', sans-serif; font-weight: 700; }
+    .albert    { font-family: 'Albert Sans', sans-serif; font-weight: 800; }
+    .hanken    { font-family: 'Hanken Grotesk', sans-serif; font-weight: 900; }
+    .kumbh     { font-family: 'Kumbh Sans', sans-serif; font-weight: 800; }
+    .nunitof   { font-family: 'Nunito', sans-serif; font-weight: 900; }
+
+    /* ── BLOCK 3 STYLE EXTRAS ── */
+    .gradient-text {
+      background: linear-gradient(90deg, var(--color-black) 0%, var(--color-primary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .shadow-logo { text-shadow: 4px 4px 0 rgba(255,92,0,0.20); }
+    .pill-tag {
+      display: inline-block; background: var(--color-primary); color: #fff;
+      border-radius: 999px; padding: 4px 16px; font-size: inherit; line-height: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Opciones de logotipo — PideFácil</h1>
+  <p>Colores finales: naranja #FF5C00, negro #18181B, gris #E5E7EB y fondo #FAFAFA</p>
+
+  <section class="grid">
+
+    <div class="card">
+      <div class="logo poppins">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Poppins ExtraBold — app friendly</div>
+    </div>
+
+    <div class="card">
+      <div class="logo outfit">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Outfit ExtraBold — moderna y premium</div>
+    </div>
+
+    <div class="card">
+      <div class="logo manrope">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Manrope ExtraBold — elegante y tecnológica</div>
+    </div>
+
+    <div class="card">
+      <div class="logo montserrat">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Montserrat ExtraBold — fuerte y corporativa</div>
+    </div>
+
+    <div class="card">
+      <div class="logo nunito">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Nunito Sans Black — cercana y redondeada</div>
+    </div>
+
+    <div class="card">
+      <div class="logo urbanist">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Urbanist ExtraBold — minimalista y actual</div>
+    </div>
+
+    <div class="card">
+      <div class="logo outfit uppercase">
+        <span class="black">PIDE</span><span class="orange">FÁCIL</span>
+      </div>
+      <div class="name">Outfit uppercase — más fuerte y premium</div>
+    </div>
+
+    <div class="card">
+      <div class="logo poppins soft">
+        <span class="black">Pide</span><span class="orange">Fácil</span>
+      </div>
+      <div class="name">Poppins con mayúsculas — más comercial</div>
+    </div>
+
+    <div class="card">
+      <div class="logo manrope soft">
+        <span class="black">Pide</span><span class="orange">Facil</span>
+      </div>
+      <div class="name">Manrope sin tilde — más tech/internacional</div>
+    </div>
+
+  </section>
+
+  <h2 style="text-align:center;margin:60px 0 10px;font-size:24px">20 opciones adicionales</h2>
+  <p>Nuevas tipografías — elegantes, minimalistas, geométricas, expresivas</p>
+
+  <section class="grid">
+
+    <!-- 1 -->
+    <div class="card">
+      <div class="logo jakarta tight">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Plus Jakarta Sans — moderna y muy tight, estilo fintech</div>
+    </div>
+
+    <!-- 2 -->
+    <div class="card">
+      <div class="logo dmsans">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">DM Sans — limpia, neutral, premium sin esfuerzo</div>
+    </div>
+
+    <!-- 3 -->
+    <div class="card">
+      <div class="logo space tight">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Space Grotesk — geométrica con personalidad tech</div>
+    </div>
+
+    <!-- 4 -->
+    <div class="card">
+      <div class="logo inter tight">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Inter Black — la tipografía de apps por excelencia</div>
+    </div>
+
+    <!-- 5 -->
+    <div class="card">
+      <div class="logo raleway tracked">
+        <span class="black">PIDE</span><span class="orange">FÁCIL</span>
+      </div>
+      <div class="name">Raleway Bold + tracked — elegante, premium y espaciado</div>
+    </div>
+
+    <!-- 6 -->
+    <div class="card">
+      <div class="logo bebas" style="font-size:56px">
+        <span class="black">PIDE</span><span class="orange">FÁCIL</span>
+      </div>
+      <div class="name">Bebas Neue — impactante, display, estilo marca fuerte</div>
+    </div>
+
+    <!-- 7 -->
+    <div class="card">
+      <div class="logo syne tight">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Syne ExtraBold — angular, moderna, editorial y única</div>
+    </div>
+
+    <!-- 8 -->
+    <div class="card">
+      <div class="logo lexend">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Lexend — legibilidad máxima, limpia, muy app-friendly</div>
+    </div>
+
+    <!-- 9 -->
+    <div class="card">
+      <div class="logo figtree tight">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Figtree Black — redondeada pesada, cálida y fuerte</div>
+    </div>
+
+    <!-- 10 -->
+    <div class="card">
+      <div class="logo quicksand" style="font-size:46px;letter-spacing:-1px">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Quicksand Bold — amigable, redondeada, app de consumo</div>
+    </div>
+
+    <!-- 11 -->
+    <div class="card">
+      <div class="logo comfortaa" style="font-size:46px">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Comfortaa Bold — curvas suaves, identidad cálida y casual</div>
+    </div>
+
+    <!-- 12 -->
+    <div class="card">
+      <div class="logo josefin">
+        <span class="black">PIDE</span><span class="orange">FÁCIL</span>
+      </div>
+      <div class="name">Josefin Sans Bold — uppercase geométrica clásica</div>
+    </div>
+
+    <!-- 13 -->
+    <div class="card">
+      <div class="logo exo2 tight">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Exo 2 ExtraBold — futurista, dinámica, tech moderna</div>
+    </div>
+
+    <!-- 14 -->
+    <div class="card">
+      <div class="logo righteous" style="font-size:50px;letter-spacing:-1px">
+        <span class="black">Pide</span><span class="orange">Fácil</span>
+      </div>
+      <div class="name">Righteous — display suave, personalidad y calidez</div>
+    </div>
+
+    <!-- 15: badge icon + wordmark -->
+    <div class="card">
+      <div style="display:inline-flex;align-items:center;gap:12px;margin-bottom:18px">
+        <div class="badge-icon">P</div>
+        <div class="wordmark jakarta" style="letter-spacing:-1px">
+          <span class="black">pide</span><span class="orange">fácil</span>
+        </div>
+      </div>
+      <div class="name">Ícono inicial + Jakarta Sans — estilo app con brandmark</div>
+    </div>
+
+    <!-- 16: stacked -->
+    <div class="card">
+      <div class="stacked" style="margin-bottom:18px">
+        <div class="logo inter tight" style="margin-bottom:0">
+          <span class="black">pidefácil</span>
+        </div>
+        <div class="sub">delivery express</div>
+      </div>
+      <div class="name">Inter + subtítulo rastreado — wordmark con tagline</div>
+    </div>
+
+    <!-- 17: two weights -->
+    <div class="card">
+      <div class="logo two-weight dmsans" style="letter-spacing:-1px">
+        <span class="black light">pide</span><span class="orange bold">fácil</span>
+      </div>
+      <div class="name">DM Sans — contraste peso ligero/bold, sofisticado</div>
+    </div>
+
+    <!-- 18: slash separator -->
+    <div class="card">
+      <div class="logo space" style="letter-spacing:-1px">
+        <span class="black">pide</span><span style="color:var(--color-primary);margin:0 2px">/</span><span class="black">fácil</span>
+      </div>
+      <div class="name">Space Grotesk + slash naranja — estilo tech / startup</div>
+    </div>
+
+    <!-- 19: outlined -->
+    <div class="card">
+      <div class="logo poppins outlined" style="letter-spacing:-2px">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Poppins Outlined — estilo editorial, logo diferenciador</div>
+    </div>
+
+    <!-- 20: all lowercase italic -->
+    <div class="card">
+      <div class="logo raleway italic" style="letter-spacing:-1px;font-size:50px">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Raleway Italic — dinámico, velocidad, estilo delivery</div>
+    </div>
+
+  </section>
+
+  <h2 style="text-align:center;margin:60px 0 10px;font-size:24px">40 opciones adicionales</h2>
+  <p>Nuevas tipografías II — grotescas, condensadas, display, tratamientos visuales</p>
+
+  <section class="grid">
+
+    <!-- 21 -->
+    <div class="card">
+      <div class="logo worksans tight">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Work Sans ExtraBold — humanista geométrica, muy legible</div>
+    </div>
+
+    <!-- 22 -->
+    <div class="card">
+      <div class="logo barlow tight">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Barlow ExtraBold — sólida, segura, versátil</div>
+    </div>
+
+    <!-- 23 -->
+    <div class="card">
+      <div class="logo redhat tight">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Red Hat Display — elegante, corporativa, tech moderna</div>
+    </div>
+
+    <!-- 24 -->
+    <div class="card">
+      <div class="logo ibmplex" style="letter-spacing:-1px">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">IBM Plex Sans — precisión técnica, confianza institucional</div>
+    </div>
+
+    <!-- 25 -->
+    <div class="card">
+      <div class="logo epilogue tight">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Epilogue Black — editorial marcada, gran presencia</div>
+    </div>
+
+    <!-- 26 -->
+    <div class="card">
+      <div class="logo mulish tight">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Mulish ExtraBold — neutra, limpia, muy app-friendly</div>
+    </div>
+
+    <!-- 27 -->
+    <div class="card">
+      <div class="logo karla tight">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Karla ExtraBold — personalidad humanista y cercana</div>
+    </div>
+
+    <!-- 28 -->
+    <div class="card">
+      <div class="logo rubik" style="letter-spacing:-1px">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Rubik Bold — esquinas redondeadas, amigable y moderna</div>
+    </div>
+
+    <!-- 29 -->
+    <div class="card">
+      <div class="logo titillium" style="letter-spacing:-1px">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Titillium Web — italiana, fuerte e institucional</div>
+    </div>
+
+    <!-- 30 -->
+    <div class="card">
+      <div class="logo jost tight">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Jost ExtraBold — geométrica, inspirada en Futura</div>
+    </div>
+
+    <!-- 31 -->
+    <div class="card">
+      <div class="logo beviet tight">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Be Vietnam Pro — moderna, dinámica y flexible</div>
+    </div>
+
+    <!-- 32 -->
+    <div class="card">
+      <div class="logo barlowc" style="font-size:58px;letter-spacing:0;text-transform:uppercase">
+        <span class="black">PIDE</span><span class="orange">FÁCIL</span>
+      </div>
+      <div class="name">Barlow Condensed — impacto compacto, fuerte y directo</div>
+    </div>
+
+    <!-- 33 -->
+    <div class="card">
+      <div class="logo oswald" style="font-size:54px;letter-spacing:0;text-transform:uppercase">
+        <span class="black">PIDE</span><span class="orange">FÁCIL</span>
+      </div>
+      <div class="name">Oswald Bold — condensado clásico, gran legibilidad</div>
+    </div>
+
+    <!-- 34 -->
+    <div class="card">
+      <div class="logo anton" style="font-size:62px;letter-spacing:1px;text-transform:uppercase">
+        <span class="black">PIDE</span><span class="orange">FÁCIL</span>
+      </div>
+      <div class="name">Anton — display masivo, máximo impacto visual</div>
+    </div>
+
+    <!-- 35 -->
+    <div class="card">
+      <div class="logo bigsh" style="font-size:60px;letter-spacing:0;text-transform:uppercase">
+        <span class="black">PIDE</span><span class="orange">FÁCIL</span>
+      </div>
+      <div class="name">Big Shoulders Display — ultra condensada, americana</div>
+    </div>
+
+    <!-- 36 -->
+    <div class="card">
+      <div class="logo yanone" style="font-size:58px;letter-spacing:-1px">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Yanone Kaffeesatz — ligera, condensada y con carácter</div>
+    </div>
+
+    <!-- 37 -->
+    <div class="card">
+      <div class="logo albert tight">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Albert Sans — nórdica, limpia, minimalista escandinava</div>
+    </div>
+
+    <!-- 38 -->
+    <div class="card">
+      <div class="logo hanken tight">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Hanken Grotesk — inspirada en Helvetica, sofisticada</div>
+    </div>
+
+    <!-- 39 -->
+    <div class="card">
+      <div class="logo kumbh tight">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Kumbh Sans — geométrica precisa, muy moderna</div>
+    </div>
+
+    <!-- 40 -->
+    <div class="card">
+      <div class="logo nunitof" style="letter-spacing:-1px">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Nunito ExtraBold — redondísima, bubbly, muy consumer</div>
+    </div>
+
+    <!-- 41: degradado inter -->
+    <div class="card">
+      <div class="logo inter tight gradient-text">pidefácil</div>
+      <div class="name">Inter + degradado negro→naranja — efecto premium moderno</div>
+    </div>
+
+    <!-- 42: Work Sans italic -->
+    <div class="card">
+      <div class="logo worksans italic tight">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Work Sans Italic — movimiento y velocidad delivery</div>
+    </div>
+
+    <!-- 43: Jakarta tracked uppercase -->
+    <div class="card">
+      <div class="logo jakarta tracked">
+        <span class="black">PIDE</span><span class="orange">FÁCIL</span>
+      </div>
+      <div class="name">Plus Jakarta Sans uppercase tracked — sofisticado y premium</div>
+    </div>
+
+    <!-- 44: Rubik + círculo inicial -->
+    <div class="card">
+      <div style="display:inline-flex;align-items:center;gap:10px;margin-bottom:18px">
+        <div style="width:48px;height:48px;border-radius:50%;background:var(--color-primary);display:flex;align-items:center;justify-content:center;color:white;font-family:'Rubik',sans-serif;font-weight:700;font-size:24px">P</div>
+        <div class="wordmark rubik" style="letter-spacing:-1px">
+          <span class="black">pide</span><span class="orange">fácil</span>
+        </div>
+      </div>
+      <div class="name">Rubik + círculo inicial — ícono suave y amigable</div>
+    </div>
+
+    <!-- 45: Outfit TitleCase -->
+    <div class="card">
+      <div class="logo outfit" style="letter-spacing:-1px;font-size:50px">
+        <span class="black">Pide</span><span class="orange">Fácil</span>
+      </div>
+      <div class="name">Outfit TitleCase — equilibrio entre comercial y premium</div>
+    </div>
+
+    <!-- 46: Manrope solo fácil en itálica -->
+    <div class="card">
+      <div class="logo manrope" style="letter-spacing:-2px">
+        <span class="black">pide</span><span class="orange" style="font-style:italic">fácil</span>
+      </div>
+      <div class="name">Manrope — solo «fácil» en itálica, énfasis dinámico</div>
+    </div>
+
+    <!-- 47: Poppins shadow -->
+    <div class="card">
+      <div class="logo poppins shadow-logo" style="letter-spacing:-2px">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Poppins + sombra naranja sutil — profundidad y presencia</div>
+    </div>
+
+    <!-- 48: Space Grotesk punto -->
+    <div class="card">
+      <div class="logo space" style="letter-spacing:-1px">
+        <span class="black">pide</span><span style="color:var(--color-primary);margin:0 4px;font-size:36px;vertical-align:middle;line-height:1">●</span><span class="black">fácil</span>
+      </div>
+      <div class="name">Space Grotesk + punto separador naranja — tech y elegante</div>
+    </div>
+
+    <!-- 49: Syne uppercase -->
+    <div class="card">
+      <div class="logo syne" style="font-size:44px;letter-spacing:1px;text-transform:uppercase">
+        <span class="black">PIDE</span><span class="orange">FÁCIL</span>
+      </div>
+      <div class="name">Syne uppercase — editorial fuerte, muy identitaria</div>
+    </div>
+
+    <!-- 50: Figtree invertido -->
+    <div class="card">
+      <div class="logo figtree tight">
+        <span class="orange">pide</span><span class="black">fácil</span>
+      </div>
+      <div class="name">Figtree invertido — naranja «pide», negro «fácil»</div>
+    </div>
+
+    <!-- 51: Jost apilado dos líneas -->
+    <div class="card">
+      <div style="margin-bottom:18px;line-height:1">
+        <div style="font-family:'Jost',sans-serif;font-weight:800;font-size:52px;letter-spacing:-2px;color:var(--color-black)">pide</div>
+        <div style="font-family:'Jost',sans-serif;font-weight:800;font-size:52px;letter-spacing:-2px;color:var(--color-primary)">fácil</div>
+      </div>
+      <div class="name">Jost apilado — dos líneas, jerarquía visual limpia</div>
+    </div>
+
+    <!-- 52: DM Sans + tagline -->
+    <div class="card">
+      <div class="stacked" style="margin-bottom:18px">
+        <div class="logo dmsans tight" style="margin-bottom:0">
+          <span class="black">pide</span><span class="orange">fácil</span>
+        </div>
+        <div class="sub">hecho para ti</div>
+      </div>
+      <div class="name">DM Sans + tagline «hecho para ti» — marca completa</div>
+    </div>
+
+    <!-- 53: Barlow bloque naranja -->
+    <div class="card">
+      <div style="margin-bottom:18px;display:inline-flex;align-items:center;gap:0">
+        <span style="font-family:'Barlow',sans-serif;font-weight:800;font-size:48px;letter-spacing:-2px;background:var(--color-primary);color:white;padding:2px 12px;border-radius:10px 0 0 10px">pide</span><span style="font-family:'Barlow',sans-serif;font-weight:800;font-size:48px;letter-spacing:-2px;color:var(--color-primary);padding:2px 8px;border:2px solid var(--color-primary);border-left:none;border-radius:0 10px 10px 0">fácil</span>
+      </div>
+      <div class="name">Barlow — relleno + borde naranja, alto contraste visual</div>
+    </div>
+
+    <!-- 54: Epilogue outlined -->
+    <div class="card">
+      <div class="logo epilogue outlined" style="letter-spacing:-2px">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Epilogue Outlined — editorial, diferenciador, sin relleno</div>
+    </div>
+
+    <!-- 55: Montserrat + coma -->
+    <div class="card">
+      <div class="logo montserrat" style="letter-spacing:-2px">
+        <span class="black">pide,</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Montserrat + coma — acento tipográfico con personalidad</div>
+    </div>
+
+    <!-- 56: Be Vietnam two-weight -->
+    <div class="card">
+      <div class="logo two-weight beviet" style="letter-spacing:-1px">
+        <span class="black light">pide</span><span class="orange bold">fácil</span>
+      </div>
+      <div class="name">Be Vietnam Pro — «pide» thin / «fácil» bold, contraste elegante</div>
+    </div>
+
+    <!-- 57: IBM Plex uppercase tracked -->
+    <div class="card">
+      <div class="logo ibmplex" style="font-size:30px;letter-spacing:5px;text-transform:uppercase">
+        <span class="black">PIDE</span><span class="orange">FÁCIL</span>
+      </div>
+      <div class="name">IBM Plex Sans uppercase tracked — corporativo y serio</div>
+    </div>
+
+    <!-- 58: Hanken borde naranja -->
+    <div class="card" style="border-color:var(--color-primary);border-width:2px">
+      <div class="logo hanken tight">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Hanken Grotesk + tarjeta borde naranja — emphasis de marca</div>
+    </div>
+
+    <!-- 59: Kumbh fácil italic -->
+    <div class="card">
+      <div class="logo kumbh" style="letter-spacing:-2px">
+        <span class="black">pide</span><span class="orange" style="font-style:italic">fácil</span>
+      </div>
+      <div class="name">Kumbh Sans + itálica en «fácil» — énfasis en la acción</div>
+    </div>
+
+    <!-- 60: Oswald lowercase -->
+    <div class="card">
+      <div class="logo oswald" style="font-size:52px;letter-spacing:-1px">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Oswald lowercase — condensado pero cálido, sin gritar</div>
+    </div>
+
+  </section>
+
+</body>
+</html>
