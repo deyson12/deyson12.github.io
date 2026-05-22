@@ -60,6 +60,23 @@
       border: 3px solid #c9a227;
       box-shadow: 0 0 0 4px rgba(201,162,39,.15), 0 4px 20px rgba(201,162,39,.25);
     }
+    .btn-download {
+      margin-top: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: #111827;
+      color: #fff;
+      border: none;
+      border-radius: 99px;
+      padding: 9px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .18s;
+    }
+    .btn-download:hover { background: #F15200; }
+    .btn-download svg { flex-shrink: 0; }
 
     .logo {
       font-size: 48px;
@@ -343,6 +360,18 @@
 
   <section class="grid">
 
+    <!-- R6 -->
+    <div class="card chosen">
+      <div class="logo baloo">
+        <span class="black">pide</span><span class="orange">fácil</span>
+      </div>
+      <div class="name">Baloo 2 ExtraBold — redonda festiva con mucho carácter</div>
+      <button class="btn-download" onclick="downloadLogo()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Descargar PNG
+      </button>
+    </div>
+
     <div class="card">
       <div class="logo poppins">
         <span class="black">pide</span><span class="orange">fácil</span>
@@ -492,14 +521,6 @@
       <div class="name">Paytone One — bold display redondeada, mucho impacto</div>
     </div>
 
-    <!-- R6 -->
-    <div class="card chosen">
-      <div class="logo baloo">
-        <span class="black">pide</span><span class="orange">fácil</span>
-      </div>
-      <div class="name">Baloo 2 ExtraBold — redonda festiva con mucho carácter</div>
-    </div>
-
     <!-- R7 -->
     <div class="card">
       <div class="logo cabinr" style="letter-spacing:-1px">
@@ -597,6 +618,81 @@
       phdr.appendChild(actions);
       card.appendChild(phdr);
     });
+  </script>
+
+  <script>
+    async function downloadLogo() {
+      await document.fonts.ready;
+
+      // Detect active mode
+      const body = document.body;
+      let mode = 'light';
+      if (body.classList.contains('om1')) mode = 'om1';
+      else if (body.classList.contains('om2')) mode = 'om2';
+      else if (body.classList.contains('om3')) mode = 'om3';
+
+      const modeConfig = {
+        light: { bg: null,      pide: '#111827', facil: '#F15200', label: 'negro-naranja' },
+        om1:   { bg: '#F15200', pide: '#ffffff', facil: '#ffffff', label: 'naranja-blanco-blanco' },
+        om2:   { bg: '#F15200', pide: '#ffffff', facil: '#111111', label: 'naranja-blanco-negro' },
+        om3:   { bg: '#F15200', pide: '#111111', facil: '#111111', label: 'naranja-negro-negro' },
+      };
+      const cfg = modeConfig[mode];
+
+      const scale = 4;
+      const fontSize = 80;
+      const font = `800 ${fontSize}px 'Baloo 2', sans-serif`;
+      const padH = 28, padV = 20;
+
+      // Measure text
+      const tmp = document.createElement('canvas');
+      const tmpCtx = tmp.getContext('2d');
+      tmpCtx.font = font;
+      tmpCtx.letterSpacing = '-0.5px';
+      const w1 = tmpCtx.measureText('pide').width;
+      const w2 = tmpCtx.measureText('fácil').width;
+
+      const cw = Math.ceil(w1 + w2) + padH * 2;
+      const ch = Math.ceil(fontSize * 1.5) + padV * 2;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = cw * scale;
+      canvas.height = ch * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(scale, scale);
+
+      // Background
+      if (cfg.bg) {
+        ctx.fillStyle = cfg.bg;
+        const r = 24;
+        ctx.beginPath();
+        ctx.moveTo(r, 0); ctx.lineTo(cw - r, 0);
+        ctx.quadraticCurveTo(cw, 0, cw, r);
+        ctx.lineTo(cw, ch - r); ctx.quadraticCurveTo(cw, ch, cw - r, ch);
+        ctx.lineTo(r, ch); ctx.quadraticCurveTo(0, ch, 0, ch - r);
+        ctx.lineTo(0, r); ctx.quadraticCurveTo(0, 0, r, 0);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // Text
+      ctx.font = font;
+      ctx.letterSpacing = '-0.5px';
+      ctx.textBaseline = 'middle';
+      const y = ch / 2 + fontSize * 0.06;
+      ctx.fillStyle = cfg.pide;
+      ctx.fillText('pide', padH, y);
+      ctx.fillStyle = cfg.facil;
+      ctx.fillText('fácil', padH + w1, y);
+
+      canvas.toBlob(blob => {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `pidefacil-logo-${cfg.label}.png`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      }, 'image/png');
+    }
   </script>
 
 </body>
