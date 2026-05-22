@@ -48,14 +48,16 @@
 html{scroll-behavior:smooth;-webkit-tap-highlight-color:transparent}
 body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);color:var(--text-primary);min-height:100vh;overflow-x:hidden;}
 /* Page loader */
-.page-loader{position:fixed;inset:0;z-index:9999;background:var(--bg-main,#fff);display:flex;align-items:center;justify-content:center;transition:opacity .5s ease,visibility .5s ease}
-.page-loader.hidden{opacity:0;visibility:hidden;pointer-events:none}
-.page-loader-inner{display:flex;flex-direction:column;align-items:center;gap:12px}
-.page-loader-logo{width:64px;height:64px;object-fit:contain;animation:loader-pulse 1.2s ease-in-out infinite}
-.page-loader-brand{font-family:var(--font-head);font-weight:800;font-size:26px;color:var(--text-primary);letter-spacing:-.5px}
-.page-loader-brand span{color:#F15200}
+.page-loader{position:fixed;inset:0;z-index:9999;background:#F15200;display:flex;align-items:center;justify-content:center;transition:opacity .6s cubic-bezier(.4,0,.2,1),visibility .6s}
+.page-loader.hiding{opacity:0;visibility:hidden;pointer-events:none}
+.page-loader.hidden{display:none}
+.page-loader-inner{display:flex;flex-direction:column;align-items:center;gap:12px;transition:transform .35s cubic-bezier(.4,0,.2,1),opacity .35s ease}
+.page-loader.hiding .page-loader-inner{transform:scale(.85);opacity:0}
+.page-loader-logo{width:64px;height:64px;object-fit:contain;animation:loader-pulse 1.2s ease-in-out infinite;filter:brightness(0) invert(1)}
+.page-loader-brand{font-family:var(--font-head);font-weight:800;font-size:26px;color:#fff;letter-spacing:-.5px}
+.page-loader-brand span{color:#fff}
 .page-loader-dots{display:flex;gap:6px;margin-top:4px}
-.page-loader-dots span{width:7px;height:7px;border-radius:50%;background:#F15200;animation:loader-bounce 1.2s ease-in-out infinite}
+.page-loader-dots span{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.7);animation:loader-bounce 1.2s ease-in-out infinite}
 .page-loader-dots span:nth-child(2){animation-delay:.2s}
 .page-loader-dots span:nth-child(3){animation-delay:.4s}
 @keyframes loader-pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.92);opacity:.7}}
@@ -717,8 +719,25 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
 <div class="page-loader" id="pageLoader" style="overflow:hidden">
   <div class="page-loader-inner">
     <img class="page-loader-logo" src="./images/favicon.ico" alt="PideFácil" width="48" height="48">
-    <div class="page-loader-brand">Pide<span>Fácil</span></div>
+    <div class="page-loader-brand"><span>Pide</span><span>Fácil</span></div>
     <div class="page-loader-dots"><span></span><span></span><span></span></div>
+  </div>
+</div>
+
+<!-- ORDER DETAIL MODAL -->
+<div class="ord-detail-overlay" id="ordDetailOverlay" onclick="if(event.target===this)closeOrderDetail()">
+  <div class="ord-detail-box" role="dialog" aria-modal="true" aria-labelledby="ordDetailTitle">
+    <div class="ord-detail-header">
+      <div>
+        <div class="ord-detail-title" id="ordDetailTitle">Detalle del pedido</div>
+        <div class="ord-detail-ref" id="ordDetailRef"></div>
+      </div>
+      <button class="btn-close" onclick="closeOrderDetail()" aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="ord-detail-body" id="ordDetailBody"></div>
+    <div class="ord-detail-footer" id="ordDetailFooter"></div>
   </div>
 </div>
 

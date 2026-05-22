@@ -594,9 +594,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   initBanner();
   renderOffers();
   applyFilters();
-  // Hide loader
+  // Hide loader with smooth scale+fade animation
   const _loader = document.getElementById('pageLoader');
-  if (_loader) { _loader.classList.add('hidden'); document.body.style.overflow = ''; }
+  if (_loader) {
+    _loader.classList.add('hiding');
+    setTimeout(() => { _loader.classList.add('hidden'); }, 650);
+    document.body.style.overflow = '';
+  }
   updateCartUI();
   updateWishUI();
   initSearch();
@@ -607,6 +611,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderRecentlyViewed();
   if (_popupQueue.length) _showNextPopup();
   _handleProductDeepLink();
+  _handleOrderDeepLink();
   // Track page view (once per session)
   if (!sessionStorage.getItem('pf_pv')) {
     sessionStorage.setItem('pf_pv', '1');
@@ -2490,6 +2495,20 @@ function _handleProductDeepLink() {
     .catch(() => {});
 }
 
+async function _handleOrderDeepLink() {
+  const orderId = new URLSearchParams(location.search).get('pedido');
+  if (!orderId) return;
+  const cached = (window._apiOrdersHistory || []).find(o => o.id === orderId);
+  if (cached) { openOrderDetail(window._apiOrdersHistory.indexOf(cached)); return; }
+  try {
+    const res = await fetch(`${API_BASE}/api/orders/${orderId}`);
+    if (!res.ok) return;
+    const ord = await res.json();
+    window._apiOrdersHistory = [ord, ...(window._apiOrdersHistory || [])];
+    openOrderDetail(0);
+  } catch (_) {}
+}
+
 async function openProduct(id) {
   closeBannerPopup();
   let p = _productCache.get(id);
@@ -2771,6 +2790,10 @@ async function _fetchAndRenderOrders() {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
             Repetir pedido
           </button>
+          <button class="btn-repeat-order" style="border-color:var(--border);color:var(--text-secondary);margin-top:4px" onclick="openOrderDetail(${idx})">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Ver detalle completo
+          </button>
         </div>
       </div>
     </div>`;
@@ -2778,6 +2801,113 @@ async function _fetchAndRenderOrders() {
 
   // Store for repeatOrderFromApi lookup
   window._apiOrdersHistory = hist;
+}
+
+function openOrderDetail(idx) {
+  const hist = window._apiOrdersHistory || [];
+  const ord  = hist[idx];
+  if (!ord) return;
+
+  const items = ord.products ?? [];
+  const total = items.reduce((s, p) => s + (p.unitPrice != null ? Number(p.unitPrice) : (p.product?.price ?? 0)) * (p.quantity ?? 1), 0);
+
+  const statusChip = (s) => {
+    const map = {
+      CONFIRMADO:              `<span class="ord-status-chip osc-approved">✅ CONFIRMADO</span>`,
+      PENDIENTE:               `<span class="ord-status-chip osc-pending">⏳ PENDIENTE</span>`,
+      CANCELADO:               `<span class="ord-status-chip osc-declined">❌ CANCELADO</span>`,
+      CANCELADO_AUTOMATICAMENTE:`<span class="ord-status-chip osc-declined">❌ CANCELADO</span>`,
+      ENVIADO:                 `<span class="ord-status-chip osc-approved">🚚 ENVIADO</span>`,
+      RECIBIDO:                `<span class="ord-status-chip osc-approved">📦 RECIBIDO</span>`
+    };
+    return map[s] ?? `<span class="ord-status-chip osc-pending">${s}</span>`;
+  };
+
+  const itemsHtml = items.length
+    ? items.map(p => {
+        const price = (p.unitPrice != null ? Number(p.unitPrice) : (p.product?.price ?? 0));
+        const img   = p.product?.image
+          ? `<img class="ord-detail-item-img" src="${p.product.image}" alt="" loading="lazy">`
+          : `<div class="ord-detail-item-img" style="display:flex;align-items:center;justify-content:center;font-size:18px">📦</div>`;
+        return `<div class="ord-detail-item-row">
+          ${img}
+          <span class="ord-detail-item-name">${p.product?.name ?? '—'}</span>
+          <span class="ord-detail-item-qty">×${p.quantity}</span>
+          <span class="ord-detail-item-price">$${(price * p.quantity).toLocaleString('es-CO')}</span>
+        </div>`;
+      }).join('')
+    : `<div style="font-size:12px;color:var(--text-muted)">Sin detalle de productos</div>`;
+
+  document.getElementById('ordDetailTitle').textContent = `Pedido del ${fmtDateOrder(ord.createdAt)}`;
+  document.getElementById('ordDetailRef').textContent   = 'Ref: ' + (ord.id ?? '').toUpperCase();
+
+  document.getElementById('ordDetailBody').innerHTML = `
+    <div class="ord-detail-section">
+      <div class="ord-detail-section-title">Estado</div>
+      <div class="ord-detail-status-row">
+        ${statusChip(ord.status)}
+        <span style="font-size:12px;color:var(--text-muted)">${fmtDateOrder(ord.createdAt)}</span>
+      </div>
+    </div>
+    <div class="ord-detail-section">
+      <div class="ord-detail-section-title">Productos (${items.length})</div>
+      ${itemsHtml}
+      <div class="ord-detail-total-row"><span>Total</span><span>$${total.toLocaleString('es-CO')}</span></div>
+    </div>
+    <div class="ord-detail-section">
+      <div class="ord-detail-section-title">Datos de entrega</div>
+      <div class="ord-detail-info-row"><span class="ord-detail-info-icon">👤</span><span>${ord.buyer?.name ?? '—'}</span></div>
+      <div class="ord-detail-info-row"><span class="ord-detail-info-icon">📞</span><span>${ord.buyer?.phone ?? ord.buyerPhone ?? '—'}</span></div>
+      <div class="ord-detail-info-row"><span class="ord-detail-info-icon">📍</span><span>${ord.address ?? '—'}</span></div>
+      <div class="ord-detail-info-row"><span class="ord-detail-info-icon">💳</span><span>${ord.paymentType ?? '—'}</span></div>
+      ${ord.notes ? `<div class="ord-detail-info-row"><span class="ord-detail-info-icon">💬</span><span>${ord.notes}</span></div>` : ''}
+    </div>`;
+
+  document.getElementById('ordDetailFooter').innerHTML = `
+    <button class="btn-ord-detail-repeat" onclick="closeOrderDetail();repeatOrderFromApi(${idx})">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+      Repetir este pedido
+    </button>
+    <button class="btn-ord-detail-repeat" style="border-color:var(--border);color:var(--text-secondary)" onclick="_copyOrderLink('${ord.id}')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      Copiar enlace del pedido
+    </button>`;
+
+  const overlay = document.getElementById('ordDetailOverlay');
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  // Push deep-link URL so it can be shared
+  const sp = new URLSearchParams(location.search);
+  sp.set('pedido', ord.id);
+  history.pushState({pedido: ord.id}, '', `${location.pathname}?${sp}`);
+}
+
+function closeOrderDetail() {
+  const overlay = document.getElementById('ordDetailOverlay');
+  if (overlay) overlay.classList.remove('open');
+  document.body.style.overflow = 'hidden'; // orders panel still open
+  // Remove deep-link param from URL without adding a history entry
+  const sp = new URLSearchParams(location.search);
+  sp.delete('pedido');
+  const newUrl = sp.toString() ? `${location.pathname}?${sp}` : location.pathname;
+  history.replaceState(null, '', newUrl);
+}
+
+function _copyOrderLink(orderId) {
+  const sp = new URLSearchParams(location.search);
+  sp.set('pedido', orderId);
+  const url = `${location.origin}${location.pathname}?${sp}`;
+  navigator.clipboard.writeText(url)
+    .then(() => showToast('Enlace copiado', '🔗'))
+    .catch(() => {
+      // Fallback for browsers without clipboard API
+      const ta = document.createElement('textarea');
+      ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('Enlace copiado', '🔗');
+    });
 }
 
 function openOrdersHistory() {
