@@ -101,6 +101,9 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
 }
 /* Header — Dark mode */
 [data-theme="dark"] .header{background:#000;}
+[data-theme="dark"] .page-loader{background:#000;}
+[data-theme="dark"] .page-loader-brand span{color:#F15200;}
+[data-theme="dark"] .page-loader-dots span{background:rgba(255,255,255,.5);}
 [data-theme="dark"] .logo-text .logo-full>span,
 [data-theme="dark"] .logo-text .logo-short>span,
 [data-theme="dark"] .header-top .logo .logo-text .logo-full>span,
@@ -721,6 +724,7 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
 </div>
 
 <!-- PAGE LOADER -->
+<script>(function(){var t=localStorage.getItem('cy_theme');if(t)document.documentElement.dataset.theme=t;})()</script>
 <div class="page-loader" id="pageLoader" style="overflow:hidden">
   <div class="page-loader-inner">
     <div class="page-loader-brand">pide<span>fácil</span></div>
