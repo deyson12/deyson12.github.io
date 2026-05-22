@@ -8,7 +8,7 @@
 <link rel="icon" type="image/x-icon" href="./images/favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Baloo+2:wght@800&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -50,11 +50,13 @@
     text-decoration: none;
   }
   .topbar-logo-text {
-    font-size: 18px;
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 26px;
     font-weight: 800;
     color: #fff;
-    letter-spacing: -.4px;
+    letter-spacing: -0.5px;
   }
+  .topbar-logo-text span { color: #fff; }
   .topbar-title {
     color: rgba(255,255,255,.75);
     font-size: 13px;
@@ -152,7 +154,7 @@
 
 <div class="topbar">
   <a href="/">
-    <span class="topbar-logo-text">PideFácil</span>
+    <span class="topbar-logo-text">pide<span>fácil</span></span>
   </a>
   <div class="topbar-sep"></div>
   <span class="topbar-title">Términos y Condiciones</span>

@@ -32,9 +32,9 @@
 <!-- Google Fonts — non-blocking -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" media="print" onload="this.media='all'">
-<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap"></noscript>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&family=Baloo+2:wght@800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&family=Baloo+2:wght@800&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&family=Baloo+2:wght@800&display=swap"></noscript>
 
 <!-- app.css — non-blocking with preload -->
 <link rel="stylesheet" href="css/app.css" media="print" onload="this.media='all'">
@@ -53,8 +53,8 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
 .page-loader.hidden{display:none}
 .page-loader-inner{display:flex;flex-direction:column;align-items:center;gap:12px;transition:transform .35s cubic-bezier(.4,0,.2,1),opacity .35s ease}
 .page-loader.hiding .page-loader-inner{transform:scale(.85);opacity:0}
-.page-loader-logo{width:64px;height:64px;object-fit:contain;animation:loader-pulse 1.2s ease-in-out infinite;filter:brightness(0) invert(1)}
-.page-loader-brand{font-family:var(--font-head);font-weight:800;font-size:26px;color:#fff;letter-spacing:-.5px}
+.page-loader-logo{display:none}
+.page-loader-brand{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:28px;color:#fff;letter-spacing:-2px}
 .page-loader-brand span{color:#fff}
 .page-loader-dots{display:flex;gap:6px;margin-top:4px}
 .page-loader-dots span{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.7);animation:loader-bounce 1.2s ease-in-out infinite}
@@ -66,8 +66,8 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
 .header{position:sticky;top:0;z-index:100;background:#F15200;box-shadow:0 1px 3px rgba(0,0,0,.08);}
 .header-top{max-width:1400px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:12px;}
 .logo{display:flex;align-items:center;text-decoration:none;flex-shrink:0;gap:6px;background:none;padding:4px 2px;}
-.logo-img{width:32px;height:32px;object-fit:contain;flex-shrink:0;filter:brightness(0) invert(1);}
-.logo-text{font-family:var(--font-head);font-weight:800;font-size:20px;letter-spacing:-0.5px;}
+.logo-img{display:none}
+.logo-text{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:26px;letter-spacing:-0.5px;}
 .logo-text .logo-full,.logo-text .logo-short{color:#fff}
 .logo-text .logo-full>span,.logo-text .logo-short>span{color:#fff}
 .logo-text .logo-full{display:none}
@@ -180,8 +180,7 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
       <span class="ham-badge" id="hamBadge">0</span>
     </button>
     <a class="logo" href="#" onclick="return false">
-      <img class="logo-img" src="./images/favicon.ico" alt="PideFácil logo" width="28" height="28">
-      <span class="logo-text"><span class="logo-short">P<span>F</span></span><span class="logo-full">Pide<span>Fácil</span></span></span>
+      <span class="logo-text"><span class="logo-short">p<span>f</span></span><span class="logo-full">pide<span>fácil</span></span></span>
     </a>
     <div class="search-wrap">
       <input class="search-input" id="searchInput" type="text" placeholder="Buscar productos..." autocomplete="off" aria-label="Buscar productos">
@@ -251,7 +250,7 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
 <div class="ham-overlay" id="hamOverlay" onclick="closeHamDrawer()"></div>
 <div class="ham-drawer" id="hamDrawer" role="dialog" aria-modal="true" aria-label="Menú de navegación">
   <div class="ham-drawer-head">
-    <span class="ham-drawer-logo">Pide<span>Facil</span></span>
+    <span class="ham-drawer-logo">pide<span>fácil</span></span>
     <button class="ham-drawer-close" onclick="closeHamDrawer()" aria-label="Cerrar menú">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
     </button>
@@ -718,8 +717,7 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
 <!-- PAGE LOADER -->
 <div class="page-loader" id="pageLoader" style="overflow:hidden">
   <div class="page-loader-inner">
-    <img class="page-loader-logo" src="./images/favicon.ico" alt="PideFácil" width="48" height="48">
-    <div class="page-loader-brand"><span>Pide</span><span>Fácil</span></div>
+    <div class="page-loader-brand">pide<span>fácil</span></div>
     <div class="page-loader-dots"><span></span><span></span><span></span></div>
   </div>
 </div>

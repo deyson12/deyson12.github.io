@@ -7,7 +7,7 @@
 <link rel="icon" type="image/x-icon" href="./images/favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Baloo+2:wght@800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/app.css">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -38,8 +38,9 @@
   /* ── TOPBAR ── */
   .topbar { background: var(--primary); padding: 0 20px; height: 56px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
   .topbar-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
-  .topbar-logo img { width: 28px; height: 28px; filter: brightness(0) invert(1); }
-  .topbar-logo span { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: -.4px; }
+  .topbar-logo img { display: none; }
+  .topbar-logo span { font-family: 'Baloo 2', sans-serif; font-size: 26px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+  .topbar-logo span span { color: #fff; }
   .topbar-title { color: rgba(255,255,255,.7); font-size: 13px; font-weight: 500; margin-left: 4px; }
   .topbar-sep { width: 1px; height: 20px; background: rgba(255,255,255,.25); }
   .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
@@ -552,8 +553,7 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
   </button>
   <a class="topbar-logo" href="./index.html" title="Ir a la tienda">
-    <img src="./images/favicon.ico" alt="PideFácil">
-    <span>PideFácil</span>
+    <span>pide<span>fácil</span></span>
   </a>
   <div class="topbar-sep"></div>
   <span class="topbar-section-label" id="topbarSectionLabel">Pedidos</span>

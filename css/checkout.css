@@ -25,8 +25,8 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary)
 /* HEADER */
 .header{background:var(--bg-header);border-bottom:1px solid var(--border);box-shadow:var(--shadow-sm);padding:14px 20px;display:flex;align-items:center;gap:14px;}
 .logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
-.logo-img{width:32px;height:44px;object-fit:contain;}
-.logo-text{font-family:var(--font-head);font-weight:800;font-size:20px;color:var(--text-primary);}
+.logo-img{display:none;}
+.logo-text{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:26px;color:var(--text-primary);letter-spacing:-0.5px;}
 .logo-text span{color:var(--primary);}
 .header-back{margin-left:auto;display:flex;align-items:center;gap:7px;background:none;border:1.5px solid var(--border);padding:8px 16px;border-radius:var(--radius-full);font-family:var(--font-head);font-size:13px;font-weight:600;color:var(--text-secondary);cursor:pointer;transition:var(--transition);text-decoration:none;}
 .header-back:hover{border-color:var(--primary);color:var(--primary);}
