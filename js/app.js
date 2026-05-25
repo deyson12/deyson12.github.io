@@ -1576,6 +1576,7 @@ async function renderSearchDropdown(q) {
     const results = await _sr.json();
     if (!results || !results.length) throw new Error('empty');
     results.forEach(p => { if (!_productCache.has(p.id)) _productCache.set(p.id, normalizeProduct(p)); });
+    if (q !== lastLoggedQuery) { lastLoggedQuery = q; trackEvent('SEARCH_WITH_RESULTS', { query: q, count: results.length }); }
     dd.innerHTML = results.map(p =>
       `<div class="search-drop-item" onmousedown="openProduct('${p.id}');document.getElementById('searchInput').value='';closeSearchDropdown()">
         <img class="search-drop-img" src="${p.image}" alt="${p.name}" width="42" height="42" loading="lazy" decoding="async">
@@ -2130,6 +2131,8 @@ async function sendWhatsappOrder() {
 
   postOrderToApi({ fullItems, address: dir, paymentType: 'TRANSFERENCIA', couponCode: _appliedCoupon?.code || null, discountAmount: cuponDisc || null, lat: _deliveryLat, lng: _deliveryLng });
 
+  trackEvent('ORDER_PLACED', { total: finalTotal, itemCount: orderItems.length, paymentType: 'whatsapp' });
+
   // Record coupon use (fire-and-forget)
   if (_appliedCoupon?.code) {
     fetch(`${API_BASE}/api/coupons/use/${encodeURIComponent(_appliedCoupon.code)}`, { method: 'POST' }).catch(() => {});
@@ -2174,6 +2177,8 @@ function updateOrderBtn() {
 async function submitWithWompi(od) {
   const ref         = 'PF-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7).toUpperCase();
   const amountCents = Math.round(od.totalAmount * 100); // entero exacto, sin decimales flotantes
+
+  trackEvent('WOMPI_START', { total: od.totalAmount, itemCount: od.orderItems?.length ?? 0 });
 
   console.log('[WOMPI-DBG] === submitWithWompi START ===');
   console.log('[WOMPI-DBG] env:         ', WOMPI.env);
@@ -2275,6 +2280,7 @@ function confirmWompiPayment() {
     fetch(`${API_BASE}/api/coupons/use/${encodeURIComponent(_appliedCoupon.code)}`, { method: 'POST' }).catch(() => {});
   }
   closeWompiResult();
+  trackEvent('ORDER_PLACED', { total: od.totalAmount, itemCount: od.orderItems?.length ?? 0, paymentType: 'wompi' });
   window.open(`https://wa.me/${WA_PHONE}?text=${encodeURIComponent(msg)}`, '_blank');
   showToast('¡Pedido confirmado! Te contactaremos pronto 🙌', '');
 }

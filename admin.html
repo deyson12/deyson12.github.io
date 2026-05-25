@@ -793,6 +793,17 @@
     <div id="anGeoFunnel"><div class="an-empty">Cargando…</div></div>
   </div>
 
+  <!-- Comparativa vs mes anterior -->
+  <div class="an-section-label">📅 Comparativa vs mes anterior <span class="an-tip" data-tip="Compara el revenue, número de pedidos y ticket promedio del mes seleccionado versus el mes inmediatamente anterior. La flecha verde indica mejora, la roja indica caída.">?</span></div>
+  <div id="anComparativa" style="margin-bottom:20px"><div class="an-empty">Cargando…</div></div>
+
+  <!-- Nuevos vs recurrentes -->
+  <div class="an-section-label">👥 Clientes nuevos vs recurrentes <span class="an-tip" data-tip="De todos los compradores confirmados de este mes: cuántos hacen su primera compra (nuevos) vs cuántos ya habían comprado en meses anteriores (recurrentes). Un negocio saludable equilibra ambos.">?</span></div>
+  <div class="an-card" style="margin-bottom:20px">
+    <div class="an-card-title" style="margin-bottom:16px">¿Quiénes compraron este mes?</div>
+    <div id="anNewVsReturning"><div class="an-empty">Cargando…</div></div>
+  </div>
+
   <!-- Charts -->
   <div class="an-section-label">📊 Detalle</div>
   <div class="an-charts-grid">
@@ -817,8 +828,16 @@
       <div id="anByHour"><div class="an-empty">Cargando…</div></div>
     </div>
     <div class="an-card">
+      <div class="an-card-title">� Pedidos por día de la semana <span class="an-tip" data-tip="Cuántos pedidos confirmados se realizan en cada día de la semana. Útil para saber cuándo publicar, hacer promociones y tener más staff disponible.">?</span></div>
+      <div id="anByDow"><div class="an-empty">Cargando…</div></div>
+    </div>
+    <div class="an-card">
       <div class="an-card-title">💳 Ventas por método de pago <span class="an-tip" data-tip="Cuántos pedidos del mes se pagaron con cada método (Wompi, contra entrega, transferencia, etc.).">?</span></div>
       <div id="anByPayment"><div class="an-empty">Cargando…</div></div>
+    </div>
+    <div class="an-card">
+      <div class="an-card-title">💰 Revenue por método de pago <span class="an-tip" data-tip="Cuánto dinero generó cada método de pago en el mes. El ticket promedio de cada método puede ser muy diferente.">?</span></div>
+      <div id="anRevenueByPayment"><div class="an-empty">Cargando…</div></div>
     </div>
     <div class="an-card">
       <div class="an-card-title">👁️ Productos más vistos (30 días) <span class="an-tip" data-tip="Productos con más vistas de página en los últimos 30 días según el sistema de analytics. No equivale a ventas.">?</span></div>
@@ -827,6 +846,26 @@
     <div class="an-card">
       <div class="an-card-title">🔍 Búsquedas sin resultados (30 días) <span class="an-tip" data-tip="Términos que los clientes buscaron y no encontraron ningún producto. Son oportunidades de ampliar el catálogo.">?</span></div>
       <div id="anNoResults"><div class="an-empty">Cargando…</div></div>
+    </div>
+    <div class="an-card">
+      <div class="an-card-title">🔎 Top búsquedas con resultado (30 días) <span class="an-tip" data-tip="Qué buscan más los usuarios y sí encuentran algo. Si 'pollo' es #1 y solo tienes 2 productos de pollo, considera ampliar el catálogo en esa categoría.">?</span></div>
+      <div id="anTopSearches"><div class="an-empty">Cargando…</div></div>
+    </div>
+    <div class="an-card">
+      <div class="an-card-title">💳 Tasa de éxito Wompi <span class="an-tip" data-tip="De cada 100 usuarios que iniciaron el pago con Wompi, cuántos completaron el pedido. Tasa baja indica fricción en el flujo de pago. Los datos se acumulan desde este deploy.">?</span></div>
+      <div id="anWompiSuccess"><div class="an-empty">Cargando…</div></div>
+    </div>
+    <div class="an-card" style="grid-column:1/-1">
+      <div class="an-card-title">⏱️ Tiempo promedio de confirmación de pedido <span class="an-tip" data-tip="Tiempo promedio (en minutos) desde que se crea un pedido hasta que se confirma en el admin. Meta: menos de 30 minutos. Requiere el campo updated_at del deploy V35.">?</span></div>
+      <div id="anAvgConfirm"><div class="an-empty">Cargando…</div></div>
+    </div>
+    <div class="an-card" style="grid-column:1/-1">
+      <div class="an-card-title">🏆 LTV — Top clientes por valor histórico <span class="an-tip" data-tip="Los compradores que más dinero han gastado en total a lo largo del tiempo (no solo este mes). Son tus verdaderos VIPs — considera darles atención especial, cupones o trato prioritario.">?</span></div>
+      <div id="anLtv"><div class="an-empty">Cargando…</div></div>
+    </div>
+    <div class="an-card" style="grid-column:1/-1">
+      <div class="an-card-title">🪦 Productos sin ventas en 30 días <span class="an-tip" data-tip="Productos activos y visibles que ningún cliente ha comprado en los últimos 30 días. Son ruido en el catálogo — considera desactivarlos o ajustar precio/descripción.">?</span></div>
+      <div id="anDeadProducts"><div class="an-empty">Cargando…</div></div>
     </div>
     <div class="an-card">
       <div class="an-card-title">🏷️ Categorías más filtradas (30 días) <span class="an-tip" data-tip="Categorías que los clientes usaron más como filtro al navegar la tienda. Refleja el interés real del catálogo.">?</span></div>
@@ -839,6 +878,18 @@
     <div class="an-card">
       <div class="an-card-title">📣 Tráfico por fuente UTM (90 días) <span class="an-tip" data-tip="Visitantes únicos y visitas totales agrupados por utm_source. Los usuarios sin UTM se contabilizan como 'direct'. Cubre los últimos 90 días.">?</span></div>
       <div id="anTrafficSource"><div class="an-empty">Cargando…</div></div>
+    </div>
+    <div class="an-card">
+      <div class="an-card-title">🎯 Pedidos por fuente UTM <span class="an-tip" data-tip="Cuántos pedidos se originaron desde cada fuente UTM. Requiere que el cliente haya abierto el link con parámetro utm_source. Los datos se acumulan desde el deploy que agregó el evento ORDER_PLACED.">?</span></div>
+      <div id="anOrdersByUtm"><div class="an-empty">Cargando…</div></div>
+    </div>
+    <div class="an-card">
+      <div class="an-card-title">🛒 Abandono de carrito por producto <span class="an-tip" data-tip="Productos que los usuarios agregan al carrito pero con los que nunca llegan al checkout. Tasa alta = precio, descripción o foto pueden estar generando dudas. Últimos 30 días.">?</span></div>
+      <div id="anCartAbandonment"><div class="an-empty">Cargando…</div></div>
+    </div>
+    <div class="an-card" style="grid-column:1/-1">
+      <div class="an-card-title">👁️‍🗨️ Ratio vistas vs ventas por producto <span class="an-tip" data-tip="Cruza los productos más vistos (analytics) con sus ventas reales del mes. Un producto con muchas vistas y pocas ventas puede tener problema de precio, descripción o foto. Útimos 30 días de vistas / mes actual de ventas.">?</span></div>
+      <div id="anViewsVsSales"><div class="an-empty">Cargando…</div></div>
     </div>
     <div class="an-card" style="grid-column:1/-1">
       <div class="an-card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
@@ -2206,13 +2257,25 @@ async function loadAnalytics() {
       if (ro.ok) allOrders = await ro.json();
     } catch (_) {}
 
-    const res = await fetch(`${API_BASE}/api/analytics/stats?excludeLoopback=${document.getElementById('chkExcludeLocal')?.checked ?? true}`, {
+    // Fetch previous month orders for comparativa
+    let prevMonthOrders = [];
+    try {
+      const [y, m] = currentMonth.split('-').map(Number);
+      const pd = new Date(y, m - 2, 1);
+      const prevDate = `${pd.getFullYear()}-${String(pd.getMonth()+1).padStart(2,'0')}-01`;
+      const rp = await fetch(`${API_BASE}/api/orders/seller/${_FIXED_SELLER_ID}/month/${prevDate}`, {
+        headers: { 'Authorization': `Bearer ${getToken()}` }
+      });
+      if (rp.ok) prevMonthOrders = await rp.json();
+    } catch (_) {}
+
+    const res = await fetch(`${API_BASE}/api/analytics/stats?excludeLoopback=${document.getElementById('chkExcludeLocal')?.checked ?? true}&sellerId=${_FIXED_SELLER_ID}`, {
       headers: { 'Authorization': `Bearer ${getToken()}` }
     });
     if (res.status === 401 || res.status === 403) { sessionStorage.removeItem(AUTH_KEY); location.reload(); return; }
     if (!res.ok) throw new Error(res.statusText);
     const s = await res.json();
-    renderAnalytics(s);
+    renderAnalytics(s, prevMonthOrders);
   } catch (e) {
     showToast('Error al cargar analytics: ' + e.message);
   } finally {
@@ -2222,7 +2285,7 @@ async function loadAnalytics() {
   }
 }
 
-function renderAnalytics(s) {
+function renderAnalytics(s, prevMonthOrders = []) {
   // ── Traffic stats ──────────────────────────────────────────────
   document.getElementById('anVisitorsToday').textContent  = s.uniqueVisitorsToday   ?? '—';
   document.getElementById('anVisitorsMonth').textContent  = s.uniqueVisitorsThisMonth ?? '—';
@@ -2282,6 +2345,83 @@ function renderAnalytics(s) {
   _setHealth('anNoImage',  noImage,  allProducts.length);
   _setHealth('anNoDrop',   noDrop,   allProducts.length);
   _setHealth('anInactive', inactive, allProducts.length);
+
+  // ── Comparativa vs mes anterior ────────────────────────────────
+  const prevConfirmed = prevMonthOrders.filter(o => o.status === 'CONFIRMADO');
+  const prevRevenue   = prevConfirmed.reduce((s, o) => s + orderTotal(o), 0);
+  const prevTicket    = prevConfirmed.length ? prevRevenue / prevConfirmed.length : 0;
+  const _delta = (cur, prev) => {
+    if (!prev) return null;
+    return Math.round((cur - prev) / prev * 100);
+  };
+  const _deltaHtml = (pct, invertColor = false) => {
+    if (pct == null) return `<span style="font-size:11px;color:var(--text-muted)">sin datos prev.</span>`;
+    const good = invertColor ? pct < 0 : pct > 0;
+    const col  = pct === 0 ? 'var(--text-muted)' : good ? '#22c55e' : '#ef4444';
+    const arrow = pct > 0 ? '▲' : pct < 0 ? '▼' : '→';
+    return `<span style="font-size:13px;font-weight:800;color:${col}">${arrow} ${Math.abs(pct)}%</span>`;
+  };
+  const compItems = [
+    { icon: '💰', label: 'Revenue confirmado', cur: totalRevenueMes, prev: prevRevenue, fmt: v => fmtPrice(v), isPrice: true },
+    { icon: '📦', label: 'Pedidos confirmados', cur: confirmed.length, prev: prevConfirmed.length, fmt: v => v },
+    { icon: '🎫', label: 'Ticket promedio',     cur: ticketPromedio ?? 0, prev: prevTicket, fmt: v => fmtPrice(v), isPrice: true },
+  ];
+  document.getElementById('anComparativa').innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">
+      ${compItems.map(ci => {
+        const d = _delta(ci.cur, ci.prev);
+        return `<div style="background:var(--bg-card);border-radius:12px;padding:16px 18px;border:1px solid var(--border)">
+          <div style="font-size:20px;margin-bottom:6px">${ci.icon}</div>
+          <div style="font-size:11px;font-weight:700;color:var(--text-secondary);margin-bottom:8px">${ci.label}</div>
+          <div style="font-size:22px;font-weight:900;color:var(--text-primary);line-height:1.1;margin-bottom:6px">${ci.fmt(ci.cur)}</div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            ${_deltaHtml(d)}
+            <span style="font-size:11px;color:var(--text-muted)">vs ${ci.fmt(ci.prev)} anterior</span>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+
+  // ── Nuevos vs recurrentes ──────────────────────────────────────
+  const nvr      = s.newVsReturning ?? { newBuyers: 0, returningBuyers: 0 };
+  const nvrNew   = Number(nvr.newBuyers ?? 0);
+  const nvrRet   = Number(nvr.returningBuyers ?? 0);
+  const nvrTotal = nvrNew + nvrRet;
+  const pctNew   = nvrTotal > 0 ? Math.round(nvrNew / nvrTotal * 100) : 0;
+  const pctRet   = 100 - pctNew;
+  const nvrNote  = nvrTotal === 0
+    ? `<div style="margin-top:12px;padding:10px 14px;border-radius:8px;background:var(--border);font-size:11px;color:var(--text-muted)">⏳ Sin pedidos confirmados aún para este mes.</div>`
+    : pctNew > 70
+    ? `<div style="margin-top:12px;padding:10px 14px;border-radius:8px;background:#eff6ff;border:1.5px solid #93c5fd;font-size:11px;color:#1d4ed8">📣 El <strong>${pctNew}%</strong> son clientes nuevos — buen crecimiento. Trabaja la retención para que vuelvan.</div>`
+    : pctRet > 70
+    ? `<div style="margin-top:12px;padding:10px 14px;border-radius:8px;background:#f0fdf4;border:1.5px solid #86efac;font-size:11px;color:#166534">🔄 El <strong>${pctRet}%</strong> son recurrentes — excelente retención. Busca atraer clientes nuevos para crecer.</div>`
+    : `<div style="margin-top:12px;padding:10px 14px;border-radius:8px;background:#f0fdf4;border:1.5px solid #86efac;font-size:11px;color:#166534">✅ Buen balance entre clientes nuevos (<strong>${pctNew}%</strong>) y recurrentes (<strong>${pctRet}%</strong>).</div>`;
+  document.getElementById('anNewVsReturning').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div style="background:var(--bg);border-radius:12px;padding:14px 16px;border:1px solid var(--border);text-align:center">
+        <div style="font-size:22px;margin-bottom:4px">🆕</div>
+        <div style="font-size:28px;font-weight:900;color:#6366f1;line-height:1.1">${nvrNew}</div>
+        <div style="font-size:11px;font-weight:700;color:var(--text-primary);margin-top:5px">Nuevos</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:2px">primera compra</div>
+        <div style="margin-top:8px;font-size:14px;font-weight:900;color:#6366f1">${pctNew}%</div>
+      </div>
+      <div style="background:var(--bg);border-radius:12px;padding:14px 16px;border:1px solid var(--border);text-align:center">
+        <div style="font-size:22px;margin-bottom:4px">🔄</div>
+        <div style="font-size:28px;font-weight:900;color:#16a34a;line-height:1.1">${nvrRet}</div>
+        <div style="font-size:11px;font-weight:700;color:var(--text-primary);margin-top:5px">Recurrentes</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:2px">ya habían comprado</div>
+        <div style="margin-top:8px;font-size:14px;font-weight:900;color:#16a34a">${pctRet}%</div>
+      </div>
+    </div>
+    ${nvrTotal > 0 ? `<div style="height:12px;border-radius:6px;overflow:hidden;display:flex;background:var(--border)">
+      <div style="width:${pctNew}%;background:#6366f1;transition:width .4s" title="Nuevos: ${nvrNew}"></div>
+      <div style="width:${pctRet}%;background:#16a34a;transition:width .4s" title="Recurrentes: ${nvrRet}"></div>
+    </div>
+    <div style="display:flex;gap:16px;margin-top:6px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-secondary)"><div style="width:10px;height:10px;border-radius:2px;background:#6366f1;flex-shrink:0"></div>Nuevos ${pctNew}%</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-secondary)"><div style="width:10px;height:10px;border-radius:2px;background:#16a34a;flex-shrink:0"></div>Recurrentes ${pctRet}%</div>
+    </div>` : ''}
+    ${nvrNote}`;
 
   // ── Bar chart helper ───────────────────────────────────────────
   const barChart = (items, getLabel, getValue, color) => {
@@ -2376,6 +2516,55 @@ function renderAnalytics(s) {
     </div>`;
   }).join('')}</div>`;
   document.getElementById('anByHour').innerHTML = orders.length ? hourHtml : '<div class="an-empty">Sin datos aún</div>';
+
+  // ── Pedidos por día de la semana ───────────────────────────────
+  const DOW_LABELS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+  const DOW_COLORS = ['#6366f1','#3b82f6','#06b6d4','#10b981','#f59e0b','#ef4444','#8b5cf6'];
+  const dowMap = [0,0,0,0,0,0,0];
+  confirmed.forEach(o => { if (o.createdAt) dowMap[new Date(o.createdAt).getDay()]++; });
+  const maxDow = Math.max(...dowMap, 1);
+  const dowPeak = dowMap.indexOf(Math.max(...dowMap));
+  document.getElementById('anByDow').innerHTML = confirmed.length
+    ? `<div class="an-hbar-chart">${DOW_LABELS.map((d, i) => `
+        <div class="an-hbar-row">
+          <div class="an-hbar-label" style="font-weight:${i===dowPeak?'800':'500'};color:${i===dowPeak?DOW_COLORS[i]:'var(--text-secondary)'}">${d}</div>
+          <div class="an-hbar-track"><div class="an-hbar-fill" style="width:${Math.round((dowMap[i]/maxDow)*100)}%;background:${DOW_COLORS[i]}"></div></div>
+          <div class="an-hbar-count" style="color:${i===dowPeak?DOW_COLORS[i]:'var(--text-muted)'}">${dowMap[i]}</div>
+        </div>`).join('')}</div>
+        <div style="margin-top:10px;font-size:11px;color:var(--text-secondary)">📈 Pico: <strong>${DOW_LABELS[dowPeak]}</strong> con <strong>${dowMap[dowPeak]}</strong> pedidos confirmados este mes.</div>`
+    : '<div class="an-empty">Sin datos aún</div>';
+
+  // ── Revenue por método de pago ─────────────────────────────────
+  const PAYMENT_ICONS = { EFECTIVO: '💵', TRANSFERENCIA: '🏦', WOMPI: '💳' };
+  const revPayMap = {};
+  confirmed.forEach(o => {
+    const k = o.paymentType ?? 'DESCONOCIDO';
+    if (!revPayMap[k]) revPayMap[k] = { count: 0, revenue: 0 };
+    revPayMap[k].count++;
+    revPayMap[k].revenue += orderTotal(o);
+  });
+  const revPayList = Object.entries(revPayMap).sort((a,b) => b[1].revenue - a[1].revenue);
+  const maxRevPay  = revPayList[0]?.[1].revenue ?? 1;
+  document.getElementById('anRevenueByPayment').innerHTML = confirmed.length
+    ? revPayList.map(([k, v]) => {
+        const icon   = PAYMENT_ICONS[k] ?? '💰';
+        const ticket = v.count > 0 ? Math.round(v.revenue / v.count) : 0;
+        const pct    = Math.max(4, Math.round((v.revenue / maxRevPay) * 100));
+        return `<div style="margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+            <span style="font-size:12px;font-weight:700">${icon} ${k}</span>
+            <span style="font-size:11px;color:var(--text-secondary)">${v.count} pedidos · ticket ${fmtPrice(ticket)}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="flex:1;height:20px;background:var(--border);border-radius:4px;overflow:hidden">
+              <div style="height:100%;width:${pct}%;background:#16a34a;border-radius:4px;display:flex;align-items:center;padding-left:6px">
+                <span style="font-size:10px;font-weight:800;color:#fff;white-space:nowrap">${fmtPrice(v.revenue)}</span>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      }).join('')
+    : '<div class="an-empty">Sin datos aún</div>';
 
   // ── Top Buyers ────────────────────────────────────────────────
   const buyerMap = {};
@@ -2560,6 +2749,201 @@ function renderAnalytics(s) {
         </div>`;
       }).join('')}</div>`
     : '<div class="an-empty">Sin datos aún</div>';
+
+  // ── Pedidos por fuente UTM ─────────────────────────────────────
+  const utmOrders = s.ordersByUtmSource ?? [];
+  const maxUtmO   = Math.max(...utmOrders.map(r => Number(r.orders)), 1);
+  document.getElementById('anOrdersByUtm').innerHTML = utmOrders.length
+    ? `<div style="margin-bottom:8px;font-size:11px;color:var(--text-muted)">Los datos se acumulan desde que se activó el tracking ORDER_PLACED.</div>
+       <div class="an-hbar-chart">${utmOrders.map(r => {
+          const label = UTM_SOURCE_LABELS[String(r.source).toLowerCase()] ?? ('🔗 ' + r.source);
+          const pct   = Math.round((Number(r.orders) / maxUtmO) * 100);
+          return `<div class="an-hbar-row">
+            <div class="an-hbar-label" style="width:90px;font-size:11px">${label}</div>
+            <div class="an-hbar-track"><div class="an-hbar-fill" style="width:${pct}%;background:#16a34a"></div></div>
+            <div style="font-size:11px;font-weight:700;color:var(--text-primary);min-width:28px;text-align:right">${r.orders}</div>
+          </div>`;
+        }).join('')}</div>`
+    : '<div class="an-empty">Sin datos aún — se registran desde el próximo pedido</div>';
+
+  // ── Abandono de carrito por producto ───────────────────────────
+  const abandon = s.cartAbandonmentByProduct ?? [];
+  document.getElementById('anCartAbandonment').innerHTML = abandon.length
+    ? abandon.map(r => {
+        const cart     = Number(r.cartSessions ?? 0);
+        const checkout = Number(r.checkoutSessions ?? 0);
+        const lost     = cart - checkout;
+        const rate     = cart > 0 ? Math.round((lost / cart) * 100) : 0;
+        const col      = rate >= 70 ? '#ef4444' : rate >= 40 ? '#f59e0b' : '#22c55e';
+        return `<div class="an-bar-row" style="align-items:flex-start;flex-direction:column;gap:4px;padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;width:100%;align-items:center">
+            <div style="font-size:12px;font-weight:700;color:var(--text-primary)">${r.name ?? r.productId}</div>
+            <div style="font-size:13px;font-weight:900;color:${col}">${rate}% abandono</div>
+          </div>
+          <div style="height:8px;border-radius:4px;overflow:hidden;display:flex;background:var(--border);width:100%">
+            <div style="width:${100-rate}%;background:#22c55e" title="Llegaron a checkout: ${checkout}"></div>
+            <div style="width:${rate}%;background:${col}" title="Abandonaron: ${lost}"></div>
+          </div>
+          <div style="display:flex;gap:12px;font-size:10px;color:var(--text-muted)">
+            <span>${cart} al carrito</span><span>${checkout} a checkout</span><span style="color:${col}">${lost} abandonaron</span>
+          </div>
+        </div>`;
+      }).join('')
+    : '<div class="an-empty">Sin datos aún</div>';
+
+  // ── Ratio vistas vs ventas ─────────────────────────────────────
+  const salesByProd = {};
+  confirmed.forEach(o => (o.products ?? []).forEach(p => {
+    const id = String(p.product?.id ?? p.productId ?? '');
+    if (id) salesByProd[id] = (salesByProd[id] || 0) + (p.quantity ?? 1);
+  }));
+  const viewsVsSales = (s.topViewedProducts ?? []).map(vp => ({
+    id:    String(vp.productId),
+    name:  vp.name,
+    views: Number(vp.views),
+    sales: salesByProd[String(vp.productId)] || 0,
+  })).sort((a, b) => b.views - a.views);
+  const maxVVS = Math.max(...viewsVsSales.map(v => v.views), 1);
+  document.getElementById('anViewsVsSales').innerHTML = viewsVsSales.length
+    ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;padding:0 4px">
+        <span>Producto</span><span style="text-align:right">Vistas · Ventas · Conversión</span>
+       </div>
+       ${viewsVsSales.map(v => {
+          const convPct = v.views > 0 ? (v.sales / v.views * 100).toFixed(1) : '0.0';
+          const convNum = parseFloat(convPct);
+          const convCol = convNum >= 5 ? '#22c55e' : convNum >= 1 ? '#f59e0b' : v.views < 10 ? 'var(--text-muted)' : '#ef4444';
+          const barW    = Math.max(2, Math.round((v.views / maxVVS) * 100));
+          const tag     = v.sales === 0 && v.views >= 20
+            ? `<span style="font-size:9px;background:#fef2f2;color:#dc2626;border-radius:4px;padding:1px 5px;font-weight:700">sin ventas</span>`
+            : '';
+          return `<div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:6px 4px;border-bottom:1px solid var(--border)">
+            <div>
+              <div style="font-size:11px;font-weight:700;color:var(--text-primary);margin-bottom:3px">${v.name} ${tag}</div>
+              <div style="height:6px;border-radius:3px;overflow:hidden;background:var(--border)">
+                <div style="width:${barW}%;height:100%;background:#6366f1"></div>
+              </div>
+            </div>
+            <div style="text-align:right;font-size:11px;white-space:nowrap">
+              <span style="color:var(--text-secondary)">${v.views} 👁</span>
+              <span style="color:var(--text-primary);font-weight:700;margin:0 4px">${v.sales} 📦</span>
+              <span style="color:${convCol};font-weight:800">${convPct}%</span>
+            </div>
+          </div>`;
+        }).join('')}`
+    : '<div class="an-empty">Sin datos aún</div>';
+
+  // ── Top búsquedas con resultado ────────────────────────────────
+  const topSearches = s.topSearchesWithResults ?? [];
+  const maxTS = topSearches[0]?.total ?? 1;
+  document.getElementById('anTopSearches').innerHTML = topSearches.length
+    ? topSearches.map(r => `
+        <div class="an-bar-row">
+          <div class="an-bar-label">🔎 ${r.query}</div>
+          <div class="an-bar-track"><div class="an-bar-fill" style="width:${Math.round((Number(r.total)/maxTS)*100)}%;background:#6366f1"></div></div>
+          <div class="an-bar-count">${r.total}</div>
+        </div>`).join('')
+    : '<div class="an-empty">Sin datos aún — se registran desde este deploy</div>';
+
+  // ── Tasa de éxito Wompi ────────────────────────────────────────
+  const ws       = s.wompiSuccess ?? {};
+  const wsStart  = Number(ws.wompiStarts  ?? 0);
+  const wsPlaced = Number(ws.wompiPlaced  ?? 0);
+  const wsRate   = wsStart > 0 ? Math.round((wsPlaced / wsStart) * 100) : null;
+  const wsCol    = wsRate == null ? '#9ca3af' : wsRate >= 60 ? '#22c55e' : wsRate >= 30 ? '#f59e0b' : '#ef4444';
+  const wsLabel  = wsRate == null ? '—' : wsRate >= 60 ? '🟢 Buena' : wsRate >= 30 ? '🟡 Media' : '🔴 Baja';
+  document.getElementById('anWompiSuccess').innerHTML =
+    `<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <div style="flex:1;min-width:200px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+          <div style="background:var(--bg);border-radius:10px;padding:12px;border:1px solid var(--border);text-align:center">
+            <div style="font-size:22px;font-weight:900;color:#6366f1">${wsStart}</div>
+            <div style="font-size:10px;font-weight:700;color:var(--text-secondary);margin-top:3px">Iniciaron Wompi</div>
+          </div>
+          <div style="background:var(--bg);border-radius:10px;padding:12px;border:1px solid var(--border);text-align:center">
+            <div style="font-size:22px;font-weight:900;color:#16a34a">${wsPlaced}</div>
+            <div style="font-size:10px;font-weight:700;color:var(--text-secondary);margin-top:3px">Completaron pedido</div>
+          </div>
+        </div>
+        ${wsStart > 0 ? `<div style="height:10px;border-radius:5px;overflow:hidden;display:flex;background:var(--border)">
+          <div style="width:${wsRate}%;background:#16a34a;transition:width .4s"></div>
+          <div style="flex:1;background:#ef4444"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px;color:var(--text-muted)">
+          <span style="color:#16a34a">✔ Completaron ${wsRate}%</span>
+          <span style="color:#ef4444">✘ Abandonaron ${100-wsRate}%</span>
+        </div>` : '<div style="font-size:11px;color:var(--text-muted)">⏳ Sin datos — se registran desde el próximo intento Wompi.</div>'}
+      </div>
+      <div style="text-align:center;flex-shrink:0">
+        <div style="font-size:40px;font-weight:900;color:${wsCol}">${wsRate != null ? wsRate + '%' : '—'}</div>
+        <div style="font-size:12px;font-weight:700;color:${wsCol}">${wsLabel} conversión</div>
+      </div>
+    </div>`;
+
+  // ── Tiempo promedio de confirmación ───────────────────────────
+  const avgMin = s.avgConfirmationMinutes != null ? Math.round(Number(s.avgConfirmationMinutes)) : null;
+  const avgCol  = avgMin == null ? '#9ca3af' : avgMin <= 30 ? '#22c55e' : avgMin <= 120 ? '#f59e0b' : '#ef4444';
+  const avgLabel = avgMin == null ? '—' : avgMin <= 30 ? '🟢 Excelente (< 30 min)' : avgMin <= 120 ? '🟡 Mejorable (< 2h)' : '🔴 Lento (> 2h)';
+  const avgFmt   = avgMin == null ? '—' : avgMin < 60 ? `${avgMin} min` : `${Math.floor(avgMin/60)}h ${avgMin%60}m`;
+  document.getElementById('anAvgConfirm').innerHTML =
+    `<div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+      <div style="flex:1;min-width:200px">
+        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6;margin-bottom:8px">
+          Tiempo promedio desde que el cliente envía el pedido hasta que se marca como <strong>Confirmado</strong> en el admin.
+          Meta: <strong style="color:#22c55e">menos de 30 minutos</strong>.
+        </div>
+        ${avgMin == null ? '<div style="font-size:11px;color:var(--text-muted)">⏳ Requiere el campo updated_at (migración V35). Disponible tras el redeploy y primeras confirmaciones.</div>' : ''}
+      </div>
+      <div style="text-align:center;flex-shrink:0">
+        <div style="font-size:40px;font-weight:900;color:${avgCol}">${avgFmt}</div>
+        <div style="font-size:12px;font-weight:700;color:${avgCol}">${avgLabel}</div>
+      </div>
+    </div>`;
+
+  // ── LTV — Top clientes ────────────────────────────────────────
+  const ltv = s.topBuyersByLtv ?? [];
+  document.getElementById('anLtv').innerHTML = ltv.length
+    ? `<div style="margin-bottom:8px;font-size:11px;color:var(--text-muted)">Revenue total histórico por cliente (solo pedidos CONFIRMADO).</div>
+       ${ltv.map((b, i) => {
+          const ltval  = Number(b.ltv);
+          const maxLtv = Number(ltv[0].ltv);
+          const pct    = Math.max(4, Math.round((ltval / maxLtv) * 100));
+          const medal  = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i+1}`;
+          return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <div style="font-size:16px;width:28px;text-align:center;flex-shrink:0">${medal}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:12px;font-weight:700;color:var(--text-primary);margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${b.buyerName ?? '—'}">${b.buyerName ?? '—'}</div>
+              <div style="height:6px;border-radius:3px;overflow:hidden;background:var(--border)">
+                <div style="width:${pct}%;height:100%;background:#6366f1"></div>
+              </div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              <div style="font-size:12px;font-weight:900;color:#6366f1">${fmtPrice(ltval)}</div>
+              <div style="font-size:10px;color:var(--text-muted)">${b.totalOrders} pedidos</div>
+            </div>
+          </div>`;
+        }).join('')}`
+    : '<div class="an-empty">Sin datos — requiere buyer_id en pedidos</div>';
+
+  // ── Productos sin ventas (catálogo muerto) ────────────────────
+  const dead30 = s.productsWithoutSales30d ?? [];
+  const dead60 = s.productsWithoutSales60d ?? [];
+  const deadEl  = document.getElementById('anDeadProducts');
+  if (!dead30.length && !dead60.length) {
+    deadEl.innerHTML = '<div class="an-empty">¡Genial! Todos los productos activos se han vendido en los últimos 30 días.</div>';
+  } else {
+    const deadNote = dead30.length > 8 ? `<div style="margin-top:10px;padding:10px 14px;border-radius:8px;background:#fef2f2;border:1.5px solid #fca5a5;font-size:11px;color:#7f1d1d">⚠️ Tienes <strong>${dead30.length} productos</strong> activos sin ninguna venta en 30 días. Considera desactivarlos o revisar precio y descripción.</div>` : '';
+    deadEl.innerHTML = `<div style="margin-bottom:8px;font-size:11px;color:var(--text-muted)">${dead30.length} producto${dead30.length!==1?'s':''} activo${dead30.length!==1?'s':''} sin ventas en los últimos 30 días:</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px">
+        ${dead30.slice(0,20).map(p => `
+          <div style="background:var(--bg);border-radius:10px;border:1px solid var(--border);overflow:hidden;display:flex;align-items:center;gap:8px;padding:8px 10px">
+            ${p.image ? `<img src="${p.image}" width="36" height="36" style="border-radius:6px;object-fit:cover;flex-shrink:0" loading="lazy" alt="">` : '<div style="width:36px;height:36px;border-radius:6px;background:var(--border);flex-shrink:0"></div>'}
+            <div style="min-width:0">
+              <div style="font-size:11px;font-weight:700;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.name}">${p.name}</div>
+              <div style="font-size:9px;color:var(--text-muted);margin-top:2px">${p.lastSaleAt ? 'Última: ' + String(p.lastSaleAt).substring(0,10) : 'Nunca vendido'}</div>
+            </div>
+          </div>`).join('')}
+      </div>${deadNote}`;
+  }
 
   // ── Geo friction funnel ────────────────────────────────────────
   const funnelMap = Object.fromEntries((s.conversionFunnel ?? []).map(f => [f.step, f.sessions]));
