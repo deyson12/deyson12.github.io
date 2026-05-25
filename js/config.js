@@ -76,3 +76,61 @@ const WOMPI = {
   currency:    'COP',
   redirectUrl: 'https://pidefacil.shop/wompi-checkout.html',
 };
+
+// ── Dev environment badges ────────────────────────────────────
+// Shown only on localhost/127.0.0.1. Warns if local is hitting prod APIs.
+(function() {
+  const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+  if (!isLocal) return;
+
+  const apiIsProd   = typeof API_BASE  !== 'undefined' && API_BASE.includes('run.app');
+  const wompiIsProd = typeof WOMPI_ENV !== 'undefined' && WOMPI_ENV === 'prod';
+
+  const badges = [];
+  if (apiIsProd) {
+    badges.push({ text: 'LOCAL · API PDN', color: '#ef4444', title: 'Estás en local pero apuntando a la API de producción' });
+  } else {
+    badges.push({ text: 'LOCAL', color: '#6366f1', title: 'Ambiente local — API local (seguro)' });
+  }
+  if (wompiIsProd) {
+    badges.push({ text: 'WOMPI · PDN', color: '#f59e0b', title: '⚠️ Wompi apunta a producción — los cobros son REALES' });
+  }
+
+  const wrap = document.createElement('div');
+  wrap.style.cssText = [
+    'position:fixed', 'top:50%', 'left:10px', 'z-index:99999',
+    'display:flex', 'flex-direction:column', 'gap:5px',
+    'pointer-events:none',
+    'transform:translateY(-50%)',
+  ].join(';');
+
+  badges.forEach(b => {
+    const el = document.createElement('div');
+    el.title = b.title;
+    el.textContent = b.text;
+    el.style.cssText = [
+      `background:${b.color}`,
+      'color:#fff',
+      'border:none',
+      'font-family:ui-monospace,monospace',
+      'font-size:13px',
+      'font-weight:800',
+      'letter-spacing:.12em',
+      'text-transform:uppercase',
+      'padding:7px 16px',
+      'border-radius:8px',
+      'pointer-events:auto',
+      'cursor:default',
+      'line-height:1',
+      'box-shadow:0 2px 10px rgba(0,0,0,.35)',
+    ].join(';');
+    wrap.appendChild(el);
+  });
+
+  // Wait for body to be available
+  if (document.body) {
+    document.body.appendChild(wrap);
+  } else {
+    document.addEventListener('DOMContentLoaded', () => document.body.appendChild(wrap));
+  }
+})();

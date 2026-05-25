@@ -786,6 +786,13 @@
     </div>
   </div>
 
+  <!-- Geo friction -->
+  <div class="an-section-label">🧭 Fricción de ubicación <span class="an-tip" data-tip="Muestra cuántos usuarios abrieron la tienda, cuántos confirmaron su dirección al inicio y cuántos la saltaron. Una tasa alta de 'Saltaron' indica que el modal de dirección genera fricción y puede estar reduciendo conversión.">?</span></div>
+  <div class="an-card" style="margin-bottom:20px">
+    <div class="an-card-title" style="margin-bottom:16px">¿Qué hacen los visitantes con el modal de dirección?</div>
+    <div id="anGeoFunnel"><div class="an-empty">Cargando…</div></div>
+  </div>
+
   <!-- Charts -->
   <div class="an-section-label">📊 Detalle</div>
   <div class="an-charts-grid">
@@ -2407,19 +2414,95 @@ function renderAnalytics(s) {
 
   // ── Funnel ─────────────────────────────────────────────────────
   const funnel = s.conversionFunnel ?? [];
-  const funnelColors  = { PAGE_VIEW: '#6366f1', CART_ADD: '#f59e0b', CHECKOUT_START: '#3b82f6', ORDER_PLACED: '#16a34a' };
-  const funnelLabels  = { PAGE_VIEW: 'Visitas', CART_ADD: 'Al carrito', CHECKOUT_START: 'Checkout', ORDER_PLACED: 'Pedido' };
-  const maxF = funnel[0]?.sessions ?? 1;
-  document.getElementById('anFunnel').innerHTML = funnel.length
-    ? funnel.map(f => `
-        <div class="an-funnel-row">
-          <div class="an-funnel-label">${funnelLabels[f.step] ?? f.step}</div>
-          <div class="an-funnel-track">
-            <div class="an-funnel-fill" style="width:${Math.max(6, Math.round((f.sessions/maxF)*100))}%;background:${funnelColors[f.step] ?? '#6366f1'}">
-              ${f.sessions}
-            </div>
-          </div>
-        </div>`).join('')
+  const FUNNEL_META = {
+    PAGE_VIEW:      { icon: '👁️',  label: 'Visitas',     sub: 'abrieron la tienda',    color: '#6366f1' },
+    CART_ADD:       { icon: '🛒',  label: 'Al carrito',  sub: 'agregaron un producto', color: '#f59e0b' },
+    CHECKOUT_START: { icon: '💳',  label: 'Checkout',    sub: 'iniciaron el pago',     color: '#3b82f6' },
+    ORDER_PLACED:   { icon: '✅',  label: 'Pedido',      sub: 'completaron el pedido', color: '#16a34a' },
+  };
+  const FUNNEL_STEPS = ['PAGE_VIEW','CART_ADD','CHECKOUT_START','ORDER_PLACED'];
+  const funnelMap2 = Object.fromEntries(funnel.map(f => [f.step, f.sessions]));
+  const fBase = funnelMap2['PAGE_VIEW'] ?? 1;
+
+  const fStatCards = FUNNEL_STEPS.map((step, i) => {
+    const m     = FUNNEL_META[step];
+    const count = funnelMap2[step] ?? 0;
+    const pctBase = fBase > 0 ? Math.round((count / fBase) * 100) : 0;
+    const prev    = i > 0 ? (funnelMap2[FUNNEL_STEPS[i - 1]] ?? 0) : null;
+    const pctPrev = (prev !== null && prev > 0) ? Math.round((count / prev) * 100) : null;
+    const convCol = pctPrev == null ? m.color : pctPrev >= 50 ? '#22c55e' : pctPrev >= 20 ? '#f59e0b' : '#ef4444';
+    const foot = pctPrev !== null
+      ? `<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);display:flex;justify-content:center;gap:10px;align-items:center">
+           <div style="text-align:center">
+             <div style="font-size:14px;font-weight:900;color:${convCol}">${pctPrev}%</div>
+             <div style="font-size:9px;color:var(--text-muted)">continuaron</div>
+           </div>
+           <div style="width:1px;height:24px;background:var(--border)"></div>
+           <div style="text-align:center">
+             <div style="font-size:14px;font-weight:900;color:var(--text-muted)">${pctBase}%</div>
+             <div style="font-size:9px;color:var(--text-muted)">del total</div>
+           </div>
+         </div>`
+      : `<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
+           <span style="font-size:13px;font-weight:900;color:${m.color}">100%</span>
+           <span style="font-size:9px;color:var(--text-muted);margin-left:3px">base</span>
+         </div>`;
+    return `<div style="background:var(--bg);border-radius:12px;padding:14px 16px;border:1px solid var(--border);text-align:center">
+      <div style="font-size:22px;margin-bottom:4px">${m.icon}</div>
+      <div style="font-size:26px;font-weight:900;color:${m.color};line-height:1.1">${count.toLocaleString()}</div>
+      <div style="font-size:11px;font-weight:700;color:var(--text-primary);margin-top:5px">${m.label}</div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:2px">${m.sub}</div>
+      ${foot}
+    </div>`;
+  }).join('');
+
+  const fBars = FUNNEL_STEPS.map(step => {
+    const m     = FUNNEL_META[step];
+    const count = funnelMap2[step] ?? 0;
+    const pct   = fBase > 0 ? Math.max(4, Math.round((count / fBase) * 100)) : 4;
+    const pctLbl = fBase > 0 ? Math.round((count / fBase) * 100) : 0;
+    return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <div style="font-size:16px;width:24px;text-align:center;flex-shrink:0">${m.icon}</div>
+      <div style="width:88px;font-size:11px;font-weight:700;color:var(--text-secondary);flex-shrink:0">${m.label}</div>
+      <div style="flex:1;height:28px;background:var(--border);border-radius:6px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:${m.color};border-radius:6px;display:flex;align-items:center;padding-left:8px;box-sizing:border-box">
+          <span style="font-size:11px;font-weight:800;color:#fff;white-space:nowrap">${count.toLocaleString()}</span>
+        </div>
+      </div>
+      <div style="width:32px;text-align:right;font-size:11px;font-weight:700;color:var(--text-muted);flex-shrink:0">${pctLbl}%</div>
+    </div>`;
+  }).join('');
+
+  const fOrders = funnelMap2['ORDER_PLACED'] ?? 0;
+  const fOverall = fBase > 0 ? (fOrders / fBase * 100).toFixed(1) : '0';
+  const fOvNum   = parseFloat(fOverall);
+  const fOvCol   = fOvNum >= 5 ? '#22c55e' : fOvNum >= 2 ? '#f59e0b' : '#ef4444';
+  const fOvLabel = fOvNum >= 5 ? '🟢 Buena' : fOvNum >= 2 ? '🟡 Normal' : '🔴 Mejorable';
+  let fBigDrop = { prevLabel: '', nextLabel: '', pct: 0 };
+  for (let i = 1; i < FUNNEL_STEPS.length; i++) {
+    const p = funnelMap2[FUNNEL_STEPS[i - 1]] ?? 0;
+    const c = funnelMap2[FUNNEL_STEPS[i]] ?? 0;
+    const d = p > 0 ? Math.round(((p - c) / p) * 100) : 0;
+    if (d > fBigDrop.pct) fBigDrop = { prevLabel: FUNNEL_META[FUNNEL_STEPS[i-1]].label, nextLabel: FUNNEL_META[FUNNEL_STEPS[i]].label, pct: d };
+  }
+  const fPageViews = funnelMap2['PAGE_VIEW'] ?? 0;
+
+  document.getElementById('anFunnel').innerHTML = funnel.some(f => FUNNEL_STEPS.includes(f.step))
+    ? `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:20px">${fStatCards}</div>
+       <div style="margin-bottom:20px">${fBars}</div>
+       <div style="background:var(--bg);border-radius:12px;padding:16px 20px;border:1.5px solid ${fOvCol}40;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+         <div style="flex:1;min-width:180px">
+           <div style="font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:4px">Conversión total (visita → pedido)</div>
+           <div style="font-size:11px;color:var(--text-secondary);line-height:1.6">
+             De <strong>${fPageViews.toLocaleString()}</strong> visitas llegaron a pedir <strong style="color:${fOvCol}">${fOrders.toLocaleString()}</strong> usuarios.
+             ${fBigDrop.pct > 0 ? `Mayor abandono entre <strong>${fBigDrop.prevLabel}</strong> → <strong>${fBigDrop.nextLabel}</strong> (<strong style="color:#ef4444">−${fBigDrop.pct}%</strong>).` : ''}
+           </div>
+         </div>
+         <div style="text-align:center;flex-shrink:0">
+           <div style="font-size:40px;font-weight:900;color:${fOvCol}">${fOverall}%</div>
+           <div style="font-size:12px;font-weight:700;color:${fOvCol}">${fOvLabel} conversión</div>
+         </div>
+       </div>`
     : '<div class="an-empty">Sin datos aún</div>';
 
   // ── Top categories ─────────────────────────────────────────────
@@ -2477,6 +2560,85 @@ function renderAnalytics(s) {
         </div>`;
       }).join('')}</div>`
     : '<div class="an-empty">Sin datos aún</div>';
+
+  // ── Geo friction funnel ────────────────────────────────────────
+  const funnelMap = Object.fromEntries((s.conversionFunnel ?? []).map(f => [f.step, f.sessions]));
+  const geoViews    = funnelMap['PAGE_VIEW']       ?? 0;
+  const geoSet      = funnelMap['GEO_ADDRESS_SET'] ?? 0;
+  const geoSkipped  = funnelMap['GEO_SKIPPED']     ?? 0;
+  const geoModal    = geoSet + geoSkipped; // users who actually saw the modal
+  const geoAuto     = Math.max(0, geoViews - geoModal); // already had saved address
+  const skipRate    = geoModal > 0 ? Math.round((geoSkipped / geoModal) * 100) : null;
+  const skipColor   = skipRate == null ? '#9ca3af' : skipRate >= 40 ? '#ef4444' : skipRate >= 20 ? '#f59e0b' : '#22c55e';
+  const skipLabel   = skipRate == null ? '—' : skipRate >= 40 ? '🔴 Alta' : skipRate >= 20 ? '🟡 Media' : '🟢 Baja';
+
+  document.getElementById('anGeoFunnel').innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px">
+        <div style="background:var(--bg);border-radius:12px;padding:14px 16px;border:1px solid var(--border);text-align:center">
+          <div style="font-size:26px;font-weight:900;color:#6366f1">${geoViews.toLocaleString()}</div>
+          <div style="font-size:11px;font-weight:700;color:var(--text-secondary);margin-top:4px">🔗 Abrieron el link</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:2px">PAGE_VIEW</div>
+        </div>
+        <div style="background:var(--bg);border-radius:12px;padding:14px 16px;border:1px solid var(--border);text-align:center">
+          <div style="font-size:26px;font-weight:900;color:#3b82f6">${geoModal.toLocaleString()}</div>
+          <div style="font-size:11px;font-weight:700;color:var(--text-secondary);margin-top:4px">💬 Vieron el modal</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:2px">confirmaron + saltaron</div>
+        </div>
+        <div style="background:var(--bg);border-radius:12px;padding:14px 16px;border:1px solid var(--border);text-align:center">
+          <div style="font-size:26px;font-weight:900;color:#22c55e">${geoSet.toLocaleString()}</div>
+          <div style="font-size:11px;font-weight:700;color:var(--text-secondary);margin-top:4px">📍 Pusieron dirección</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:2px">GEO_ADDRESS_SET</div>
+        </div>
+        <div style="background:var(--bg);border-radius:12px;padding:14px 16px;border:1px solid var(--border);text-align:center">
+          <div style="font-size:26px;font-weight:900;color:#f59e0b">${geoSkipped.toLocaleString()}</div>
+          <div style="font-size:11px;font-weight:700;color:var(--text-secondary);margin-top:4px">⏭️ Lo saltaron</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:2px">GEO_SKIPPED</div>
+        </div>
+        <div style="background:var(--bg);border-radius:12px;padding:14px 16px;border:1px solid var(--border);text-align:center">
+          <div style="font-size:26px;font-weight:900;color:#8b5cf6">${geoAuto.toLocaleString()}</div>
+          <div style="font-size:11px;font-weight:700;color:var(--text-secondary);margin-top:4px">⚡ Ya tenían guardada</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:2px">sin modal</div>
+        </div>
+      </div>
+      <div style="background:var(--bg);border-radius:12px;padding:16px 20px;border:1.5px solid ${skipColor}40;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <div style="flex:1;min-width:180px">
+          <div style="font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:4px">Tasa de fricción del modal</div>
+          <div style="font-size:11px;color:var(--text-secondary);line-height:1.5">De los usuarios que vieron el modal de dirección, el <strong style="color:${skipColor}">${skipRate ?? 0}%</strong> lo saltaron sin poner dirección. Si este número es alto, considera quitar o aplazar el modal.</div>
+        </div>
+        <div style="text-align:center;flex-shrink:0">
+          <div style="font-size:40px;font-weight:900;color:${skipColor}">${skipRate != null ? skipRate + '%' : '—'}</div>
+          <div style="font-size:12px;font-weight:700;color:${skipColor}">${skipLabel} fricción</div>
+        </div>
+      </div>
+      ${geoModal < 100 ? `<div style="margin-top:12px;padding:10px 14px;border-radius:8px;background:var(--border);display:flex;align-items:center;gap:8px">
+        <span style="font-size:15px">⏳</span>
+        <span style="font-size:11px;color:var(--text-muted)">Aún no hay suficientes datos — se necesitan al menos <strong>100 usuarios</strong> que vean el modal para que este porcentaje sea confiable. Actualmente: <strong>${geoModal}</strong>.</span>
+      </div>` : skipRate >= 40 ? `<div style="margin-top:12px;padding:12px 16px;border-radius:8px;background:#fef2f2;border:1.5px solid #fca5a5;display:flex;align-items:flex-start;gap:10px">
+        <span style="font-size:18px;flex-shrink:0">🚨</span>
+        <div>
+          <div style="font-size:12px;font-weight:800;color:#dc2626;margin-bottom:3px">Considera quitar el modal de dirección</div>
+          <div style="font-size:11px;color:#7f1d1d;line-height:1.6">Con <strong>${geoModal} usuarios</strong> y una tasa de abandonó del <strong>${skipRate}%</strong>, el modal está generando fricción real y probablemente reduciendo conversión. Opciones: quitarlo, aplazarlo al momento del pedido, o hacerlo totalmente opcional.</div>
+        </div>
+      </div>` : skipRate >= 20 ? `<div style="margin-top:12px;padding:12px 16px;border-radius:8px;background:#fffbeb;border:1.5px solid #fcd34d;display:flex;align-items:flex-start;gap:10px">
+        <span style="font-size:18px;flex-shrink:0">⚠️</span>
+        <div>
+          <div style="font-size:12px;font-weight:800;color:#92400e;margin-bottom:3px">El modal tiene fricción moderada</div>
+          <div style="font-size:11px;color:#78350f;line-height:1.6">Un <strong>${skipRate}%</strong> de abandono es aceptable pero mejorable. Considera simplificar el copy del modal o permitir cerrarlo más fácil. No es urgente quitarlo.</div>
+        </div>
+      </div>` : `<div style="margin-top:12px;padding:10px 14px;border-radius:8px;background:#f0fdf4;border:1.5px solid #86efac;display:flex;align-items:center;gap:8px">
+        <span style="font-size:15px">✅</span>
+        <span style="font-size:11px;color:#166534">El modal funciona bien — solo el <strong>${skipRate}%</strong> lo salta. No hay razón para quitarlo.</span>
+      </div>`}
+      ${geoModal > 0 ? `<div style="margin-top:16px">
+        <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Desglose visual</div>
+        <div style="height:12px;border-radius:6px;overflow:hidden;display:flex;background:var(--border)">
+          <div style="width:${Math.round((geoSet/geoModal)*100)}%;background:#22c55e;transition:width .4s" title="Confirmaron: ${geoSet}"></div>
+          <div style="width:${Math.round((geoSkipped/geoModal)*100)}%;background:#f59e0b;transition:width .4s" title="Saltaron: ${geoSkipped}"></div>
+        </div>
+        <div style="display:flex;gap:16px;margin-top:6px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-secondary)"><div style="width:10px;height:10px;border-radius:2px;background:#22c55e;flex-shrink:0"></div>Confirmaron ${Math.round((geoSet/geoModal)*100)}%</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-secondary)"><div style="width:10px;height:10px;border-radius:2px;background:#f59e0b;flex-shrink:0"></div>Saltaron ${Math.round((geoSkipped/geoModal)*100)}%</div>
+        </div>
+      </div>` : ''}`;
 
   // ── Visitor locations map ──────────────────────────────────────
   const locs = s.visitorLocations ?? [];

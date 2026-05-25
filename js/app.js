@@ -416,6 +416,7 @@ function _showAddressModal(onDecision) {
 
   btnSkip.addEventListener('click', () => {
     sessionStorage.setItem('pf_geo_skip', '1');
+    trackEvent('GEO_SKIPPED', { url: location.href });
     _closeGeoModal();
     if (onDecision) onDecision();
   });
@@ -557,6 +558,13 @@ async function _detectCity() {
 
 document.addEventListener('DOMContentLoaded', async () => {
   _detectCity(); // fire-and-forget; resolves before user finishes typing address
+  // Track link open immediately — before any geo decision or loading
+  if (!sessionStorage.getItem('pf_pv')) {
+    sessionStorage.setItem('pf_pv', '1');
+    const utmSource = _captureUTM();
+    trackEvent('PAGE_VIEW', { referrer: document.referrer || 'directo', url: location.href, utm_source: utmSource });
+  }
+  _trackUTMEntry();
   const grid = document.getElementById('productsGrid');
   grid.innerHTML = Array(PAGE_SIZE).fill(0).map(buildSkeleton).join('');
   // Wait for the user's geo decision before loading products so the correct
@@ -613,15 +621,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (_popupQueue.length) _showNextPopup();
   _handleProductDeepLink();
   _handleOrderDeepLink();
-  // Track page view (once per session)
-  if (!sessionStorage.getItem('pf_pv')) {
-    sessionStorage.setItem('pf_pv', '1');
-    const utmSource = _captureUTM();
-    trackEvent('PAGE_VIEW', { referrer: document.referrer || 'directo', url: location.href, utm_source: utmSource });
-  }
-  // Track UTM entry — fires whenever utm_source is in the URL, once per session+source
-  // Independent of pf_pv so mid-session campaign links are always recorded
-  _trackUTMEntry();
+  // Track page view (once per session) — already fired at DOMContentLoaded, skip here
+  // Track UTM entry — already fired at DOMContentLoaded, skip here
   // Scroll-to-top button visibility
   const _scrollBtn = document.getElementById('btnScrollTop');
   if (_scrollBtn) {
