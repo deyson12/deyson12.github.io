@@ -90,6 +90,7 @@ const PAGE_SIZE = 12;
 let PROMOTED = [];
 let _gridRenderedCount = 0; // reset on each applyFilters; drives promoted injection
 let _promoShownCount   = 0; // stops injecting once all promoted products have been shown once
+let _aboveFoldCount    = 0; // first N cards get eager loading + fetchpriority=high for LCP
 const PROMO_EVERY = 6;      // inject promoted cards every N regular cards
 
 // ===== POPUP AD =====
@@ -1027,8 +1028,8 @@ function renderSbnrBanners(banners) {
   const container = document.getElementById('sbnrContainer');
   if (!container) return;
   const visible = banners.filter(b => b.visible);
-  if (!visible.length) { container.innerHTML = ''; container.style.display = 'none'; return; }
-  container.style.display = '';
+  if (!visible.length) { container.innerHTML = ''; container.classList.add('sbnr-empty'); return; }
+  container.classList.remove('sbnr-empty');
 
   const renderSlide = b => renderBannerTemplate(b);
 
@@ -1120,7 +1121,7 @@ function stars(r) { const f = Math.floor(r), h = r % 1 >= .5 ? 1 : 0; return 'тн
 function calcDiscount(p) { return (p.oldPrice && p.oldPrice > p.price) ? Math.round((p.oldPrice - p.price) / p.oldPrice * 100) : 0; }
 
 // ===== BUILD CARD =====
-function buildCard(p, extra = '') {
+function buildCard(p, extra = '', aboveFold = false) {
   const cartItem = cart.find(c => c.id === p.id), inCart = !!cartItem, inWish = wishlist.includes(p.id);
   const disc = calcDiscount(p);
   const badgeList = [];
@@ -1133,7 +1134,7 @@ function buildCard(p, extra = '') {
     badgeList.push('<span class="badge badge-new">Nuevo</span>');
   return `<div class="product-card ${extra}" onclick="openProduct('${p.id}')">
     <div class="card-img-wrap">
-      <img class="card-img" src="${p.image}" alt="${p.name}" width="300" height="300" loading="lazy" decoding="async" onload="this.classList.add('img-loaded')" onerror="this.classList.add('img-loaded')">
+      <img class="card-img" src="${p.image}" alt="${p.name}" width="300" height="300" loading="${aboveFold ? 'eager' : 'lazy'}"${aboveFold ? ' fetchpriority="high"' : ''} decoding="${aboveFold ? 'sync' : 'async'}" onload="this.classList.add('img-loaded')" onerror="this.classList.add('img-loaded')">
       <div class="badge-wrap">${badgeList.join('')}</div>
       <button class="card-wishlist ${inWish ? 'active' : ''}" data-wish-id="${p.id}" onclick="toggleWish(event,'${p.id}')" aria-label="${inWish ? 'Quitar de favoritos' : 'Agregar a favoritos'}" aria-pressed="${inWish}">
         <svg viewBox="0 0 24 24" stroke="var(--primary)" stroke-width="2.5" fill="${inWish ? 'var(--primary)' : 'none'}"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
@@ -1302,10 +1303,10 @@ function getVisiblePromoted() {
 
 function weavePromoted(batch) {
   const visible = getVisiblePromoted();
-  if (!visible.length) return batch.map(p => buildCard(p, 'new-in')).join('');
+  if (!visible.length) return batch.map(p => buildCard(p, 'new-in', _aboveFoldCount++ < 6)).join('');
   const html = [];
   batch.forEach(p => {
-    html.push(buildCard(p, 'new-in'));
+    html.push(buildCard(p, 'new-in', _aboveFoldCount++ < 6));
     _gridRenderedCount++;
     if (_promoShownCount < visible.length && _gridRenderedCount % PROMO_EVERY === 0) {
       html.push(buildPromotedCard(visible[_promoShownCount]));
@@ -1463,6 +1464,7 @@ function renderFirstBatch() {
 async function applyFilters() {
   _gridRenderedCount = 0;
   _promoShownCount   = 0;
+  _aboveFoldCount    = 0;
   await _fetchGridPage(0);
 }
 

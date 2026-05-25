@@ -32,9 +32,10 @@
 <!-- Google Fonts — non-blocking -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&family=Baloo+2:wght@800&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&family=Baloo+2:wght@800&display=swap" media="print" onload="this.media='all'">
-<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&family=Baloo+2:wght@800&display=swap"></noscript>
+<link rel="preconnect" href="https://ventas-7-lunas-back-241033954184.southamerica-east1.run.app">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&family=Baloo+2:wght@800&display=optional">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&family=Baloo+2:wght@800&display=optional" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&family=Baloo+2:wght@800&display=optional"></noscript>
 
 <!-- app.css — non-blocking with preload -->
 <link rel="stylesheet" href="css/app.css?v=2" media="print" onload="this.media='all'">
@@ -113,6 +114,11 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
 .banner-slider{border-radius:var(--radius-xl);overflow:hidden;position:relative;height:190px;background:var(--border);}
 @media(min-width:600px){.banner-slider{height:240px}}
 @media(min-width:768px){.banner-slider{height:300px}}
+/* Pre-reserve banner container space to prevent CLS */
+#sbnrContainer{min-height:212px;}
+@media(min-width:600px){#sbnrContainer{min-height:256px;}}
+@media(min-width:768px){#sbnrContainer{min-height:311px;}}
+#sbnrContainer.sbnr-empty{min-height:0;}
 /* Skeleton — shown while products load */
 @keyframes shimmer{0%{background-position:-600px 0}100%{background-position:600px 0}}
 .skel-card{background:var(--bg-card);border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--border);}
