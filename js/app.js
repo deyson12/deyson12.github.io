@@ -346,8 +346,8 @@ function _showAddressModal(onDecision) {
     </style>
     <div id="pfGeoBox">
       <div class="ga-icon">🏠</div>
-      <h3>¿A dónde te enviamos?</h3>
-      <p class="ga-sub">Algunos productos solo están disponibles en ciertas zonas. Ingresa tu dirección ahora para ver el catálogo completo, o hazlo más tarde y algunos productos podrían no aparecer.</p>
+      <h3>Dirección de entrega</h3>
+      <p class="ga-sub">Algunos productos solo están disponibles en ciertas zonas. Ingresa tu dirección para ver el catálogo completo.</p>
       <div class="ga-row">
         <input id="pfGeoAddrInput" type="text" placeholder="Ej: Calle 10 #5-23, El Prado"
           autocomplete="street-address" enterkeyhint="search">
