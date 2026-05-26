@@ -345,6 +345,18 @@
   .an-card-title { display: flex; align-items: center; gap: 6px; }
   .an-card-title .an-tip { position: relative; top: auto; right: auto; margin-left: auto; flex-shrink: 0; }
   .an-charts-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 16px; }
+  .an-accordion { display: grid; gap: 12px; margin-bottom: 14px; }
+  .an-group { border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-card); box-shadow: var(--shadow); overflow: hidden; }
+  .an-group-head { width: 100%; border: 0; background: transparent; color: var(--text-primary); display: flex; align-items: center; gap: 10px; padding: 12px 14px; cursor: pointer; text-align: left; }
+  .an-group-head:hover { background: #fff7ed; }
+  .an-group-title { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+  .an-group-sub { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+  .an-group-count { margin-left: auto; font-size: 10px; font-weight: 700; color: var(--text-muted); background: var(--bg); border-radius: 999px; padding: 4px 8px; }
+  .an-group-caret { width: 14px; height: 14px; transition: transform .2s; color: var(--text-muted); }
+  .an-group.collapsed .an-group-caret { transform: rotate(-90deg); }
+  .an-group-body { padding: 8px 12px 12px; border-top: 1px solid var(--border); }
+  .an-group.collapsed .an-group-body { display: none; }
+  .an-group-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
   .an-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
   .an-card-title { font-size: 13px; font-weight: 800; color: var(--text-primary); margin-bottom: 14px; }
   .an-card-full { grid-column: span 1; }
@@ -657,6 +669,9 @@
     <div class="stat-card"><div class="stat-label">Cancelados</div><div class="stat-value red" id="statCancelado">—</div></div>
   </div>
 
+  <!-- Stale pending orders alert (rendered by renderPendingAlert()) -->
+  <div id="pendingAlert"></div>
+
   <!-- Toolbar -->
   <div class="toolbar">
     <div class="toolbar-search">
@@ -806,7 +821,64 @@
 
   <!-- Charts -->
   <div class="an-section-label">📊 Detalle</div>
-  <div class="an-charts-grid">
+  <div class="an-accordion" id="anAccordion">
+    <div class="an-group" id="anGroup-action">
+      <button class="an-group-head" onclick="_toggleAnGroup('action')">
+        <span class="an-group-title">⚡ Acción inmediata</span>
+        <span class="an-group-sub">operación y riesgos</span>
+        <span class="an-group-count" id="anGroupCount-action">0</span>
+        <svg class="an-group-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 15 6-6 6 6"/></svg>
+      </button>
+      <div class="an-group-body an-group-grid" id="anGroupBody-action"></div>
+    </div>
+    <div class="an-group" id="anGroup-attraction">
+      <button class="an-group-head" onclick="_toggleAnGroup('attraction')">
+        <span class="an-group-title">📡 Atracción</span>
+        <span class="an-group-sub">tráfico, ciudad, comportamiento</span>
+        <span class="an-group-count" id="anGroupCount-attraction">0</span>
+        <svg class="an-group-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 15 6-6 6 6"/></svg>
+      </button>
+      <div class="an-group-body an-group-grid" id="anGroupBody-attraction"></div>
+    </div>
+    <div class="an-group" id="anGroup-discovery">
+      <button class="an-group-head" onclick="_toggleAnGroup('discovery')">
+        <span class="an-group-title">🔎 Descubrimiento</span>
+        <span class="an-group-sub">búsquedas, vistas, categorías</span>
+        <span class="an-group-count" id="anGroupCount-discovery">0</span>
+        <svg class="an-group-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 15 6-6 6 6"/></svg>
+      </button>
+      <div class="an-group-body an-group-grid" id="anGroupBody-discovery"></div>
+    </div>
+    <div class="an-group" id="anGroup-conversion">
+      <button class="an-group-head" onclick="_toggleAnGroup('conversion')">
+        <span class="an-group-title">🎯 Conversión</span>
+        <span class="an-group-sub">embudo y cierre de compra</span>
+        <span class="an-group-count" id="anGroupCount-conversion">0</span>
+        <svg class="an-group-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 15 6-6 6 6"/></svg>
+      </button>
+      <div class="an-group-body an-group-grid" id="anGroupBody-conversion"></div>
+    </div>
+    <div class="an-group" id="anGroup-value">
+      <button class="an-group-head" onclick="_toggleAnGroup('value')">
+        <span class="an-group-title">🏆 Valor cliente</span>
+        <span class="an-group-sub">revenue y fidelización</span>
+        <span class="an-group-count" id="anGroupCount-value">0</span>
+        <svg class="an-group-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 15 6-6 6 6"/></svg>
+      </button>
+      <div class="an-group-body an-group-grid" id="anGroupBody-value"></div>
+    </div>
+    <div class="an-group collapsed" id="anGroup-diagnostic">
+      <button class="an-group-head" onclick="_toggleAnGroup('diagnostic')">
+        <span class="an-group-title">🧪 Diagnóstico avanzado</span>
+        <span class="an-group-sub">métricas secundarias</span>
+        <span class="an-group-count" id="anGroupCount-diagnostic">0</span>
+        <svg class="an-group-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 15 6-6 6 6"/></svg>
+      </button>
+      <div class="an-group-body an-group-grid" id="anGroupBody-diagnostic"></div>
+    </div>
+  </div>
+
+  <div class="an-charts-grid" id="anLegacyCards" style="display:none">
     <div class="an-card">
       <div class="an-card-title">🔄 Embudo de conversión <span class="an-tip" data-tip="Cuántos usuarios pasaron por cada etapa: Vista de página → Agregar al carrito → Inicio de checkout → Pedido realizado. Muestra dónde se pierden clientes.">?</span></div>
       <div id="anFunnel"><div class="an-empty">Cargando…</div></div>
@@ -855,6 +927,14 @@
       <div class="an-card-title">💳 Tasa de éxito Wompi <span class="an-tip" data-tip="De cada 100 usuarios que iniciaron el pago con Wompi, cuántos completaron el pedido. Tasa baja indica fricción en el flujo de pago. Los datos se acumulan desde este deploy.">?</span></div>
       <div id="anWompiSuccess"><div class="an-empty">Cargando…</div></div>
     </div>
+    <div class="an-card">
+      <div class="an-card-title">📜 Scroll depth en la tienda <span class="an-tip" data-tip="Qué porcentaje de sesiones llegó al 25%, 50%, 75% y 100% del scroll de la página. Si el 70% nunca pasa del primer scroll, los productos de abajo son invisibles. Los datos se acumulan desde este deploy.">?</span></div>
+      <div id="anScrollDepth"><div class="an-empty">Cargando…</div></div>
+    </div>
+    <div class="an-card">
+      <div class="an-card-title">⏳ Tiempo promedio por sesión <span class="an-tip" data-tip="Duración promedio de las sesiones activas en los últimos 30 días (sesiones con al menos 2 eventos, entre 5 seg y 30 min). Una sesión de 8 seg es un rebote. 3 minutos es alguien comprometido.">?</span></div>
+      <div id="anAvgSession"><div class="an-empty">Cargando…</div></div>
+    </div>
     <div class="an-card" style="grid-column:1/-1">
       <div class="an-card-title">⏱️ Tiempo promedio de confirmación de pedido <span class="an-tip" data-tip="Tiempo promedio (en minutos) desde que se crea un pedido hasta que se confirma en el admin. Meta: menos de 30 minutos. Requiere el campo updated_at del deploy V35.">?</span></div>
       <div id="anAvgConfirm"><div class="an-empty">Cargando…</div></div>
@@ -864,8 +944,16 @@
       <div id="anLtv"><div class="an-empty">Cargando…</div></div>
     </div>
     <div class="an-card" style="grid-column:1/-1">
-      <div class="an-card-title">🪦 Productos sin ventas en 30 días <span class="an-tip" data-tip="Productos activos y visibles que ningún cliente ha comprado en los últimos 30 días. Son ruido en el catálogo — considera desactivarlos o ajustar precio/descripción.">?</span></div>
+      <div class="an-card-title">🪦 Productos sin ventas en 6 meses <span class="an-tip" data-tip="Productos activos y visibles que ningún cliente ha comprado en los últimos 6 meses. Son ruido en el catálogo — considera desactivarlos o ajustar precio/descripción.">?</span></div>
       <div id="anDeadProducts"><div class="an-empty">Cargando…</div></div>
+    </div>
+    <div class="an-card" style="grid-column:1/-1">
+      <div class="an-card-title">❌ Productos con alta cancelación (90 días) <span class="an-tip" data-tip="Productos que más se cancelan relativamente. Un producto con 40% de cancelación tiene un problema: descripción engañosa, calidad, o tiempo de entrega irreal. Mínimo 3 pedidos para aparecer.">?</span></div>
+      <div id="anHighCancel"><div class="an-empty">Cargando…</div></div>
+    </div>
+    <div class="an-card" style="grid-column:1/-1">
+      <div class="an-card-title">🌆 Distribución por ciudad <span class="an-tip" data-tip="Ciudades detectadas de los visitantes que compartieron ubicación (GEO_ACCEPT). Últimos 90 días. Útil para saber dónde concentrar publicidad.">?</span></div>
+      <div id="anCityTable"><div class="an-empty">Cargando…</div></div>
     </div>
     <div class="an-card">
       <div class="an-card-title">🏷️ Categorías más filtradas (30 días) <span class="an-tip" data-tip="Categorías que los clientes usaron más como filtro al navegar la tienda. Refleja el interés real del catálogo.">?</span></div>
@@ -1706,6 +1794,30 @@ function updateStats() {
   document.getElementById('statPendiente').textContent = allOrders.filter(o => o.status === 'PENDIENTE').length;
   document.getElementById('statConfirmado').textContent= allOrders.filter(o => o.status === 'CONFIRMADO').length;
   document.getElementById('statCancelado').textContent = allOrders.filter(o => o.status === 'CANCELADO' || o.status === 'CANCELADO_AUTOMATICAMENTE').length;
+  renderPendingAlert();
+}
+
+function renderPendingAlert() {
+  const el = document.getElementById('pendingAlert');
+  if (!el) return;
+  const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+  const stale = allOrders.filter(o => o.status === 'PENDIENTE' && new Date(o.createdAt) < twoHoursAgo);
+  if (!stale.length) { el.innerHTML = ''; return; }
+  const oldest = stale.reduce((a, b) => new Date(a.createdAt) < new Date(b.createdAt) ? a : b);
+  const hrs = Math.floor((Date.now() - new Date(oldest.createdAt)) / 3_600_000);
+  el.innerHTML = `
+    <div style="margin:0 0 12px;padding:14px 18px;border-radius:12px;background:#fff7ed;border:2px solid #f97316;display:flex;align-items:flex-start;gap:12px;cursor:pointer" onclick="setStatus('PENDIENTE', document.querySelector('[data-status=PENDIENTE]'))">
+      <span style="font-size:22px;flex-shrink:0;line-height:1">🚨</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:800;color:#c2410c;margin-bottom:3px">
+          ${stale.length} pedido${stale.length !== 1 ? 's' : ''} PENDIENTE${stale.length !== 1 ? 'S' : ''} con más de 2 horas sin atender
+        </div>
+        <div style="font-size:12px;color:#ea580c;line-height:1.5">
+          El más antiguo lleva <strong>${hrs}h</strong> esperando. Haz clic aquí para ver solo los pendientes.
+        </div>
+      </div>
+      <button onclick="event.stopPropagation(); document.getElementById('pendingAlert').innerHTML=''" style="background:none;border:none;cursor:pointer;color:#f97316;font-size:18px;line-height:1;padding:0;flex-shrink:0" title="Cerrar alerta">✕</button>
+    </div>`;
 }
 
 // ── FILTERS ────────────────────────────────────────────────
@@ -2223,11 +2335,86 @@ async function advanceToStatus(orderId, status) {
 }
 
 // ── ANALYTICS ─────────────────────────────────────────────
+var _analyticsLayoutBuilt = false;
+
+function _toggleAnGroup(groupId) {
+  const group = document.getElementById(`anGroup-${groupId}`);
+  if (!group) return;
+  group.classList.toggle('collapsed');
+}
+
+function _metricCard(metricId) {
+  return document.getElementById(metricId)?.closest('.an-card') ?? null;
+}
+
+function _appendMetricCard(metricId, bodyEl) {
+  const card = _metricCard(metricId);
+  if (!card || !bodyEl || card.dataset.anMoved === '1') return;
+  card.dataset.anMoved = '1';
+  bodyEl.appendChild(card);
+}
+
+function _updateAnGroupCount(name) {
+  const body = document.getElementById(`anGroupBody-${name}`);
+  const countEl = document.getElementById(`anGroupCount-${name}`);
+  if (!body || !countEl) return;
+  countEl.textContent = String(body.querySelectorAll('.an-card').length);
+}
+
+function organizeAnalyticsCards() {
+  if (_analyticsLayoutBuilt) return;
+
+  const legacy = document.getElementById('anLegacyCards');
+  if (!legacy) return;
+
+  const groups = {
+    action: document.getElementById('anGroupBody-action'),
+    attraction: document.getElementById('anGroupBody-attraction'),
+    discovery: document.getElementById('anGroupBody-discovery'),
+    conversion: document.getElementById('anGroupBody-conversion'),
+    value: document.getElementById('anGroupBody-value'),
+    diagnostic: document.getElementById('anGroupBody-diagnostic')
+  };
+
+  [
+    'anWompiSuccess', 'anAvgConfirm', 'anHighCancel', 'anDeadProducts'
+  ].forEach(id => _appendMetricCard(id, groups.action));
+
+  [
+    'anTrafficSource', 'anCityTable', 'anScrollDepth', 'anAvgSession', 'anVisMapEl'
+  ].forEach(id => _appendMetricCard(id, groups.attraction));
+
+  [
+    'anTopProducts', 'anTopCategories', 'anTopSearches', 'anNoResults'
+  ].forEach(id => _appendMetricCard(id, groups.discovery));
+
+  [
+    'anFunnel', 'anByHour', 'anByDow', 'anByPayment', 'anRevenueByPayment',
+    'anOrdersByUtm', 'anCartAbandonment', 'anViewsVsSales'
+  ].forEach(id => _appendMetricCard(id, groups.conversion));
+
+  [
+    'anLtv', 'anTopByRevenue', 'anTopByUnits', 'anTopBuyers'
+  ].forEach(id => _appendMetricCard(id, groups.value));
+
+  // Any cards not explicitly mapped are kept in advanced diagnostics.
+  [...legacy.querySelectorAll('.an-card')].forEach(card => {
+    if (card.dataset.anMoved !== '1') {
+      card.dataset.anMoved = '1';
+      groups.diagnostic.appendChild(card);
+    }
+  });
+
+  ['action', 'attraction', 'discovery', 'conversion', 'value', 'diagnostic'].forEach(_updateAnGroupCount);
+  _analyticsLayoutBuilt = true;
+}
+
 async function loadAnalytics() {
   const btn = document.getElementById('btnRefresh');
   btn.classList.add('spinning');
   const loader = document.getElementById('analyticsLoader');
   if (loader) loader.style.display = 'flex';
+  organizeAnalyticsCards();
   try {
     // Ensure categories are loaded
     if (!allCategories.length) {
@@ -2926,15 +3113,15 @@ function renderAnalytics(s, prevMonthOrders = []) {
 
   // ── Productos sin ventas (catálogo muerto) ────────────────────
   const dead30 = s.productsWithoutSales30d ?? [];
-  const dead60 = s.productsWithoutSales60d ?? [];
+  const dead6m = s.productsWithoutSales6m ?? s.productsWithoutSales60d ?? [];
   const deadEl  = document.getElementById('anDeadProducts');
-  if (!dead30.length && !dead60.length) {
-    deadEl.innerHTML = '<div class="an-empty">¡Genial! Todos los productos activos se han vendido en los últimos 30 días.</div>';
+  if (!dead6m.length && !dead30.length) {
+    deadEl.innerHTML = '<div class="an-empty">¡Genial! Todos los productos activos se han vendido en los últimos 6 meses.</div>';
   } else {
-    const deadNote = dead30.length > 8 ? `<div style="margin-top:10px;padding:10px 14px;border-radius:8px;background:#fef2f2;border:1.5px solid #fca5a5;font-size:11px;color:#7f1d1d">⚠️ Tienes <strong>${dead30.length} productos</strong> activos sin ninguna venta en 30 días. Considera desactivarlos o revisar precio y descripción.</div>` : '';
-    deadEl.innerHTML = `<div style="margin-bottom:8px;font-size:11px;color:var(--text-muted)">${dead30.length} producto${dead30.length!==1?'s':''} activo${dead30.length!==1?'s':''} sin ventas en los últimos 30 días:</div>
+    const deadNote = dead6m.length > 8 ? `<div style="margin-top:10px;padding:10px 14px;border-radius:8px;background:#fef2f2;border:1.5px solid #fca5a5;font-size:11px;color:#7f1d1d">⚠️ Tienes <strong>${dead6m.length} productos</strong> activos sin ninguna venta en 6 meses. Considera desactivarlos o revisar precio y descripción.</div>` : '';
+    deadEl.innerHTML = `<div style="margin-bottom:8px;font-size:11px;color:var(--text-muted)">${dead6m.length} producto${dead6m.length!==1?'s':''} activo${dead6m.length!==1?'s':''} sin ventas en los últimos 6 meses:</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px">
-        ${dead30.slice(0,20).map(p => `
+        ${dead6m.slice(0,20).map(p => `
           <div style="background:var(--bg);border-radius:10px;border:1px solid var(--border);overflow:hidden;display:flex;align-items:center;gap:8px;padding:8px 10px">
             ${p.image ? `<img src="${p.image}" width="36" height="36" style="border-radius:6px;object-fit:cover;flex-shrink:0" loading="lazy" alt="">` : '<div style="width:36px;height:36px;border-radius:6px;background:var(--border);flex-shrink:0"></div>'}
             <div style="min-width:0">
@@ -2944,6 +3131,112 @@ function renderAnalytics(s, prevMonthOrders = []) {
           </div>`).join('')}
       </div>${deadNote}`;
   }
+
+  // ── Scroll depth funnel ───────────────────────────────────────
+  const depthRows = s.scrollDepth ?? [];
+  const depthMap  = { 25: 0, 50: 0, 75: 0, 100: 0 };
+  depthRows.forEach(r => { const k = Number(r.pct); if (depthMap.hasOwnProperty(k)) depthMap[k] = Number(r.sessions); });
+  const depthBase = depthMap[25];
+  const depthMax  = Math.max(...Object.values(depthMap), 1);
+  document.getElementById('anScrollDepth').innerHTML = depthBase === 0
+    ? '<div class="an-empty">Sin datos — se registran desde el deploy que activó el evento SCROLL_DEPTH</div>'
+    : `<div style="margin-bottom:8px;font-size:11px;color:var(--text-muted)">Sesiones únicas que llegaron a cada profundidad de scroll (30 días).</div>
+      ${[25,50,75,100].map(pct => {
+        const val  = depthMap[pct];
+        const pctR = depthBase > 0 ? Math.round((val / depthBase) * 100) : 0;
+        const barW = Math.round((val / depthMax) * 100);
+        const col  = pct === 100 ? '#8b5cf6' : pct === 75 ? '#6366f1' : pct === 50 ? '#3b82f6' : '#60a5fa';
+        return `<div class="an-bar-row">
+          <div class="an-bar-label" style="min-width:70px">${pct}% scroll</div>
+          <div class="an-bar-track"><div class="an-bar-fill" style="width:${barW}%;background:${col}"></div></div>
+          <div class="an-bar-count">${val.toLocaleString()} <span style="font-size:9px;color:var(--text-muted)">${pctR}%</span></div>
+        </div>`;
+      }).join('')}
+      <div style="margin-top:10px;padding:8px 12px;background:var(--border);border-radius:8px;font-size:11px;color:var(--text-muted)">
+        ${depthBase > 0 && depthMap[100] < depthBase * 0.3
+          ? `⚠️ Solo el <strong>${Math.round((depthMap[100]/depthBase)*100)}%</strong> de los visitantes llega al final — los productos al fondo de la tienda son prácticamente invisibles.`
+          : `✅ El <strong>${Math.round((depthMap[100]/depthBase)*100)}%</strong> de los visitantes llega al final de la página.`}
+      </div>`;
+
+  // ── Avg session time ──────────────────────────────────────────
+  const avgSec   = s.avgSessionTimeSeconds != null ? Math.round(Number(s.avgSessionTimeSeconds)) : null;
+  const avgSecMin = avgSec != null ? Math.floor(avgSec / 60) : null;
+  const avgSecSec = avgSec != null ? avgSec % 60 : null;
+  const avgFmtSec = avgSec == null ? '—' : avgSec < 60 ? `${avgSec}s` : `${avgSecMin}m ${avgSecSec}s`;
+  const avgColSec = avgSec == null ? '#9ca3af' : avgSec >= 90 ? '#22c55e' : avgSec >= 30 ? '#f59e0b' : '#ef4444';
+  const avgLblSec = avgSec == null ? '—'
+    : avgSec >= 180 ? '🟢 Muy comprometido (> 3 min)'
+    : avgSec >= 90  ? '🟢 Comprometido (> 1.5 min)'
+    : avgSec >= 30  ? '🟡 Básico (< 1.5 min)'
+    : '🔴 Posible rebote (< 30s)';
+  document.getElementById('anAvgSession').innerHTML =
+    `<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <div style="flex:1;min-width:180px;font-size:13px;color:var(--text-secondary);line-height:1.6">
+        Duración promedio por sesión <strong>activa</strong> en los últimos 30 días.<br>
+        Sesiones de <strong>5s – 30 min</strong> con al menos 2 eventos.<br>
+        Meta: <strong style="color:#22c55e">más de 90 segundos</strong>.
+      </div>
+      <div style="text-align:center;flex-shrink:0">
+        <div style="font-size:40px;font-weight:900;color:${avgColSec}">${avgFmtSec}</div>
+        <div style="font-size:12px;font-weight:700;color:${avgColSec}">${avgLblSec}</div>
+      </div>
+    </div>`;
+
+  // ── Products with high cancellation ──────────────────────────
+  const hcList = s.highCancellationProducts ?? [];
+  document.getElementById('anHighCancel').innerHTML = hcList.length
+    ? `<div style="margin-bottom:8px;font-size:11px;color:var(--text-muted)">Productos con al menos 3 pedidos en 90 días, ordenados por % de cancelación.</div>
+      ${hcList.map(p => {
+        const conf   = Number(p.confirmedOrders);
+        const canc   = Number(p.cancelledOrders);
+        const total  = conf + canc;
+        const rate   = total > 0 ? Math.round((canc / total) * 100) : 0;
+        const col    = rate >= 50 ? '#ef4444' : rate >= 25 ? '#f59e0b' : '#22c55e';
+        return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12px;font-weight:700;color:var(--text-primary);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.productName}">${p.productName}</div>
+            <div style="height:8px;border-radius:4px;overflow:hidden;display:flex;background:var(--border)">
+              <div style="width:${Math.round((conf/total)*100)}%;background:#22c55e"></div>
+              <div style="flex:1;background:${col}"></div>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:4px;font-size:10px;color:var(--text-muted)">
+              <span style="color:#22c55e">✔ ${conf} confirmados</span>
+              <span style="color:${col}">✘ ${canc} cancelados</span>
+            </div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;min-width:52px">
+            <div style="font-size:20px;font-weight:900;color:${col}">${rate}%</div>
+            <div style="font-size:9px;color:var(--text-muted)">cancelación</div>
+          </div>
+        </div>`;
+      }).join('')}`
+    : '<div class="an-empty">Sin datos suficientes — se necesitan ≥3 pedidos por producto en los últimos 90 días</div>';
+
+  // ── City distribution table ───────────────────────────────────
+  const locs2  = s.visitorLocations ?? [];
+  const cityCount = {};
+  locs2.forEach(l => { const c = (l.city && String(l.city).trim()) || 'Desconocida'; cityCount[c] = (cityCount[c] || 0) + 1; });
+  const citySorted = Object.entries(cityCount).sort((a, b) => b[1] - a[1]);
+  const cityTotal  = citySorted.reduce((acc, [, n]) => acc + n, 0);
+  document.getElementById('anCityTable').innerHTML = citySorted.length
+    ? `<div style="margin-bottom:8px;font-size:11px;color:var(--text-muted)">Basado en visitantes que compartieron ubicación (últimos 90 días). Total: <strong>${cityTotal}</strong> ubicaciones.</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px">
+        ${citySorted.slice(0, 20).map(([city, count], i) => {
+          const pct  = cityTotal > 0 ? Math.round((count / cityTotal) * 100) : 0;
+          const col  = i === 0 ? '#6366f1' : i === 1 ? '#8b5cf6' : i === 2 ? '#a78bfa' : '#9ca3af';
+          return `<div style="background:var(--bg);border-radius:10px;padding:10px 14px;border:1px solid var(--border)">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+              <span style="font-size:12px;font-weight:700;color:var(--text-primary)">${city}</span>
+              <span style="font-size:14px;font-weight:900;color:${col}">${pct}%</span>
+            </div>
+            <div style="height:5px;border-radius:3px;overflow:hidden;background:var(--border)">
+              <div style="width:${pct}%;height:100%;background:${col}"></div>
+            </div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:4px">${count} visitante${count !== 1 ? 's' : ''}</div>
+          </div>`;
+        }).join('')}
+      </div>`
+    : '<div class="an-empty">Sin datos de ubicación — los visitantes deben aceptar compartir su ubicación</div>';
 
   // ── Geo friction funnel ────────────────────────────────────────
   const funnelMap = Object.fromEntries((s.conversionFunnel ?? []).map(f => [f.step, f.sessions]));

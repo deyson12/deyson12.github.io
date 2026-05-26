@@ -637,6 +637,25 @@ document.addEventListener('DOMContentLoaded', async () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }, { passive: false });
   }
+
+  // Scroll depth tracking — fires SCROLL_DEPTH at 25/50/75/100% milestones (once per session each)
+  (function() {
+    const milestones = [25, 50, 75, 100];
+    const fired = new Set();
+    function onDepthScroll() {
+      const scrolled = window.scrollY + window.innerHeight;
+      const total    = document.documentElement.scrollHeight;
+      if (total <= window.innerHeight) return; // page fits in viewport, skip
+      const pct = Math.round((scrolled / total) * 100);
+      milestones.forEach(m => {
+        if (!fired.has(m) && pct >= m) {
+          fired.add(m);
+          trackEvent('SCROLL_DEPTH', { pct: m });
+        }
+      });
+    }
+    window.addEventListener('scroll', onDepthScroll, { passive: true });
+  })();
 });
 
 // ===== MAP / GEOCODING =====
@@ -1611,6 +1630,22 @@ function getCheckedItems()  { return cart.filter(i => checkedItems.has(i.id)); }
 function getSelectedTotal() { return getCheckedItems().reduce((s, i) => s + i.price * i.qty, 0); }
 function getCount()         { return cart.reduce((s, i) => s + i.qty, 0); }
 
+function removePurchasedFromCartByIds(ids) {
+  const uniq = [...new Set((ids || []).filter(Boolean))];
+  if (!uniq.length) return 0;
+  const before = cart.length;
+  cart = cart.filter(i => !uniq.includes(i.id));
+  uniq.forEach(id => checkedItems.delete(id));
+  const removed = before - cart.length;
+  if (removed > 0) {
+    saveCart();
+    updateCartUI();
+    renderCartPanel();
+    updateAllBtns();
+  }
+  return removed;
+}
+
 function flyToCart(originEl) {
   const fab = document.getElementById('fabCart');
   if (!originEl || !fab) return;
@@ -1659,7 +1694,8 @@ function addToCart(id, e) {
   const p = _productCache.get(id), ex = cart.find(x => x.id === id);
   if (!p) return;
   if (ex) ex.qty++;
-  else { cart.push({ ...p, qty: 1 }); checkedItems.add(id); }
+  else { cart.push({ ...p, qty: 1 }); }
+  checkedItems.add(id); // always (re-)select on explicit add — shows FAB and updates total
   saveCart(); updateCartUI(); updateAllBtns(); bumpBadge();
   showToast(ex ? `+1 ${p.name.split(' ')[0]}` : `Agregado: ${p.name.split(' ').slice(0, 3).join(' ')}`, ex ? '🛒' : '✅');
   trackEvent('CART_ADD', { productId: p?.id, name: p?.name, price: p?.price, qty: ex ? ex.qty : 1 });
@@ -1693,6 +1729,7 @@ function changeQty(id, d) {
   const i = cart.find(c => c.id === id); if (!i) return;
   i.qty += d;
   if (i.qty <= 0) { removeFromCart(id); return; }
+  if (d > 0) checkedItems.add(id); // re-select on explicit + press
   saveCart(); updateCartUI(); renderCartPanel(); updateAllBtns();
 }
 function toggleSelectAll(checked) {
@@ -1703,10 +1740,7 @@ function toggleSelectAll(checked) {
 function toggleCheck(id) {
   if (checkedItems.has(id)) checkedItems.delete(id); else checkedItems.add(id);
   saveCart();
-  const sel = getSelectedTotal();
-  document.getElementById('cartTotal').textContent    = fmtPrice(sel);
-  document.getElementById('fabTotal').textContent     = fmtPrice(sel);
-  renderCartPanel();
+  updateCartUI();
 }
 function updateCartUI() {
   const n = getCount(), sel = getSelectedTotal();
@@ -1714,7 +1748,7 @@ function updateCartUI() {
   document.getElementById('cartCountPill').textContent = n;
   document.getElementById('cartTotal').textContent     = fmtPrice(sel);
   document.getElementById('fabTotal').textContent      = fmtPrice(sel);
-  n > 0 ? document.getElementById('fabCart').classList.add('visible') : document.getElementById('fabCart').classList.remove('visible');
+  sel > 0 ? document.getElementById('fabCart').classList.add('visible') : document.getElementById('fabCart').classList.remove('visible');
   renderCartPanel();
 }
 
@@ -2039,17 +2073,42 @@ async function sendWhatsappOrder() {
   if (!pago) { showToast('Selecciona el método de pago', '');       document.getElementById('inputPago').focus(); return; }
   if (pago === 'Efectivo' && !cambio) { showToast('Ingresa el valor con que vas a pagar', ''); document.getElementById('inputCambio').focus(); return; }
 
+  // Open placeholder tab early to reduce popup blocking on mobile browsers.
+  // Only for WhatsApp flow; Wompi has its own redirect.
+  let waPopup = null;
+  if (pago !== 'Wompi') {
+    waPopup = window.open('', '_blank');
+    if (waPopup && !waPopup.closed) {
+      try {
+        waPopup.document.title = 'Abriendo WhatsApp...';
+        waPopup.document.body.style.cssText = 'font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:16px;color:#334155';
+        waPopup.document.body.innerHTML = '<div style="font-size:14px">Redirigiendo a WhatsApp...</div>';
+      } catch (_) {
+        // Ignore cross-browser quirks in about:blank placeholder.
+      }
+    }
+  }
+
   setCyUser({ dir, name: nom, phone });
 
   _orderLoading(true);
 
-  // ── Guest checkout: register if first time ──────────────
-  try {
-    await ensureGuestUser(nom, phone);
-  } catch (e) {
-    _orderLoading(false);
-    openRegisterError(nom, phone);
-    return;
+  // ── Guest checkout: async for WhatsApp, blocking for Wompi ──────────────
+  let _guestReadyPromise = Promise.resolve();
+  if (pago === 'Wompi') {
+    try {
+      await ensureGuestUser(nom, phone);
+    } catch (e) {
+      _orderLoading(false);
+      openRegisterError(nom, phone);
+      return;
+    }
+  } else {
+    // For WhatsApp checkout, do not block UX on guest registration.
+    _guestReadyPromise = ensureGuestUser(nom, phone).catch((e) => {
+      console.warn('ensureGuestUser (background) error:', e);
+      return null;
+    });
   }
 
   try {
@@ -2129,7 +2188,17 @@ async function sendWhatsappOrder() {
     wompiRef: null, wompiId: null, wompiStatus: null,
   });
 
-  postOrderToApi({ fullItems, address: dir, paymentType: 'TRANSFERENCIA', couponCode: _appliedCoupon?.code || null, discountAmount: cuponDisc || null, lat: _deliveryLat, lng: _deliveryLng });
+  _guestReadyPromise.finally(() => {
+    postOrderToApi({
+      fullItems,
+      address: dir,
+      paymentType: 'TRANSFERENCIA',
+      couponCode: _appliedCoupon?.code || null,
+      discountAmount: cuponDisc || null,
+      lat: _deliveryLat,
+      lng: _deliveryLng,
+    });
+  });
 
   trackEvent('ORDER_PLACED', { total: finalTotal, itemCount: orderItems.length, paymentType: 'whatsapp' });
 
@@ -2150,10 +2219,32 @@ async function sendWhatsappOrder() {
   buyNowProduct = null;
   repeatOrderItems = null;
   closeOrderPopup();
-  window.open(`https://wa.me/${WA_PHONE}?text=${encodeURIComponent(msg)}`, '_blank');
+
+  const purchasedIds = bpId
+    ? [bpId]
+    : (selectedIds.length
+        ? selectedIds
+        : fullItems.map(i => i?.product?.id).filter(Boolean));
+  removePurchasedFromCartByIds(purchasedIds);
+
+  const waUrl = `https://wa.me/${WA_PHONE}?text=${encodeURIComponent(msg)}`;
+  if (waPopup && !waPopup.closed) {
+    try {
+      waPopup.location.href = waUrl;
+    } catch (_) {
+      const opened = window.open(waUrl, '_blank');
+      if (!opened) window.location.href = waUrl;
+    }
+  } else {
+    const opened = window.open(waUrl, '_blank');
+    if (!opened) window.location.href = waUrl;
+  }
 
   } catch (err) {
     console.error('[PideFácil] Error al procesar pedido:', err);
+    if (waPopup && !waPopup.closed) {
+      try { waPopup.close(); } catch (_) {}
+    }
     _orderLoading(false);
     showToast('Ocurrió un error al enviar el pedido. Intenta de nuevo.', '❌');
   }
@@ -2271,10 +2362,12 @@ function confirmWompiPayment() {
     mapLat: savedLat, mapLng: savedLng,
   });
 
-  if (!od.bpId && od.selectedIds?.length) {
-    od.selectedIds.forEach(id => { cart = cart.filter(c => c.id !== id); checkedItems.delete(id); });
-    saveCart(); updateCartUI(); renderCartPanel();
-  }
+  const purchasedIds = od.bpId
+    ? [od.bpId]
+    : (od.selectedIds?.length
+        ? od.selectedIds
+        : (od.fullItems || []).map(i => i?.product?.id).filter(Boolean));
+  removePurchasedFromCartByIds(purchasedIds);
   // Record coupon use (fire-and-forget)
   if (_appliedCoupon?.code) {
     fetch(`${API_BASE}/api/coupons/use/${encodeURIComponent(_appliedCoupon.code)}`, { method: 'POST' }).catch(() => {});
