@@ -262,6 +262,21 @@ let _pfGeoLng    = null;  // lng confirmed in the modal
  *   - Immediately if the user already skipped this session (sessionStorage flag).
  */
 function _waitForGeoDecision() {
+  const geoModalEnabled = typeof GEO_ADDRESS_MODAL_ENABLED === 'boolean' ? GEO_ADDRESS_MODAL_ENABLED : true;
+
+  // If initial address modal is disabled by config, continue normal load flow.
+  // Keep cached coords when available, but never block with the modal.
+  if (!geoModalEnabled) {
+    try {
+      const pref = localStorage.getItem(GEO_PREF_KEY);
+      if (pref === 'granted') {
+        const cached = JSON.parse(localStorage.getItem(GEO_CACHE_KEY) || 'null');
+        if (cached) _geoCoords = { lat: cached.lat, lng: cached.lng };
+      }
+    } catch (_) {}
+    return Promise.resolve();
+  }
+
   const pref = localStorage.getItem(GEO_PREF_KEY);
 
   if (pref === 'granted') {
