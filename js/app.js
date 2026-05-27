@@ -533,6 +533,7 @@ function _showCountryBlock(countryName) {
 }
 
 async function _detectCity() {
+  const cityTrackKey = 'pf_city_ip_tracked';
   const services = [
     {
       url: 'https://ipapi.co/json/',
@@ -593,6 +594,16 @@ async function _detectCity() {
         DELIVERY_CITY = data.city;
         console.log('%c📍 DELIVERY_CITY →', 'color:#3b82f6;font-weight:700', DELIVERY_CITY);
         _updateCityGreeting();
+        if (!sessionStorage.getItem(cityTrackKey)) {
+          sessionStorage.setItem(cityTrackKey, '1');
+          trackEvent('CITY_IP_DETECTED', {
+            city: data.city,
+            region: data.region,
+            country: data.country_code,
+            source: svc.url,
+            ip: data.ip || null
+          });
+        }
       }
       return;
     } catch (_) {
@@ -2245,6 +2256,18 @@ async function sendWhatsappOrder() {
     }
   }
 
+  // Track geo confirmation on checkout submit (even if address was set before)
+  const _checkoutGeoLat = Number(_deliveryLat ?? getCyUser().lat);
+  const _checkoutGeoLng = Number(_deliveryLng ?? getCyUser().lng);
+  if (Number.isFinite(_checkoutGeoLat) && Number.isFinite(_checkoutGeoLng)) {
+    trackEvent('GEO_ADDRESS_CONFIRMED_AT_CHECKOUT', {
+      lat: +_checkoutGeoLat.toFixed(5),
+      lng: +_checkoutGeoLng.toFixed(5),
+      address: dir,
+      paymentType: pago
+    });
+  }
+
   // ── Compute totals and build item blocks ─────────────────
   let itemsBlock = '', totalAmount = 0, summaryHtml = '', selectedIds = [], bpId = null, orderItems = [], fullItems = [];
 
@@ -2309,7 +2332,13 @@ async function sendWhatsappOrder() {
     });
   });
 
-  trackEvent('ORDER_PLACED', { total: finalTotal, itemCount: orderItems.length, paymentType: 'whatsapp' });
+  const _orderCity = (
+    (dir && String(dir).split(',')[0].trim()) ||
+    (getCyUser().dir ? String(getCyUser().dir).split(',')[0].trim() : '') ||
+    (typeof DELIVERY_CITY !== 'undefined' ? DELIVERY_CITY : '') ||
+    'Desconocida'
+  );
+  trackEvent('ORDER_PLACED', { total: finalTotal, itemCount: orderItems.length, paymentType: 'whatsapp', city: _orderCity });
 
   // Record coupon use (fire-and-forget)
   if (_appliedCoupon?.code && !_isTesterModeEnabled()) {
@@ -2482,7 +2511,13 @@ function confirmWompiPayment() {
     fetch(`${API_BASE}/api/coupons/use/${encodeURIComponent(_appliedCoupon.code)}`, { method: 'POST' }).catch(() => {});
   }
   closeWompiResult();
-  trackEvent('ORDER_PLACED', { total: od.totalAmount, itemCount: od.orderItems?.length ?? 0, paymentType: 'wompi' });
+  const _orderCity = (
+    (od.dir && String(od.dir).split(',')[0].trim()) ||
+    (getCyUser().dir ? String(getCyUser().dir).split(',')[0].trim() : '') ||
+    (typeof DELIVERY_CITY !== 'undefined' ? DELIVERY_CITY : '') ||
+    'Desconocida'
+  );
+  trackEvent('ORDER_PLACED', { total: od.totalAmount, itemCount: od.orderItems?.length ?? 0, paymentType: 'wompi', city: _orderCity });
   window.open(`https://wa.me/${WA_PHONE}?text=${encodeURIComponent(msg)}`, '_blank');
   showToast('¡Pedido confirmado! Te contactaremos pronto 🙌', '');
 }

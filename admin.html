@@ -351,12 +351,15 @@
   .an-group-head:hover { background: #fff7ed; }
   .an-group-title { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
   .an-group-sub { font-size: 11px; color: var(--text-muted); font-weight: 600; }
-  .an-group-count { margin-left: auto; font-size: 10px; font-weight: 700; color: var(--text-muted); background: var(--bg); border-radius: 999px; padding: 4px 8px; }
+  .an-group-refresh { margin-left: auto; font-size: 10px; font-weight: 700; color: var(--text-muted); background: var(--bg); border: 1px solid var(--border); border-radius: 999px; padding: 4px 8px; cursor: pointer; user-select: none; }
+  .an-group-refresh:hover { color: var(--primary); border-color: var(--primary); }
+  .an-group-count { margin-left: 6px; font-size: 10px; font-weight: 700; color: var(--text-muted); background: var(--bg); border-radius: 999px; padding: 4px 8px; }
   .an-group-caret { width: 14px; height: 14px; transition: transform .2s; color: var(--text-muted); }
   .an-group.collapsed .an-group-caret { transform: rotate(-90deg); }
   .an-group-body { padding: 8px 12px 12px; border-top: 1px solid var(--border); }
   .an-group.collapsed .an-group-body { display: none; }
   .an-group-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  .an-group-loading { font-size: 12px; color: var(--text-muted); background: var(--bg); border: 1px dashed var(--border); border-radius: var(--radius-sm); padding: 10px 12px; }
   .an-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
   .an-card-title { font-size: 13px; font-weight: 800; color: var(--text-primary); margin-bottom: 14px; }
   .an-card-full { grid-column: span 1; }
@@ -737,7 +740,7 @@
       <button class="month-nav-btn" onclick="shiftMonth(1)" id="monthNavNextAnalytics" title="Mes siguiente">›</button>
     </div>
     <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);cursor:pointer;user-select:none" title="Excluye eventos con IP 127.0.0.1 / ::1 / 0:0:0:0:0:0:0:1 (pruebas locales)">
-      <input type="checkbox" id="chkExcludeLocal" checked style="accent-color:#F15200;width:14px;height:14px" onchange="loadAnalytics()">
+      <input type="checkbox" id="chkExcludeLocal" checked style="accent-color:#F15200;width:14px;height:14px" onchange="onExcludeLocalToggle()">
       Ocultar pruebas locales
     </label>
   </div>
@@ -830,6 +833,7 @@
       <button class="an-group-head" onclick="_toggleAnGroup('action')">
         <span class="an-group-title">⚡ Acción inmediata</span>
         <span class="an-group-sub">operación y riesgos</span>
+        <span class="an-group-refresh" title="Refrescar este panel" onclick="_refreshAnGroup(event, 'action')">↻</span>
         <span class="an-group-count" id="anGroupCount-action">0</span>
         <svg class="an-group-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 15 6-6 6 6"/></svg>
       </button>
@@ -839,6 +843,7 @@
       <button class="an-group-head" onclick="_toggleAnGroup('attraction')">
         <span class="an-group-title">📡 Atracción</span>
         <span class="an-group-sub">tráfico, ciudad, comportamiento</span>
+        <span class="an-group-refresh" title="Refrescar este panel" onclick="_refreshAnGroup(event, 'attraction')">↻</span>
         <span class="an-group-count" id="anGroupCount-attraction">0</span>
         <svg class="an-group-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 15 6-6 6 6"/></svg>
       </button>
@@ -848,6 +853,7 @@
       <button class="an-group-head" onclick="_toggleAnGroup('discovery')">
         <span class="an-group-title">🔎 Descubrimiento</span>
         <span class="an-group-sub">búsquedas, vistas, categorías</span>
+        <span class="an-group-refresh" title="Refrescar este panel" onclick="_refreshAnGroup(event, 'discovery')">↻</span>
         <span class="an-group-count" id="anGroupCount-discovery">0</span>
         <svg class="an-group-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 15 6-6 6 6"/></svg>
       </button>
@@ -857,6 +863,7 @@
       <button class="an-group-head" onclick="_toggleAnGroup('conversion')">
         <span class="an-group-title">🎯 Conversión</span>
         <span class="an-group-sub">embudo y cierre de compra</span>
+        <span class="an-group-refresh" title="Refrescar este panel" onclick="_refreshAnGroup(event, 'conversion')">↻</span>
         <span class="an-group-count" id="anGroupCount-conversion">0</span>
         <svg class="an-group-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 15 6-6 6 6"/></svg>
       </button>
@@ -866,6 +873,7 @@
       <button class="an-group-head" onclick="_toggleAnGroup('value')">
         <span class="an-group-title">🏆 Valor cliente</span>
         <span class="an-group-sub">revenue y fidelización</span>
+        <span class="an-group-refresh" title="Refrescar este panel" onclick="_refreshAnGroup(event, 'value')">↻</span>
         <span class="an-group-count" id="anGroupCount-value">0</span>
         <svg class="an-group-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 15 6-6 6 6"/></svg>
       </button>
@@ -875,6 +883,7 @@
       <button class="an-group-head" onclick="_toggleAnGroup('diagnostic')">
         <span class="an-group-title">🧪 Diagnóstico avanzado</span>
         <span class="an-group-sub">métricas secundarias</span>
+        <span class="an-group-refresh" title="Refrescar este panel" onclick="_refreshAnGroup(event, 'diagnostic')">↻</span>
         <span class="an-group-count" id="anGroupCount-diagnostic">0</span>
         <svg class="an-group-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 15 6-6 6 6"/></svg>
       </button>
@@ -960,8 +969,12 @@
       <div id="anHighCancel"><div class="an-empty">Cargando…</div></div>
     </div>
     <div class="an-card" style="grid-column:1/-1">
-      <div class="an-card-title">🌆 Distribución por ciudad <span class="an-tip" data-tip="Ciudades detectadas de los visitantes que compartieron ubicación (GEO_ACCEPT). Últimos 90 días. Útil para saber dónde concentrar publicidad.">?</span></div>
+      <div class="an-card-title">🌆 Distribución por ciudad <span class="an-tip" data-tip="Ciudades detectadas por visitantes únicos usando su ubicación más reciente en los últimos 90 días (eventos GEO_ADDRESS_SET, GEO_ADDRESS_CHANGED y GEO_ADDRESS_CONFIRMED_AT_CHECKOUT). Útil para concentrar publicidad.">?</span></div>
       <div id="anCityTable"><div class="an-empty">Cargando…</div></div>
+    </div>
+    <div class="an-card" style="grid-column:1/-1">
+      <div class="an-card-title">💵 Ingresos por ciudad (visitantes únicos) <span class="an-tip" data-tip="Cruza pedidos confirmados con ciudad (últimos 90 días). Muestra visitantes únicos que compraron, cantidad de pedidos e ingresos estimados por ciudad.">?</span></div>
+      <div id="anRevenueCity"><div class="an-empty">Cargando…</div></div>
     </div>
     <div class="an-card">
       <div class="an-card-title">🏷️ Categorías más filtradas (30 días) <span class="an-tip" data-tip="Categorías que los clientes usaron más como filtro al navegar la tienda. Refleja el interés real del catálogo.">?</span></div>
@@ -1675,9 +1688,28 @@ function closeNavDrawer() {
 }
 const _FIXED_SELLER_ID = 'd59ea1a4-5841-4740-950a-fb501a46ebae';
 const TESTER_MODE_KEY = 'pf_tester_mode_v1';
+const EXCLUDE_LOCAL_PREF_KEY = 'adm_an_exclude_local';
 let allOrders = [];
 let currentStatus = 'ALL';
 let currentMonth = (() => { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; })();
+
+function _getExcludeLocalPref() {
+  const raw = localStorage.getItem(EXCLUDE_LOCAL_PREF_KEY);
+  if (raw === null) return true;
+  return raw === '1';
+}
+
+function _applyExcludeLocalPref() {
+  const chk = document.getElementById('chkExcludeLocal');
+  if (!chk) return;
+  chk.checked = _getExcludeLocalPref();
+}
+
+function onExcludeLocalToggle() {
+  const checked = document.getElementById('chkExcludeLocal')?.checked ?? true;
+  localStorage.setItem(EXCLUDE_LOCAL_PREF_KEY, checked ? '1' : '0');
+  loadAnalytics();
+}
 
 function isTesterModeEnabledDevice() {
   return localStorage.getItem(TESTER_MODE_KEY) === '1';
@@ -1741,6 +1773,7 @@ function showDashboard() {
   document.getElementById('navOverlay').style.removeProperty('display');
   document.getElementById('navDrawer').style.removeProperty('display');
   document.getElementById('dashSection').style.display  = 'block';
+  _applyExcludeLocalPref();
   refreshTesterModeAdminBtn();
   _updateMonthNavs();
   // Restore section from URL hash if present
@@ -2372,11 +2405,91 @@ async function advanceToStatus(orderId, status) {
 
 // ── ANALYTICS ─────────────────────────────────────────────
 var _analyticsLayoutBuilt = false;
+let _analyticsStatsCache = {};
+let _analyticsPrevMonthOrders = [];
+const _analyticsLoadedSections = new Set();
+const _AN_GROUP_SECTION = {
+  action: 'action',
+  attraction: 'attraction',
+  discovery: 'discovery',
+  conversion: 'conversion',
+  value: 'value',
+  diagnostic: 'diagnostic'
+};
 
-function _toggleAnGroup(groupId) {
+function _setAnGroupLoading(groupId, loading) {
+  const body = document.getElementById(`anGroupBody-${groupId}`);
+  if (!body) return;
+  const id = `anGroupLoading-${groupId}`;
+  const current = document.getElementById(id);
+  if (loading) {
+    if (current) return;
+    const el = document.createElement('div');
+    el.id = id;
+    el.className = 'an-group-loading';
+    el.textContent = 'Cargando métricas…';
+    body.prepend(el);
+  } else if (current) {
+    current.remove();
+  }
+}
+
+async function _fetchAnalyticsSection(section, force = false) {
+  if (!force && _analyticsLoadedSections.has(section)) return;
+  const res = await fetch(`${API_BASE}/api/analytics/stats?excludeLoopback=${document.getElementById('chkExcludeLocal')?.checked ?? true}&sellerId=${_FIXED_SELLER_ID}&section=${encodeURIComponent(section)}`, {
+    headers: { 'Authorization': `Bearer ${getToken()}` }
+  });
+  if (res.status === 401 || res.status === 403) { sessionStorage.removeItem(AUTH_KEY); location.reload(); return; }
+  if (!res.ok) throw new Error(res.statusText);
+  const partial = await res.json();
+  _analyticsStatsCache = { ..._analyticsStatsCache, ...partial };
+  _analyticsLoadedSections.add(section);
+}
+
+async function _loadAnalyticsGroup(groupId) {
+  const section = _AN_GROUP_SECTION[groupId];
+  if (!section || _analyticsLoadedSections.has(section)) return;
+  _setAnGroupLoading(groupId, true);
+  try {
+    await _fetchAnalyticsSection(section);
+    renderAnalytics(_analyticsStatsCache, _analyticsPrevMonthOrders);
+  } catch (e) {
+    showToast('Error al cargar sección: ' + e.message);
+  } finally {
+    _setAnGroupLoading(groupId, false);
+  }
+}
+
+async function _toggleAnGroup(groupId) {
   const group = document.getElementById(`anGroup-${groupId}`);
   if (!group) return;
+  const wasCollapsed = group.classList.contains('collapsed');
   group.classList.toggle('collapsed');
+  if (wasCollapsed) await _loadAnalyticsGroup(groupId);
+}
+
+async function _refreshAnGroup(e, groupId) {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  const section = _AN_GROUP_SECTION[groupId];
+  if (!section) return;
+
+  _analyticsLoadedSections.delete(section);
+
+  const group = document.getElementById(`anGroup-${groupId}`);
+  if (group?.classList.contains('collapsed')) group.classList.remove('collapsed');
+
+  _setAnGroupLoading(groupId, true);
+  try {
+    await _fetchAnalyticsSection(section, true);
+    renderAnalytics(_analyticsStatsCache, _analyticsPrevMonthOrders);
+  } catch (err) {
+    showToast('Error al refrescar panel: ' + (err?.message || err));
+  } finally {
+    _setAnGroupLoading(groupId, false);
+  }
 }
 
 function _metricCard(metricId) {
@@ -2417,7 +2530,7 @@ function organizeAnalyticsCards() {
   ].forEach(id => _appendMetricCard(id, groups.action));
 
   [
-    'anTrafficSource', 'anCityTable', 'anScrollDepth', 'anAvgSession', 'anVisMapEl'
+    'anTrafficSource', 'anCityTable', 'anRevenueCity', 'anScrollDepth', 'anAvgSession', 'anVisMapEl'
   ].forEach(id => _appendMetricCard(id, groups.attraction));
 
   [
@@ -2442,6 +2555,9 @@ function organizeAnalyticsCards() {
   });
 
   ['action', 'attraction', 'discovery', 'conversion', 'value', 'diagnostic'].forEach(_updateAnGroupCount);
+  ['action', 'attraction', 'discovery', 'conversion', 'value', 'diagnostic'].forEach(name => {
+    document.getElementById(`anGroup-${name}`)?.classList.add('collapsed');
+  });
   _analyticsLayoutBuilt = true;
 }
 
@@ -2492,13 +2608,11 @@ async function loadAnalytics() {
       if (rp.ok) prevMonthOrders = await rp.json();
     } catch (_) {}
 
-    const res = await fetch(`${API_BASE}/api/analytics/stats?excludeLoopback=${document.getElementById('chkExcludeLocal')?.checked ?? true}&sellerId=${_FIXED_SELLER_ID}`, {
-      headers: { 'Authorization': `Bearer ${getToken()}` }
-    });
-    if (res.status === 401 || res.status === 403) { sessionStorage.removeItem(AUTH_KEY); location.reload(); return; }
-    if (!res.ok) throw new Error(res.statusText);
-    const s = await res.json();
-    renderAnalytics(s, prevMonthOrders);
+    _analyticsPrevMonthOrders = prevMonthOrders;
+    _analyticsStatsCache = {};
+    _analyticsLoadedSections.clear();
+    await _fetchAnalyticsSection('overview', true);
+    renderAnalytics(_analyticsStatsCache, _analyticsPrevMonthOrders);
   } catch (e) {
     showToast('Error al cargar analytics: ' + e.message);
   } finally {
@@ -3292,15 +3406,14 @@ function renderAnalytics(s, prevMonthOrders = []) {
     : '<div class="an-empty">Sin datos suficientes — se necesitan ≥3 pedidos por producto en los últimos 90 días</div>';
 
   // ── City distribution table ───────────────────────────────────
-  const locs2  = s.visitorLocations ?? [];
-  const cityCount = {};
-  locs2.forEach(l => { const c = (l.city && String(l.city).trim()) || 'Desconocida'; cityCount[c] = (cityCount[c] || 0) + 1; });
-  const citySorted = Object.entries(cityCount).sort((a, b) => b[1] - a[1]);
-  const cityTotal  = citySorted.reduce((acc, [, n]) => acc + n, 0);
-  document.getElementById('anCityTable').innerHTML = citySorted.length
-    ? `<div style="margin-bottom:8px;font-size:11px;color:var(--text-muted)">Basado en visitantes que compartieron ubicación (últimos 90 días). Total: <strong>${cityTotal}</strong> ubicaciones.</div>
+  const cityRows = s.cityDistribution ?? [];
+  const cityTotal  = cityRows.reduce((acc, r) => acc + Number(r.visitors ?? 0), 0);
+  document.getElementById('anCityTable').innerHTML = cityRows.length
+    ? `<div style="margin-bottom:8px;font-size:11px;color:var(--text-muted)">Basado en visitantes únicos por ciudad (últimos 90 días), incluyendo detección por IP y cambios de dirección. Total: <strong>${cityTotal}</strong> visitantes.</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px">
-        ${citySorted.slice(0, 20).map(([city, count], i) => {
+        ${cityRows.slice(0, 20).map((r, i) => {
+          const city = (r.city && String(r.city).trim()) || 'Desconocida';
+          const count = Number(r.visitors ?? 0);
           const pct  = cityTotal > 0 ? Math.round((count / cityTotal) * 100) : 0;
           const col  = i === 0 ? '#6366f1' : i === 1 ? '#8b5cf6' : i === 2 ? '#a78bfa' : '#9ca3af';
           return `<div style="background:var(--bg);border-radius:10px;padding:10px 14px;border:1px solid var(--border)">
@@ -3315,7 +3428,45 @@ function renderAnalytics(s, prevMonthOrders = []) {
           </div>`;
         }).join('')}
       </div>`
-    : '<div class="an-empty">Sin datos de ubicación — los visitantes deben aceptar compartir su ubicación</div>';
+    : '<div class="an-empty">Sin datos de ciudad aún</div>';
+
+  // ── Revenue by city (unique purchasing visitors) ──────────────
+  const revCity = s.revenueByCity ?? [];
+  const revTotal = revCity.reduce((acc, r) => acc + Number(r.revenue ?? 0), 0);
+  document.getElementById('anRevenueCity').innerHTML = revCity.length
+    ? (() => {
+        const rows = revCity.map(r => {
+          const city = (r.city && String(r.city).trim()) || 'Desconocida';
+          const visitors = Number(r.visitors ?? 0);
+          const orders = Number(r.orders ?? 0);
+          const revenue = Number(r.revenue ?? 0);
+          const share = revTotal > 0 ? Math.round((revenue / revTotal) * 100) : 0;
+          return `<tr>
+            <td style="padding:9px 10px;border-bottom:1px solid var(--border);font-weight:600">${city}</td>
+            <td style="padding:9px 10px;border-bottom:1px solid var(--border);text-align:right">${visitors}</td>
+            <td style="padding:9px 10px;border-bottom:1px solid var(--border);text-align:right">${orders}</td>
+            <td style="padding:9px 10px;border-bottom:1px solid var(--border);text-align:right">${fmtPrice(revenue)}</td>
+            <td style="padding:9px 10px;border-bottom:1px solid var(--border);text-align:right">${share}%</td>
+          </tr>`;
+        }).join('');
+
+        return `<div style="margin-bottom:8px;font-size:11px;color:var(--text-muted)">Base de conteo: <strong>visitantes únicos compradores</strong> por ciudad (últimos 90 días).</div>
+          <div style="overflow:auto;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface)">
+            <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:620px">
+              <thead>
+                <tr style="background:var(--bg)">
+                  <th style="padding:10px;text-align:left;border-bottom:1px solid var(--border);color:var(--text-muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em">Ciudad</th>
+                  <th style="padding:10px;text-align:right;border-bottom:1px solid var(--border);color:var(--text-muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em">Visitantes</th>
+                  <th style="padding:10px;text-align:right;border-bottom:1px solid var(--border);color:var(--text-muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em">Pedidos</th>
+                  <th style="padding:10px;text-align:right;border-bottom:1px solid var(--border);color:var(--text-muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em">Ingresos</th>
+                  <th style="padding:10px;text-align:right;border-bottom:1px solid var(--border);color:var(--text-muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em">Participación</th>
+                </tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>`;
+      })()
+    : '<div class="an-empty">Sin datos aún — se llena cuando hay pedidos con ciudad en analytics</div>';
 
   // ── Geo friction funnel ────────────────────────────────────────
   const funnelMap = Object.fromEntries((s.conversionFunnel ?? []).map(f => [f.step, f.sessions]));
