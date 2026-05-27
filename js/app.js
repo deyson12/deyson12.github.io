@@ -1893,6 +1893,13 @@ function openOrderPopup() {
   document.getElementById('orderOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 
+  // Show delivery notice with hybrid policy:
+  // first 7 days => once per session; after that => once every 7 days.
+  const _noticeEl = document.getElementById('deliveryNotice');
+  if (_noticeEl) {
+    _noticeEl.style.display = _shouldShowDeliveryNotice() ? 'flex' : 'none';
+  }
+
   // Use saved confirmed coords if available, otherwise fall back to geocoding the address text
   const savedDir = _cu0.dir || '';
   resetMapState();
@@ -1910,6 +1917,52 @@ function closeOrderPopup() {
   resetMapState();
 }
 function handleOrderOverlayClick(e) { if (e.target === document.getElementById('orderOverlay')) closeOrderPopup(); }
+
+const _DELIVERY_NOTICE_FIRST_SEEN_KEY = 'pf_delivery_notice_first_seen_v1';
+const _DELIVERY_NOTICE_LAST_SEEN_KEY  = 'pf_delivery_notice_last_seen_v1';
+const _DELIVERY_NOTICE_SESSION_KEY    = 'pf_delivery_notice_session_seen_v1';
+const _DAY_MS = 24 * 60 * 60 * 1000;
+
+function _markDeliveryNoticeSeen(now = Date.now()) {
+  if (!localStorage.getItem(_DELIVERY_NOTICE_FIRST_SEEN_KEY)) {
+    localStorage.setItem(_DELIVERY_NOTICE_FIRST_SEEN_KEY, String(now));
+  }
+  localStorage.setItem(_DELIVERY_NOTICE_LAST_SEEN_KEY, String(now));
+  sessionStorage.setItem(_DELIVERY_NOTICE_SESSION_KEY, '1');
+}
+
+function _shouldShowDeliveryNotice() {
+  const now = Date.now();
+  const firstSeen = Number(localStorage.getItem(_DELIVERY_NOTICE_FIRST_SEEN_KEY) || 0);
+
+  // First ever exposure: show now.
+  if (!firstSeen) {
+    _markDeliveryNoticeSeen(now);
+    return true;
+  }
+
+  const ageMs = now - firstSeen;
+  const inFirstWeek = ageMs < (7 * _DAY_MS);
+
+  if (inFirstWeek) {
+    if (sessionStorage.getItem(_DELIVERY_NOTICE_SESSION_KEY)) return false;
+    _markDeliveryNoticeSeen(now);
+    return true;
+  }
+
+  const lastSeen = Number(localStorage.getItem(_DELIVERY_NOTICE_LAST_SEEN_KEY) || 0);
+  if (!lastSeen || (now - lastSeen) >= (7 * _DAY_MS)) {
+    _markDeliveryNoticeSeen(now);
+    return true;
+  }
+  return false;
+}
+
+function _dismissDeliveryNotice() {
+  _markDeliveryNoticeSeen();
+  const el = document.getElementById('deliveryNotice');
+  if (el) el.style.display = 'none';
+}
 function onPaymentChange() {
   document.getElementById('cambioWrap').style.display =
     document.getElementById('inputPago').value === 'Efectivo' ? 'flex' : 'none';
