@@ -920,6 +920,10 @@
       <div id="anTopProducts"><div class="an-empty">Cargando…</div></div>
     </div>
     <div class="an-card">
+      <div class="an-card-title">❤️ Productos más guardados en favoritos (30 días) <span class="an-tip" data-tip="Productos que más veces los clientes agregaron a favoritos (corazón) en los últimos 30 días. Indica alto interés pero no necesariamente compra — útil para detectar qué productos generan deseo.">?</span></div>
+      <div id="anTopWishlist"><div class="an-empty">Cargando…</div></div>
+    </div>
+    <div class="an-card">
       <div class="an-card-title">🔍 Búsquedas sin resultados (30 días) <span class="an-tip" data-tip="Términos que los clientes buscaron y no encontraron ningún producto. Son oportunidades de ampliar el catálogo.">?</span></div>
       <div id="anNoResults"><div class="an-empty">Cargando…</div></div>
     </div>
@@ -2417,7 +2421,7 @@ function organizeAnalyticsCards() {
   ].forEach(id => _appendMetricCard(id, groups.attraction));
 
   [
-    'anTopProducts', 'anTopCategories', 'anTopSearches', 'anNoResults'
+    'anTopProducts', 'anTopWishlist', 'anTopCategories', 'anTopSearches', 'anNoResults'
   ].forEach(id => _appendMetricCard(id, groups.discovery));
 
   [
@@ -2805,6 +2809,20 @@ function renderAnalytics(s, prevMonthOrders = []) {
           </div>
           <div class="an-bar-track"><div class="an-bar-fill" style="width:${Math.round((p.views/maxPV)*100)}%"></div></div>
           <div class="an-bar-count">${p.views}</div>
+        </div>`).join('')
+    : '<div class="an-empty">Sin datos aún</div>';
+
+  // ── Top wishlisted products ────────────────────────────────────
+  const wishProds = s.topWishlistedProducts ?? [];
+  const maxWP = wishProds[0]?.total ?? 1;
+  document.getElementById('anTopWishlist').innerHTML = wishProds.length
+    ? wishProds.map(p => `
+        <div class="an-bar-row">
+          <div class="an-bar-label" title="${p.productId}">
+            <span style="font-size:10px;color:var(--text-muted);font-family:monospace;margin-right:5px">REF: ${String(p.productId).substring(0,8).toUpperCase()}</span>
+          </div>
+          <div class="an-bar-track"><div class="an-bar-fill" style="width:${Math.round((p.total/maxWP)*100)}%;background:#f43f5e"></div></div>
+          <div class="an-bar-count">${p.total}</div>
         </div>`).join('')
     : '<div class="an-empty">Sin datos aún</div>';
 
