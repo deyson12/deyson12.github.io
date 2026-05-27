@@ -89,13 +89,15 @@ const WOMPI = {
   const wompiIsProd = typeof WOMPI_ENV !== 'undefined' && WOMPI_ENV === 'prod';
 
   const badges = [];
-  if (apiIsProd) {
-    badges.push({ text: 'LOCAL · API PDN', color: '#ef4444', title: 'Estás en local pero apuntando a la API de producción' });
-  } else {
-    badges.push({ text: 'LOCAL', color: '#6366f1', title: 'Ambiente local — API local (seguro)' });
-  }
-  if (wompiIsProd) {
-    badges.push({ text: 'WOMPI · PDN', color: '#f59e0b', title: '⚠️ Wompi apunta a producción — los cobros son REALES' });
+  if (isLocal) {
+    if (apiIsProd) {
+      badges.push({ text: 'LOCAL · API PDN', color: '#ef4444', title: 'Estás en local pero apuntando a la API de producción' });
+    } else {
+      badges.push({ text: 'LOCAL', color: '#6366f1', title: 'Ambiente local — API local (seguro)' });
+    }
+    if (wompiIsProd) {
+      badges.push({ text: 'WOMPI · PDN', color: '#f59e0b', title: '⚠️ Wompi apunta a producción — los cobros son REALES' });
+    }
   }
   if (isTester) {
     badges.push({ text: 'TESTER', color: '#b91c1c', title: 'Modo prueba activo en este dispositivo (no cuenta en estadísticas)' });
