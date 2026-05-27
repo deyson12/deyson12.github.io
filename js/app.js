@@ -2665,8 +2665,10 @@ async function renderWishPanel() {
 function toggleWish(e, id) {
   e.stopPropagation();
   const i = wishlist.indexOf(id);
-  if (i > -1) { wishlist.splice(i, 1); showToast('Eliminado de favoritos', '💔'); trackEvent('WISH_REMOVE', { productId: id }); }
-  else         { wishlist.push(id);     showToast('Guardado en favoritos',   '❤️'); trackEvent('WISH_ADD',    { productId: id }); }
+  const _wp = PRODUCTS.find(x => x.id === id);
+  const _wn = _wp?.name ?? null;
+  if (i > -1) { wishlist.splice(i, 1); showToast('Eliminado de favoritos', '💔'); trackEvent('WISH_REMOVE', { productId: id, name: _wn }); }
+  else         { wishlist.push(id);     showToast('Guardado en favoritos',   '❤️'); trackEvent('WISH_ADD',    { productId: id, name: _wn }); }
   localStorage.setItem('cy_wish', JSON.stringify(wishlist));
   updateWishUI();
   // Update heart buttons in-place — no grid re-render needed
