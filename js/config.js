@@ -77,11 +77,13 @@ const WOMPI = {
   redirectUrl: 'https://pidefacil.shop/wompi-checkout.html',
 };
 
-// ── Dev environment badges ────────────────────────────────────
-// Shown only on localhost/127.0.0.1. Warns if local is hitting prod APIs.
+// ── Dev/test environment badges ────────────────────────────────
+// LOCAL badges: shown only on localhost/127.0.0.1.
+// TESTER badge: shown on any host when tester mode is ON for this device.
 (function() {
   const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-  if (!isLocal) return;
+  const isTester = localStorage.getItem('pf_tester_mode_v1') === '1';
+  if (!isLocal && !isTester) return;
 
   const apiIsProd   = typeof API_BASE  !== 'undefined' && API_BASE.includes('run.app');
   const wompiIsProd = typeof WOMPI_ENV !== 'undefined' && WOMPI_ENV === 'prod';
@@ -94,6 +96,9 @@ const WOMPI = {
   }
   if (wompiIsProd) {
     badges.push({ text: 'WOMPI · PDN', color: '#f59e0b', title: '⚠️ Wompi apunta a producción — los cobros son REALES' });
+  }
+  if (isTester) {
+    badges.push({ text: 'TESTER', color: '#b91c1c', title: 'Modo prueba activo en este dispositivo (no cuenta en estadísticas)' });
   }
 
   const wrap = document.createElement('div');

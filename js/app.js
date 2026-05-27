@@ -155,7 +155,38 @@ function _getSessionId() {
   if (!sid) { sid = crypto.randomUUID(); sessionStorage.setItem('pf_sid', sid); }
   return sid;
 }
+
+// ===== TESTER MODE (per-device in production) =====
+// Controlled from admin only. Storefront reads this flag and skips tracking/writes.
+const TESTER_MODE_KEY = 'pf_tester_mode_v1';
+
+function _isTesterModeEnabled() {
+  return localStorage.getItem(TESTER_MODE_KEY) === '1';
+}
+
+function _setTesterModeEnabled(enabled) {
+  localStorage.setItem(TESTER_MODE_KEY, enabled ? '1' : '0');
+}
+
+function _renderTesterModeBadge() {
+  if (!_isTesterModeEnabled()) return;
+  if (document.getElementById('pfTesterModeBadge')) return;
+  const el = document.createElement('div');
+  el.id = 'pfTesterModeBadge';
+  el.textContent = 'MODO PRUEBA · SIN ESTADISTICAS';
+  el.style.cssText = [
+    'position:fixed', 'right:10px', 'bottom:10px', 'z-index:99999',
+    'background:#b91c1c', 'color:#fff', 'border-radius:999px',
+    'padding:8px 12px', 'font-size:10px', 'font-weight:800',
+    'letter-spacing:.08em', 'text-transform:uppercase',
+    'box-shadow:0 4px 14px rgba(0,0,0,.25)',
+    'pointer-events:none'
+  ].join(';');
+  document.body.appendChild(el);
+}
+
 function trackEvent(eventType, context) {
+  if (_isTesterModeEnabled()) return; // don't pollute real analytics from tester devices
   fetch(`${API_BASE}/api/analytics`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -557,6 +588,7 @@ async function _detectCity() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  _renderTesterModeBadge();
   _detectCity(); // fire-and-forget; resolves before user finishes typing address
   // Track link open immediately — before any geo decision or loading
   if (!sessionStorage.getItem('pf_pv')) {
@@ -1989,6 +2021,11 @@ function setCyUser(patch)   { localStorage.setItem(CY_USER_KEY, JSON.stringify({
  * Lanza un error si la API falla.
  */
 async function ensureGuestUser(name, phone) {
+  if (_isTesterModeEnabled()) {
+    const testerId = getCyUser().id || ('tester-' + crypto.randomUUID());
+    setCyUser({ id: testerId });
+    return testerId;
+  }
   const emailPrefix = 'user' + crypto.randomUUID().replace(/-/g, '').slice(0, 8);
   const storedPhone = getCyUser().phone;
   const res = await fetch(`${API_BASE}/api/auth/register`, {
@@ -2062,6 +2099,10 @@ function _toApiProduct(p) {
  * @param {{ fullItems: Array<{product, qty}>, address: string, paymentType: string }} opts
  */
 async function postOrderToApi({ fullItems, address, paymentType, couponCode, discountAmount, lat, lng }) {
+  if (_isTesterModeEnabled()) {
+    console.info('postOrderToApi skipped: tester mode enabled on this device');
+    return;
+  }
   try {
     const _cu   = getCyUser();
     const orderLat = lat || parseFloat(_cu.lat) || 0;
@@ -2256,12 +2297,12 @@ async function sendWhatsappOrder() {
   trackEvent('ORDER_PLACED', { total: finalTotal, itemCount: orderItems.length, paymentType: 'whatsapp' });
 
   // Record coupon use (fire-and-forget)
-  if (_appliedCoupon?.code) {
+  if (_appliedCoupon?.code && !_isTesterModeEnabled()) {
     fetch(`${API_BASE}/api/coupons/use/${encodeURIComponent(_appliedCoupon.code)}`, { method: 'POST' }).catch(() => {});
   }
 
   // Marketing consent (fire-and-forget — async, never blocks checkout)
-  if (document.getElementById('chkMarketing')?.checked) {
+  if (document.getElementById('chkMarketing')?.checked && !_isTesterModeEnabled()) {
     fetch(`${API_BASE}/api/marketing-consents`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2422,7 +2463,7 @@ function confirmWompiPayment() {
         : (od.fullItems || []).map(i => i?.product?.id).filter(Boolean));
   removePurchasedFromCartByIds(purchasedIds);
   // Record coupon use (fire-and-forget)
-  if (_appliedCoupon?.code) {
+  if (_appliedCoupon?.code && !_isTesterModeEnabled()) {
     fetch(`${API_BASE}/api/coupons/use/${encodeURIComponent(_appliedCoupon.code)}`, { method: 'POST' }).catch(() => {});
   }
   closeWompiResult();

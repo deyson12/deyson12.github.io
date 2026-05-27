@@ -632,6 +632,10 @@
       <span class="nav-item-icon">🗑️</span>
       Limpiar caché
     </button>
+    <button class="nav-item" id="testerModeToggleBtn" onclick="toggleTesterModeDevice()">
+      <span class="nav-item-icon" id="testerModeToggleIcon">🧪</span>
+      <span id="testerModeToggleText">Modo prueba: OFF</span>
+    </button>
     <button class="nav-item nav-item-logout" onclick="doLogout()">
       <span class="nav-item-icon">🚪</span>
       Cerrar sesión
@@ -1666,9 +1670,36 @@ function closeNavDrawer() {
   document.body.style.overflow = '';
 }
 const _FIXED_SELLER_ID = 'd59ea1a4-5841-4740-950a-fb501a46ebae';
+const TESTER_MODE_KEY = 'pf_tester_mode_v1';
 let allOrders = [];
 let currentStatus = 'ALL';
 let currentMonth = (() => { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; })();
+
+function isTesterModeEnabledDevice() {
+  return localStorage.getItem(TESTER_MODE_KEY) === '1';
+}
+
+function refreshTesterModeAdminBtn() {
+  const textEl = document.getElementById('testerModeToggleText');
+  const iconEl = document.getElementById('testerModeToggleIcon');
+  const btnEl = document.getElementById('testerModeToggleBtn');
+  if (!textEl || !iconEl || !btnEl) return;
+  const on = isTesterModeEnabledDevice();
+  textEl.textContent = on ? 'Modo prueba: ON' : 'Modo prueba: OFF';
+  iconEl.textContent = on ? '🧪' : '✅';
+  btnEl.style.background = on ? '#fff7ed' : '';
+  btnEl.style.color = on ? '#c2410c' : '';
+}
+
+function toggleTesterModeDevice() {
+  const on = isTesterModeEnabledDevice();
+  const next = !on;
+  localStorage.setItem(TESTER_MODE_KEY, next ? '1' : '0');
+  refreshTesterModeAdminBtn();
+  showToast(next
+    ? 'Modo prueba activado en este dispositivo (sin estadísticas reales).'
+    : 'Modo prueba desactivado en este dispositivo.');
+}
 
 // ── AUTH ──────────────────────────────────────────────────
 function getToken() { return sessionStorage.getItem(AUTH_KEY); }
@@ -1706,6 +1737,7 @@ function showDashboard() {
   document.getElementById('navOverlay').style.removeProperty('display');
   document.getElementById('navDrawer').style.removeProperty('display');
   document.getElementById('dashSection').style.display  = 'block';
+  refreshTesterModeAdminBtn();
   _updateMonthNavs();
   // Restore section from URL hash if present
   const validSections = ['pedidos', 'analytics', 'productos', 'banners', 'publicidad', 'marketing', 'qr'];
