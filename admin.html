@@ -779,15 +779,15 @@
   <div class="an-stats-grid">
     <div class="an-stat">
       <span class="an-tip" data-tip="Cantidad de usuarios únicos (por IP / cookie) que abrieron la tienda hoy.">?</span>
-      <div class="an-stat-label">Visitantes hoy</div><div class="an-stat-value" id="anVisitorsToday">—</div>
+      <div class="an-stat-label">Visitantes hoy</div><div class="an-stat-value" id="anVisitorsToday">0</div>
     </div>
     <div class="an-stat">
       <span class="an-tip" data-tip="Cantidad de usuarios únicos que visitaron la tienda en el mes actual (acumulado desde el día 1).">?</span>
-      <div class="an-stat-label">Visitantes este mes</div><div class="an-stat-value" id="anVisitorsMonth">—</div>
+      <div class="an-stat-label">Visitantes este mes</div><div class="an-stat-value" id="anVisitorsMonth">0</div>
     </div>
     <div class="an-stat">
       <span class="an-tip" data-tip="Número de sesiones registradas hoy. Una sesión puede incluir múltiples páginas vistas por el mismo usuario.">?</span>
-      <div class="an-stat-label">Sesiones hoy</div><div class="an-stat-value" id="anSessionsToday">—</div>
+      <div class="an-stat-label">Sesiones hoy</div><div class="an-stat-value" id="anSessionsToday">0</div>
     </div>
   </div>
 
@@ -2624,9 +2624,9 @@ async function loadAnalytics() {
 
 function renderAnalytics(s, prevMonthOrders = []) {
   // ── Traffic stats ──────────────────────────────────────────────
-  document.getElementById('anVisitorsToday').textContent  = s.uniqueVisitorsToday   ?? '—';
-  document.getElementById('anVisitorsMonth').textContent  = s.uniqueVisitorsThisMonth ?? '—';
-  document.getElementById('anSessionsToday').textContent  = s.sessionsToday          ?? '—';
+  document.getElementById('anVisitorsToday').textContent  = s.uniqueVisitorsToday   ?? 0;
+  document.getElementById('anVisitorsMonth').textContent  = s.uniqueVisitorsThisMonth ?? 0;
+  document.getElementById('anSessionsToday').textContent  = s.sessionsToday          ?? 0;
 
   // ── Order helpers ──────────────────────────────────────────────
   const orderTotal = o => o.products
@@ -2651,21 +2651,21 @@ function renderAnalytics(s, prevMonthOrders = []) {
 
   const totalRevenueMes    = confirmed.reduce((sum, o) => sum + orderTotal(o), 0);
   const gananciaMes        = confirmed.reduce((sum, o) => sum + orderEarnings(o), 0);
-  const ticketPromedio     = confirmed.length ? totalRevenueMes / confirmed.length : null;
+  const ticketPromedio     = confirmed.length ? totalRevenueMes / confirmed.length : 0;
   const revenuePendiente   = pending.reduce((sum, o) => sum + orderTotal(o), 0);
-  const cancelRate         = orders.length ? Math.round(cancelled.length / orders.length * 100) : null;
+  const cancelRate         = orders.length ? Math.round(cancelled.length / orders.length * 100) : 0;
   const convRate           = (s.uniqueVisitorsThisMonth > 0 && confirmed.length)
                               ? ((confirmed.length / s.uniqueVisitorsThisMonth) * 100).toFixed(1)
-                              : null;
+                              : '0.0';
 
-  document.getElementById('anRevenueMes').textContent      = confirmed.length ? fmtPrice(totalRevenueMes) : '—';
-  document.getElementById('anGananciaMes').textContent     = confirmed.length ? fmtPrice(gananciaMes) : '—';
-  document.getElementById('anTicketPromedio').textContent  = ticketPromedio != null ? fmtPrice(ticketPromedio) : '—';
-  document.getElementById('anConvRate').textContent        = convRate != null ? convRate + '%' : '—';
+  document.getElementById('anRevenueMes').textContent      = fmtPrice(totalRevenueMes);
+  document.getElementById('anGananciaMes').textContent     = fmtPrice(gananciaMes);
+  document.getElementById('anTicketPromedio').textContent  = fmtPrice(ticketPromedio);
+  document.getElementById('anConvRate').textContent        = convRate + '%';
   document.getElementById('anConvRateSub').textContent     = confirmed.length ? `${confirmed.length} confirmados / ${s.uniqueVisitorsThisMonth} visitantes` : '';
-  document.getElementById('anRevenuePendiente').textContent = revenuePendiente > 0 ? fmtPrice(revenuePendiente) : '—';
+  document.getElementById('anRevenuePendiente').textContent = fmtPrice(revenuePendiente);
   document.getElementById('anRevenuePendienteSub').textContent = pending.length ? `${pending.length} pedido${pending.length !== 1 ? 's' : ''} pendiente${pending.length !== 1 ? 's' : ''}` : '';
-  document.getElementById('anCancelRate').textContent      = cancelRate != null ? cancelRate + '%' : '—';
+  document.getElementById('anCancelRate').textContent      = cancelRate + '%';
   document.getElementById('anCancelRateSub').textContent   = cancelled.length ? `${cancelled.length} de ${orders.length} pedidos` : '';
 
   // ── Catalog health ─────────────────────────────────────────────
@@ -2721,11 +2721,16 @@ function renderAnalytics(s, prevMonthOrders = []) {
 
   // ── Nuevos vs recurrentes ──────────────────────────────────────
   const nvr      = s.newVsReturning ?? { newBuyers: 0, returningBuyers: 0 };
-  const nvrNew   = Number(nvr.newBuyers ?? 0);
-  const nvrRet   = Number(nvr.returningBuyers ?? 0);
+  const _toSafeNum = v => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  };
+  const nvrNew   = _toSafeNum(nvr.newBuyers);
+  const nvrRet   = _toSafeNum(nvr.returningBuyers);
   const nvrTotal = nvrNew + nvrRet;
-  const pctNew   = nvrTotal > 0 ? Math.round(nvrNew / nvrTotal * 100) : 0;
-  const pctRet   = 100 - pctNew;
+  const pctNewRaw = nvrTotal > 0 ? Math.round(nvrNew / nvrTotal * 100) : 0;
+  const pctNew    = Number.isFinite(pctNewRaw) ? pctNewRaw : 0;
+  const pctRet    = nvrTotal > 0 ? (100 - pctNew) : 0;
   const nvrNote  = nvrTotal === 0
     ? `<div style="margin-top:12px;padding:10px 14px;border-radius:8px;background:var(--border);font-size:11px;color:var(--text-muted)">⏳ Sin pedidos confirmados aún para este mes.</div>`
     : pctNew > 70
