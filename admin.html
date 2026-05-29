@@ -358,8 +358,9 @@
   .an-group.collapsed .an-group-caret { transform: rotate(-90deg); }
   .an-group-body { padding: 8px 12px 12px; border-top: 1px solid var(--border); }
   .an-group.collapsed .an-group-body { display: none; }
+  .an-group-body.loading .an-card { display: none !important; }
   .an-group-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
-  .an-group-loading { font-size: 12px; color: var(--text-muted); background: var(--bg); border: 1px dashed var(--border); border-radius: var(--radius-sm); padding: 10px 12px; }
+  .an-group-loading { font-size: 14px; color: var(--text-muted); background: var(--bg); border: 1px dashed var(--border); border-radius: var(--radius-sm); padding: 60px 12px; display: flex; align-items: center; justify-content: center; min-height: 200px; font-weight: 500; }
   .an-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
   .an-card-title { font-size: 13px; font-weight: 800; color: var(--text-primary); margin-bottom: 14px; }
   .an-card-full { grid-column: span 1; }
@@ -386,7 +387,8 @@
   .an-hbar-legend { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-bottom: 8px; }
   .an-hbar-legend-item { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--text-secondary); }
   .an-hbar-legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
-  .an-empty { font-size: 13px; color: var(--text-muted); text-align: center; padding: 20px 0; }
+  .an-empty { font-size: 13px; color: var(--text-muted); text-align: center; padding: 40px 20px; min-height: 120px; display: flex; align-items: center; justify-content: center; }
+  .an-empty::before { content: "⟳ "; animation: spin 1.5s linear infinite; margin-right: 6px; display: inline-block; }
 
   /* ── PRODUCTS SECTION ── */
   .prod-grid { display: flex; flex-direction: column; gap: 8px; }
@@ -973,6 +975,15 @@
       <div id="anCityTable"><div class="an-empty">Cargando…</div></div>
     </div>
     <div class="an-card" style="grid-column:1/-1">
+      <div class="an-card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <span>🗺️ Mapa de visitantes (últimos 90 días) <span class="an-tip" data-tip="Ubicaciones GPS de visitantes que aceptaron compartir su ubicación. Solo aparecen usuarios que dieron permiso voluntariamente. Útil para campañas publicitarias segmentadas por zona.">?</span></span>
+        <span id="anVisMapCount" style="font-size:12px;font-weight:500;color:var(--text-muted)"></span>
+      </div>
+      <div id="anVisMapEl" style="height:380px;width:100%;background:var(--border);border-radius:var(--radius-sm);margin-top:8px;position:relative">
+        <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:13px" id="anVisMapPlaceholder">Sin datos de ubicación aún</div>
+      </div>
+    </div>
+    <div class="an-card" style="grid-column:1/-1">
       <div class="an-card-title">💵 Ingresos por ciudad (visitantes únicos) <span class="an-tip" data-tip="Cruza pedidos confirmados con ciudad (últimos 90 días). Muestra visitantes únicos que compraron, cantidad de pedidos e ingresos estimados por ciudad.">?</span></div>
       <div id="anRevenueCity"><div class="an-empty">Cargando…</div></div>
     </div>
@@ -999,15 +1010,6 @@
     <div class="an-card" style="grid-column:1/-1">
       <div class="an-card-title">👁️‍🗨️ Ratio vistas vs ventas por producto <span class="an-tip" data-tip="Cruza los productos más vistos (analytics) con sus ventas reales del mes. Un producto con muchas vistas y pocas ventas puede tener problema de precio, descripción o foto. Útimos 30 días de vistas / mes actual de ventas.">?</span></div>
       <div id="anViewsVsSales"><div class="an-empty">Cargando…</div></div>
-    </div>
-    <div class="an-card" style="grid-column:1/-1">
-      <div class="an-card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-        <span>🗺️ Mapa de visitantes (últimos 90 días) <span class="an-tip" data-tip="Ubicaciones GPS de visitantes que aceptaron compartir su ubicación. Solo aparecen usuarios que dieron permiso voluntariamente. Útil para campañas publicitarias segmentadas por zona.">?</span></span>
-        <span id="anVisMapCount" style="font-size:12px;font-weight:500;color:var(--text-muted)"></span>
-      </div>
-      <div id="anVisMapEl" style="height:380px;width:100%;background:var(--border);border-radius:var(--radius-sm);margin-top:8px;position:relative">
-        <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:13px" id="anVisMapPlaceholder">Sin datos de ubicación aún</div>
-      </div>
     </div>
   </div>
 </div>
@@ -2424,6 +2426,7 @@ function _setAnGroupLoading(groupId, loading) {
   const current = document.getElementById(id);
   if (loading) {
     if (current) return;
+    body.classList.add('loading');
     const el = document.createElement('div');
     el.id = id;
     el.className = 'an-group-loading';
@@ -2431,6 +2434,7 @@ function _setAnGroupLoading(groupId, loading) {
     body.prepend(el);
   } else if (current) {
     current.remove();
+    body.classList.remove('loading');
   }
 }
 
@@ -2530,7 +2534,7 @@ function organizeAnalyticsCards() {
   ].forEach(id => _appendMetricCard(id, groups.action));
 
   [
-    'anTrafficSource', 'anCityTable', 'anRevenueCity', 'anScrollDepth', 'anAvgSession', 'anVisMapEl'
+    'anTrafficSource', 'anCityTable', 'anVisMapEl', 'anRevenueCity', 'anScrollDepth', 'anAvgSession'
   ].forEach(id => _appendMetricCard(id, groups.attraction));
 
   [
@@ -3231,8 +3235,8 @@ function renderAnalytics(s, prevMonthOrders = []) {
 
   // ── Tasa de éxito Wompi ────────────────────────────────────────
   const ws       = s.wompiSuccess ?? {};
-  const wsStart  = Number(ws.wompiStarts  ?? 0);
-  const wsPlaced = Number(ws.wompiPlaced  ?? 0);
+  const wsStart  = Number(ws.wompiStarts ?? 0) || 0;
+  const wsPlaced = Number(ws.wompiPlaced ?? 0) || 0;
   const wsRate   = wsStart > 0 ? Math.round((wsPlaced / wsStart) * 100) : null;
   const wsCol    = wsRate == null ? '#9ca3af' : wsRate >= 60 ? '#22c55e' : wsRate >= 30 ? '#f59e0b' : '#ef4444';
   const wsLabel  = wsRate == null ? '—' : wsRate >= 60 ? '🟢 Buena' : wsRate >= 30 ? '🟡 Media' : '🔴 Baja';
@@ -3411,13 +3415,31 @@ function renderAnalytics(s, prevMonthOrders = []) {
     : '<div class="an-empty">Sin datos suficientes — se necesitan ≥3 pedidos por producto en los últimos 90 días</div>';
 
   // ── City distribution table ───────────────────────────────────
-  const cityRows = s.cityDistribution ?? [];
+  let cityRows = s.cityDistribution ?? [];
+  
+  // Normalize city names (remove accents) and group duplicates
+  const cityMap = new Map();
+  cityRows.forEach(r => {
+    const cityName = (r.city && String(r.city).trim()) || 'Desconocida';
+    // Remove accents for grouping
+    const normalized = cityName.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (!cityMap.has(normalized)) {
+      cityMap.set(normalized, { city: cityName, visitors: 0 });
+    }
+    const entry = cityMap.get(normalized);
+    entry.visitors += Number(r.visitors ?? 0);
+  });
+  
+  // Convert back to array and sort by visitors descending
+  cityRows = Array.from(cityMap.values())
+    .sort((a, b) => b.visitors - a.visitors);
+  
   const cityTotal  = cityRows.reduce((acc, r) => acc + Number(r.visitors ?? 0), 0);
   document.getElementById('anCityTable').innerHTML = cityRows.length
     ? `<div style="margin-bottom:8px;font-size:11px;color:var(--text-muted)">Basado en visitantes únicos por ciudad (últimos 90 días), incluyendo detección por IP y cambios de dirección. Total: <strong>${cityTotal}</strong> visitantes.</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px">
         ${cityRows.slice(0, 20).map((r, i) => {
-          const city = (r.city && String(r.city).trim()) || 'Desconocida';
+          const city = r.city;
           const count = Number(r.visitors ?? 0);
           const pct  = cityTotal > 0 ? Math.round((count / cityTotal) * 100) : 0;
           const col  = i === 0 ? '#6366f1' : i === 1 ? '#8b5cf6' : i === 2 ? '#a78bfa' : '#9ca3af';
@@ -3436,12 +3458,32 @@ function renderAnalytics(s, prevMonthOrders = []) {
     : '<div class="an-empty">Sin datos de ciudad aún</div>';
 
   // ── Revenue by city (unique purchasing visitors) ──────────────
-  const revCity = s.revenueByCity ?? [];
+  let revCity = s.revenueByCity ?? [];
+  
+  // Normalize city names and group duplicates
+  const revCityMap = new Map();
+  revCity.forEach(r => {
+    const cityName = (r.city && String(r.city).trim()) || 'Desconocida';
+    // Remove accents for grouping
+    const normalized = cityName.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (!revCityMap.has(normalized)) {
+      revCityMap.set(normalized, { city: cityName, visitors: 0, orders: 0, revenue: 0 });
+    }
+    const entry = revCityMap.get(normalized);
+    entry.visitors += Number(r.visitors ?? 0);
+    entry.orders += Number(r.orders ?? 0);
+    entry.revenue += Number(r.revenue ?? 0);
+  });
+  
+  // Convert back to array and sort by revenue descending
+  revCity = Array.from(revCityMap.values())
+    .sort((a, b) => b.revenue - a.revenue);
+  
   const revTotal = revCity.reduce((acc, r) => acc + Number(r.revenue ?? 0), 0);
   document.getElementById('anRevenueCity').innerHTML = revCity.length
     ? (() => {
         const rows = revCity.map(r => {
-          const city = (r.city && String(r.city).trim()) || 'Desconocida';
+          const city = r.city;
           const visitors = Number(r.visitors ?? 0);
           const orders = Number(r.orders ?? 0);
           const revenue = Number(r.revenue ?? 0);

@@ -510,6 +510,10 @@ function _closeGeoModal() {
 }
 // ── End delivery address modal ─────────────────────────────────────────────
 function _showCountryBlock(countryName) {
+  // Deshabilitar scroll en html y body
+  document.documentElement.style.overflow = 'hidden';
+  document.body.style.overflow = 'hidden';
+  
   const el = document.createElement('div');
   el.id = 'countryBlockOverlay';
   el.style.cssText = [
@@ -518,18 +522,45 @@ function _showCountryBlock(countryName) {
     'display:flex', 'flex-direction:column',
     'align-items:center', 'justify-content:center',
     'padding:32px', 'text-align:center',
-    "font-family:'Plus Jakarta Sans',system-ui,sans-serif"
+    "font-family:'Plus Jakarta Sans',system-ui,sans-serif",
+    'overflow-y:auto',  // permite scroll dentro del overlay si es necesario
+    'touch-action:none'  // previene scroll en mobile
   ].join(';');
   el.innerHTML = `
-    <div style="font-size:56px;margin-bottom:16px">🇨🇴</div>
     <div style="font-size:22px;font-weight:800;color:#f1f5f9;margin-bottom:10px;line-height:1.3">
       Solo disponible en Colombia
     </div>
-    <div style="font-size:14px;color:#94a3b8;max-width:320px;line-height:1.6">
+    <div style="font-size:14px;color:#94a3b8;max-width:320px;line-height:1.6;margin-bottom:20px">
       Esta tienda opera únicamente dentro de Colombia.<br>
       Tu ubicación detectada es <strong style="color:#cbd5e1">${countryName}</strong>.
+    </div>
+    <div style="font-size:12px;color:#64748b;max-width:340px;line-height:1.7;background:rgba(100,112,139,0.15);padding:14px 16px;border-radius:10px;border-left:3px solid #64748b">
+      <div style="font-weight:700;color:#cbd5e1;margin-bottom:6px">💡 ¿Estás en Colombia?</div>
+      Si estás en Colombia pero ves este mensaje, probablemente tengas una VPN, proxy o herramienta que oculta tu ubicación real. Intenta:
+      <ul style="margin:8px 0;padding-left:20px;text-align:left">
+        <li>Desactivar tu VPN temporalmente</li>
+        <li>Limpiar cookies del navegador</li>
+        <li>Recargar la página</li>
+      </ul>
     </div>`;
+  
   document.body.appendChild(el);
+  
+  // Prevenir scroll con eventos
+  function preventScroll(e) {
+    e.preventDefault();
+  }
+  
+  el.addEventListener('wheel', e => {
+    // Permitir scroll dentro del overlay, pero no propagarlo al fondo
+    if (e.target.closest('#countryBlockOverlay')) {
+      const scrollable = el.scrollHeight > el.clientHeight;
+      if (!scrollable) e.preventDefault();
+    }
+  });
+  
+  document.addEventListener('wheel', preventScroll, { passive: false });
+  document.addEventListener('touchmove', preventScroll, { passive: false });
 }
 
 async function _detectCity() {
