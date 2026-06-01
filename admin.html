@@ -3982,7 +3982,7 @@ async function _qrRender() {
   if (withLogo) {
     const ctx   = offscreen.getContext('2d');
     const logo  = new Image();
-    logo.src    = 'images/icono.png';
+    logo.src    = 'images/logo-small.png';
     await new Promise(resolve => {
       logo.onload  = resolve;
       logo.onerror = resolve;  // skip logo on error
