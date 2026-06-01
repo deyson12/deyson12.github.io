@@ -1190,6 +1190,14 @@
         </div>
       </div>
       <div>
+        <label style="font-size:12px;font-weight:600;color:var(--text-muted);display:block;margin-bottom:5px">Color de fondo</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="qrColorBg" type="color" value="#ffffff" oninput="_qrGenerate()"
+            style="width:38px;height:38px;border:none;border-radius:6px;cursor:pointer;padding:2px">
+          <span style="font-size:12px;color:var(--text-muted)">Fondo</span>
+        </div>
+      </div>
+      <div>
         <label style="font-size:12px;font-weight:600;color:var(--text-muted);display:block;margin-bottom:5px">Tamaño de descarga</label>
         <select id="qrSizeSelect" onchange="_qrGenerate()"
           style="padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font);background:var(--surface);color:var(--text-primary);cursor:pointer">
@@ -1691,6 +1699,19 @@ function closeNavDrawer() {
 const _FIXED_SELLER_ID = 'd59ea1a4-5841-4740-950a-fb501a46ebae';
 const TESTER_MODE_KEY = 'pf_tester_mode_v1';
 const EXCLUDE_LOCAL_PREF_KEY = 'adm_an_exclude_local';
+// QR Generator templates
+const _QR_BASE = 'https://pidefacil.shop/';
+const _QR_TEMPLATES = [
+  { label: '📷 QR físico',       emoji: '📷', source: 'qr' },
+  { label: '📸 Instagram',       emoji: '📸', source: 'instagram' },
+  { label: '💬 WhatsApp',        emoji: '💬', source: 'whatsapp' },
+  { label: '📘 Facebook',        emoji: '📘', source: 'facebook' },
+  { label: '🎵 TikTok',          emoji: '🎵', source: 'tiktok' },
+  { label: '🔍 Google',          emoji: '🔍', source: 'google' },
+  { label: '📧 Email',           emoji: '📧', source: 'email' },
+  { label: '🗺️ Volante',         emoji: '🗺️', source: 'volante' },
+  { label: '🔗 Directo',         emoji: '🔗', source: null },
+];
 let allOrders = [];
 let currentStatus = 'ALL';
 let currentMonth = (() => { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; })();
@@ -3866,18 +3887,6 @@ async function reactivateConsent(id) {
 }
 
 // ── QR GENERATOR ──────────────────────────────────────────
-const _QR_BASE = 'https://pidefacil.shop/';
-const _QR_TEMPLATES = [
-  { label: '📷 QR físico',       emoji: '📷', source: 'qr' },
-  { label: '📸 Instagram',       emoji: '📸', source: 'instagram' },
-  { label: '💬 WhatsApp',        emoji: '💬', source: 'whatsapp' },
-  { label: '📘 Facebook',        emoji: '📘', source: 'facebook' },
-  { label: '🎵 TikTok',          emoji: '🎵', source: 'tiktok' },
-  { label: '🔍 Google',          emoji: '🔍', source: 'google' },
-  { label: '📧 Email',           emoji: '📧', source: 'email' },
-  { label: '🗺️ Volante',         emoji: '🗺️', source: 'volante' },
-  { label: '🔗 Directo',         emoji: '🔗', source: null },
-];
 
 function _qrRenderTemplates() {
   const wrap = document.getElementById('qrTemplates');
@@ -3937,6 +3946,7 @@ async function _qrRender() {
 
   const size      = parseInt(document.getElementById('qrSizeSelect')?.value ?? '800', 10);
   const colorDark = document.getElementById('qrColorDark')?.value ?? '#000000';
+  const colorBg   = document.getElementById('qrColorBg')?.value ?? '#ffffff';
   const withLogo  = document.getElementById('qrLogoCheck')?.checked ?? true;
 
   try { await _qrLoadLib(); } catch (e) {
@@ -3959,7 +3969,7 @@ async function _qrRender() {
     offscreen.width   = size;
     offscreen.height  = size;
     const ctx = offscreen.getContext('2d');
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = colorBg;
     ctx.fillRect(0, 0, size, size);
     ctx.fillStyle = colorDark;
     for (let row = 0; row < moduleCount; row++) {
@@ -3995,7 +4005,7 @@ async function _qrRender() {
       const y        = Math.round((size - boxSize) / 2);
       // White rounded rect background
       ctx.save();
-      ctx.fillStyle = '#ffffff';
+      ctx.fillStyle = colorBg;
       const r = Math.round(boxSize * 0.18);
       ctx.beginPath();
       ctx.moveTo(x + r, y);
@@ -4032,9 +4042,9 @@ async function _qrRender() {
           }
         }
         tmpCtx.putImageData(imgData, 0, 0);
-        // Erase old logo area, restore white background, then redraw tinted version
+        // Erase old logo area, restore background, then redraw tinted version
         ctx.clearRect(x + pad, y + pad, logoSize, logoSize);
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = colorBg;
         ctx.fillRect(x + pad, y + pad, logoSize, logoSize);
         ctx.drawImage(tmp, x + pad, y + pad);
       }
