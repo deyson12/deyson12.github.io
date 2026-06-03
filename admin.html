@@ -630,6 +630,10 @@
       <span class="nav-item-icon">🗺️</span>
       Zonas cobertura
     </button>
+    <button class="nav-item" id="navEmailTest" onclick="showSection('emailtest');closeNavDrawer()">
+      <span class="nav-item-icon">✉️</span>
+      Email Test
+    </button>
   </div>
   <div class="nav-drawer-footer">
     <button class="nav-item" onclick="clearCache();closeNavDrawer()">
@@ -1257,6 +1261,29 @@
   </div>
 </div>
 
+<!-- EMAIL TEST SECTION -->
+<div class="content" id="emailTestSection" style="display:none">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+    <h2 style="font-size:18px;font-weight:800;flex:1">✉️ Email Test</h2>
+  </div>
+  <div style="max-width:520px;background:var(--bg-card);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);padding:24px;display:flex;flex-direction:column;gap:16px">
+    <div class="pf-form-row">
+      <label class="pf-form-label">Asunto (subject) <span style="color:#b91c1c">*</span></label>
+      <input class="pf-form-input" id="etSubject" type="text" placeholder="Ej: Bienvenido a PideFácil">
+    </div>
+    <div class="pf-form-row">
+      <label class="pf-form-label">Destinatario (to) <span style="color:#b91c1c">*</span></label>
+      <input class="pf-form-input" id="etTo" type="email" placeholder="correo@ejemplo.com">
+    </div>
+    <div class="pf-form-row">
+      <label class="pf-form-label">Template (templateFile) <span style="color:#b91c1c">*</span></label>
+      <input class="pf-form-input" id="etTemplate" type="text" placeholder="templates/confirmation_email.html">
+    </div>
+    <div id="etMsg" style="font-size:13px;display:none;padding:10px 14px;border-radius:var(--radius-sm)"></div>
+    <button class="btn-confirm" style="width:100%" onclick="sendEmailTest()">Enviar email de prueba</button>
+  </div>
+</div>
+
 <!-- PRODUCT ZONES PICKER MODAL -->
 <div class="modal-overlay" id="zpkModal" onclick="_zpkHandleOverlayClick(event)">
   <div class="modal-box" style="max-width:460px">
@@ -1654,6 +1681,7 @@ function showSection(section) {
   document.getElementById('marketingSection').style.display  = section === 'marketing'  ? 'block' : 'none';
   document.getElementById('qrSection').style.display         = section === 'qr'         ? 'block' : 'none';
   document.getElementById('zonasSection').style.display      = section === 'zonas'      ? 'block' : 'none';
+  document.getElementById('emailTestSection').style.display   = section === 'emailtest'  ? 'block' : 'none';
   document.getElementById('navPedidos').classList.toggle('active',    section === 'pedidos');
   document.getElementById('navAnalytics').classList.toggle('active',  section === 'analytics');
   document.getElementById('navProductos').classList.toggle('active',  section === 'productos');
@@ -1663,7 +1691,8 @@ function showSection(section) {
   document.getElementById('navMarketing').classList.toggle('active',  section === 'marketing');
   document.getElementById('navQr').classList.toggle('active',          section === 'qr');
   document.getElementById('navZonas').classList.toggle('active',       section === 'zonas');
-  const sectionLabels = { pedidos: 'Pedidos', analytics: 'Analytics', productos: 'Productos', banners: 'Banners', cupones: 'Cupones & Gift Cards', publicidad: 'Publicidad', marketing: 'Marketing', qr: 'Generador QR', zonas: 'Zonas cobertura' };
+  document.getElementById('navEmailTest').classList.toggle('active',    section === 'emailtest');
+  const sectionLabels = { pedidos: 'Pedidos', analytics: 'Analytics', productos: 'Productos', banners: 'Banners', cupones: 'Cupones & Gift Cards', publicidad: 'Publicidad', marketing: 'Marketing', qr: 'Generador QR', zonas: 'Zonas cobertura', emailtest: 'Email Test' };
   const labelEl = document.getElementById('topbarSectionLabel');
   if (labelEl) labelEl.textContent = sectionLabels[section] ?? section;
   history.replaceState(null, '', '#' + section);
@@ -4702,6 +4731,16 @@ function _renderBannerForm(b) {
         <option value="duo-tone"      ${v.template==='duo-tone'      ?'selected':''}>Duo Tone</option>
         <option value="ink"           ${v.template==='ink'           ?'selected':''}>Ink</option>
         <option value="border-frame"  ${v.template==='border-frame'  ?'selected':''}>Border Frame</option>
+        <optgroup label="✨ Nuevos Diseños">
+          <option value="bento-grid"    ${v.template==='bento-grid'    ?'selected':''}>Bento Grid</option>
+          <option value="neon-night"    ${v.template==='neon-night'    ?'selected':''}>Neon Night</option>
+          <option value="liquid-gradient"${v.template==='liquid-gradient'?'selected':''}>Liquid Gradient</option>
+          <option value="glassmorphism" ${v.template==='glassmorphism' ?'selected':''}>Glassmorphism</option>
+          <option value="retro-pop"     ${v.template==='retro-pop'     ?'selected':''}>Retro Pop</option>
+          <option value="cinematic"     ${v.template==='cinematic'     ?'selected':''}>Cinematic Split</option>
+          <option value="pastel-editorial"${v.template==='pastel-editorial'?'selected':''}>Pastel Editorial</option>
+          <option value="stripe-ticker" ${v.template==='stripe-ticker' ?'selected':''}>Stripe Ticker</option>
+        </optgroup>
       </select>
     </div>
     <div class="modal-actions">
@@ -6281,6 +6320,52 @@ async function _saveNewZona() {
   } finally {
     btn.disabled = false;
     btn.textContent = 'Guardar zona';
+  }
+}
+
+async function sendEmailTest() {
+  const subject  = document.getElementById('etSubject').value.trim();
+  const to       = document.getElementById('etTo').value.trim();
+  const template = document.getElementById('etTemplate').value.trim();
+  const msgEl    = document.getElementById('etMsg');
+
+  if (!subject || !to || !template) {
+    msgEl.style.display = 'block';
+    msgEl.style.background = '#fef2f2';
+    msgEl.style.color = '#b91c1c';
+    msgEl.textContent = 'Completa todos los campos obligatorios.';
+    return;
+  }
+
+  msgEl.style.display = 'none';
+  const btn = event.currentTarget;
+  btn.disabled = true;
+  btn.textContent = 'Enviando…';
+
+  try {
+    const res = await fetch(`${API_BASE}/api/email/send-test`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+      body: JSON.stringify({ subject, to, templateFile: template })
+    });
+    const text = await res.text();
+    msgEl.style.display = 'block';
+    if (res.ok) {
+      msgEl.style.background = '#f0fdf4';
+      msgEl.style.color = '#15803d';
+    } else {
+      msgEl.style.background = '#fef2f2';
+      msgEl.style.color = '#b91c1c';
+    }
+    msgEl.textContent = text;
+  } catch (e) {
+    msgEl.style.display = 'block';
+    msgEl.style.background = '#fef2f2';
+    msgEl.style.color = '#b91c1c';
+    msgEl.textContent = 'Error de conexión: ' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Enviar email de prueba';
   }
 }
 </script>

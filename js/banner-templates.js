@@ -448,6 +448,257 @@ const BANNER_TEMPLATES = {
     }
   },
 
+  // ─── BENTO GRID ────────────────────────────────────────────────────────────
+  // Layout de cuadrícula asimétrica. Panel principal con acento + dos celdas stats.
+  'bento-grid': {
+    label: 'Bento Grid',
+    render(b) {
+      const acc = b.accentColor || '#e94560';
+      return `<div class="sbnr">
+  <div class="sbnr-bento" style="background:${b.bg || '#0f0f0f'}">
+    <div class="sbnr-bento-main" style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)">
+      <span class="sbnr-bento-deco">${b.deco || '🛒'}</span>
+      <div class="sbnr-bento-tag" style="border-color:${acc};color:${acc}">${b.label}</div>
+      <h2 class="sbnr-bento-title">${b.title}<br><em>${b.titleEm}</em></h2>
+      <p class="sbnr-bento-sub">${b.sub}</p>
+      <button class="sbnr-bento-btn" style="background:${acc}" onclick="_sbnrAct('${b.id}',0)">${b.btn1.text}</button>
+    </div>
+    <div class="sbnr-bento-cell" style="background:${acc}">
+      <span class="sbnr-bento-cell-icon">⚡</span>
+      <span class="sbnr-bento-cell-label">Velocidad</span>
+      <span class="sbnr-bento-cell-value">Express</span>
+    </div>
+    <div class="sbnr-bento-cell" style="background:#10b981">
+      <span class="sbnr-bento-cell-icon">💚</span>
+      <span class="sbnr-bento-cell-label">Oferta</span>
+      <span class="sbnr-bento-cell-value">Hasta 40%</span>
+    </div>
+  </div>
+</div>`;
+    }
+  },
+
+  // ─── NEON NIGHT ────────────────────────────────────────────────────────────
+  // Fondo negro con grilla perspectivada, blobs de luz, título con gradiente.
+  'neon-night': {
+    label: 'Neon Night',
+    render(b) {
+      const acc = b.accentColor || '#a855f7';
+      return `<div class="sbnr">
+  <div class="sbnr-neon" style="background:${b.bg || '#07040f'}">
+    <div class="sbnr-neon-grid"></div>
+    <div class="sbnr-neon-glow-l"></div>
+    <div class="sbnr-neon-glow-r"></div>
+    <div class="sbnr-neon-content">
+      <div class="sbnr-neon-eyebrow">Edición especial</div>
+      <h2 class="sbnr-neon-title">${b.title}<br><em>${b.titleEm}</em></h2>
+      <p class="sbnr-neon-sub">${b.sub}</p>
+      <div class="sbnr-neon-btns">
+        <button class="sbnr-neon-primary" style="background:linear-gradient(135deg,${acc},#ec4899)" onclick="_sbnrAct('${b.id}',0)">${b.btn1.text}</button>
+        <button class="sbnr-neon-ghost" onclick="_sbnrAct('${b.id}',1)">${b.btn2.text}</button>
+      </div>
+    </div>
+    <div class="sbnr-neon-deco" style="filter:drop-shadow(0 0 22px ${acc}88)">${b.deco || '✨'}</div>
+  </div>
+</div>`;
+    }
+  },
+
+  // ─── LIQUID GRADIENT ───────────────────────────────────────────────────────
+  // Fondo gradiente orgánico con blobs morfantes animados. Emojis flotantes.
+  'liquid-gradient': {
+    label: 'Liquid Gradient',
+    render(b) {
+      const e1 = b.deco || '🥑';
+      const e2 = b.deco2 || '🍊';
+      return `<div class="sbnr">
+  <div class="sbnr-liquid" style="background:linear-gradient(135deg,#ff6b35 0%,#f7931e 35%,#fcdd63 70%,#4ecdc4 100%)">
+    <div class="sbnr-liquid-blob1"></div>
+    <div class="sbnr-liquid-blob2"></div>
+    <div class="sbnr-liquid-content">
+      <div class="sbnr-liquid-badge">${b.label}</div>
+      <h2 class="sbnr-liquid-title">${b.title}<br><em>${b.titleEm}</em></h2>
+      <p class="sbnr-liquid-sub">${b.sub}</p>
+      <div class="sbnr-liquid-btns">
+        <button class="sbnr-liquid-white" onclick="_sbnrAct('${b.id}',0)">${b.btn1.text}</button>
+        <button class="sbnr-liquid-glass" onclick="_sbnrAct('${b.id}',1)">${b.btn2.text}</button>
+      </div>
+    </div>
+    <div class="sbnr-liquid-deco">
+      <span class="sbnr-liquid-em1">${e1}</span>
+      <span class="sbnr-liquid-em2">${e2}</span>
+    </div>
+  </div>
+</div>`;
+    }
+  },
+
+  // ─── GLASSMORPHISM ─────────────────────────────────────────────────────────
+  // Fondo degradado azul-índigo con vidrio esmerilado central y pills laterales.
+  'glassmorphism': {
+    label: 'Glassmorphism',
+    render(b) {
+      return `<div class="sbnr">
+  <div class="sbnr-glass" style="background:linear-gradient(145deg,#0ea5e9 0%,#6366f1 50%,#8b5cf6 100%)">
+    <div class="sbnr-glass-bg-circles">
+      <div class="sbnr-glass-c1"></div>
+      <div class="sbnr-glass-c2"></div>
+      <div class="sbnr-glass-c3"></div>
+    </div>
+    <div class="sbnr-glass-card">
+      <span class="sbnr-glass-tag">✦ Colección Premium</span>
+      <h2 class="sbnr-glass-title">${b.title}<br><em>${b.titleEm}</em></h2>
+      <p class="sbnr-glass-sub">${b.sub}</p>
+      <div class="sbnr-glass-btns">
+        <button class="sbnr-glass-solid" onclick="_sbnrAct('${b.id}',0)">${b.btn1.text}</button>
+        <button class="sbnr-glass-outline" onclick="_sbnrAct('${b.id}',1)">${b.btn2.text}</button>
+      </div>
+    </div>
+    <div class="sbnr-glass-right">
+      <div class="sbnr-glass-pill"><span>🚀</span><span>Envío gratis</span></div>
+      <div class="sbnr-glass-pill"><span>⭐</span><span>4.9/5</span></div>
+      <div class="sbnr-glass-pill"><span>🔒</span><span>Seguro</span></div>
+    </div>
+  </div>
+</div>`;
+    }
+  },
+
+  // ─── RETRO POP ─────────────────────────────────────────────────────────────
+  // Fondo crema con patrón de puntos. Tipografía retro con highlight. Panel naranja.
+  'retro-pop': {
+    label: 'Retro Pop',
+    render(b) {
+      return `<div class="sbnr">
+  <div class="sbnr-retro">
+    <div class="sbnr-retro-left">
+      <div class="sbnr-retro-dots-bg"></div>
+      <span class="sbnr-retro-label">🔥 Ofertón</span>
+      <h2 class="sbnr-retro-title">${b.title}<br><em>${b.titleEm}</em></h2>
+      <p class="sbnr-retro-sub">${b.sub}</p>
+      <div class="sbnr-retro-btns">
+        <button class="sbnr-retro-dark" onclick="_sbnrAct('${b.id}',0)">${b.btn1.text}</button>
+        <button class="sbnr-retro-light" onclick="_sbnrAct('${b.id}',1)">${b.btn2.text}</button>
+      </div>
+    </div>
+    <div class="sbnr-retro-right">
+      <span class="sbnr-retro-emoji">${b.deco || '🛍️'}</span>
+      <span class="sbnr-retro-price">${b.sub.includes('$') ? b.sub.split(' ').pop() : 'Desde $9.900'}</span>
+    </div>
+  </div>
+</div>`;
+    }
+  },
+
+  // ─── CINEMATIC ─────────────────────────────────────────────────────────────
+  // Split 50/50: izquierda negra con scanlines, derecha verde con hexágonos.
+  'cinematic': {
+    label: 'Cinematic Split',
+    render(b) {
+      return `<div class="sbnr">
+  <div class="sbnr-cinematic">
+    <div class="sbnr-cinematic-left">
+      <div class="sbnr-cinematic-scanlines"></div>
+      <div class="sbnr-cinematic-number">01</div>
+      <span class="sbnr-cinematic-tag">★ Nuevo ingreso</span>
+      <h2 class="sbnr-cinematic-title">${b.title}<br><em>${b.titleEm}</em></h2>
+      <div class="sbnr-cinematic-divider"></div>
+      <p class="sbnr-cinematic-sub">${b.sub}</p>
+      <div class="sbnr-cinematic-btns">
+        <button class="sbnr-cinematic-green" onclick="_sbnrAct('${b.id}',0)">${b.btn1.text}</button>
+        <button class="sbnr-cinematic-wire" onclick="_sbnrAct('${b.id}',1)">${b.btn2.text}</button>
+      </div>
+    </div>
+    <div class="sbnr-cinematic-right">
+      <div class="sbnr-cinematic-img-bg"></div>
+      <div class="sbnr-cinematic-hexes">
+        <div class="sbnr-cinematic-hex"></div>
+        <div class="sbnr-cinematic-hex"></div>
+        <div class="sbnr-cinematic-hex"></div>
+      </div>
+      <div class="sbnr-cinematic-content">
+        <div class="sbnr-cinematic-num">3-5 Días</div>
+        <div class="sbnr-cinematic-label">Entrega</div>
+      </div>
+    </div>
+  </div>
+</div>`;
+    }
+  },
+
+  // ─── PASTEL EDITORIAL ──────────────────────────────────────────────────────
+  // Fondo lavanda con barra morada degradada. Estilo editorial. Círculo animado.
+  'pastel-editorial': {
+    label: 'Pastel Editorial',
+    render(b) {
+      return `<div class="sbnr">
+  <div class="sbnr-pastel">
+    <div class="sbnr-pastel-noise"></div>
+    <div class="sbnr-pastel-line"></div>
+    <div class="sbnr-pastel-content">
+      <div class="sbnr-pastel-kicker">Tendencia del mes</div>
+      <h2 class="sbnr-pastel-title">${b.title}<br><em>${b.titleEm}</em></h2>
+      <div class="sbnr-pastel-hr"></div>
+      <p class="sbnr-pastel-sub">${b.sub}</p>
+      <div class="sbnr-pastel-btns">
+        <button class="sbnr-pastel-fill" onclick="_sbnrAct('${b.id}',0)">${b.btn1.text}</button>
+        <button class="sbnr-pastel-muted" onclick="_sbnrAct('${b.id}',1)">${b.btn2.text}</button>
+      </div>
+    </div>
+    <div class="sbnr-pastel-deco">
+      <div class="sbnr-pastel-circle"></div>
+      <span class="sbnr-pastel-emoji">${b.deco || '🌸'}</span>
+    </div>
+  </div>
+</div>`;
+    }
+  },
+
+  // ─── STRIPE TICKER ────────────────────────────────────────────────────────
+  // Banda ticker animada en ámbar, cuerpo negro, líneas verticales.
+  'stripe-ticker': {
+    label: 'Stripe Ticker',
+    render(b) {
+      const tickerText = b.label || 'Oferta especial';
+      return `<div class="sbnr">
+  <div class="sbnr-ticker">
+    <div class="sbnr-ticker-strip">
+      <div class="sbnr-ticker-track">
+        <span class="sbnr-ticker-item">${tickerText}</span>
+        <span class="sbnr-ticker-item">Nuevos productos</span>
+        <span class="sbnr-ticker-item">Descuentos activos</span>
+        <span class="sbnr-ticker-item">Pago fácil</span>
+        <span class="sbnr-ticker-item">Garantía total</span>
+        <span class="sbnr-ticker-item">${tickerText}</span>
+        <span class="sbnr-ticker-item">Nuevos productos</span>
+        <span class="sbnr-ticker-item">Descuentos activos</span>
+        <span class="sbnr-ticker-item">Pago fácil</span>
+        <span class="sbnr-ticker-item">Garantía total</span>
+      </div>
+    </div>
+    <div class="sbnr-ticker-body">
+      <div class="sbnr-ticker-lines"></div>
+      <div class="sbnr-ticker-left">
+        <div class="sbnr-ticker-pretitle">Sólo por hoy</div>
+        <h2 class="sbnr-ticker-title">${b.title}<br><em>${b.titleEm}</em></h2>
+        <p class="sbnr-ticker-sub">${b.sub}</p>
+        <div class="sbnr-ticker-btns">
+          <button class="sbnr-ticker-amber" onclick="_sbnrAct('${b.id}',0)">${b.btn1.text}</button>
+          <button class="sbnr-ticker-dim" onclick="_sbnrAct('${b.id}',1)">${b.btn2.text}</button>
+        </div>
+      </div>
+      <div class="sbnr-ticker-right">
+        <div class="sbnr-ticker-stat">
+          <div class="sbnr-ticker-stat-val">Hasta 30%</div>
+          <div class="sbnr-ticker-stat-lbl">Descuento</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>`;
+    }
+  },
+
 };
 
 /**
