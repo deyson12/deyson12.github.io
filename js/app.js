@@ -3296,17 +3296,12 @@ async function openBannerPopup(filter, title) {
       if (_or.ok) products = _cacheProducts((await _or.json()).content);
     } else if (filter && filter.startsWith('collection:')) {
       const slug = filter.slice('collection:'.length);
-      const _colRes = await fetch(`${API_BASE}/api/collections/slug/${encodeURIComponent(slug)}`);
+      // UNA SOLA PETICIÓN que devuelve colección + todos los productos
+      const _colRes = await fetch(`${API_BASE}/api/collections/slug/${encodeURIComponent(slug)}/with-products`);
       if (_colRes.ok) {
         const col = await _colRes.json();
-        if (col.productIds && col.productIds.length) {
-          const fetches = col.productIds.map(pid =>
-            fetch(`${API_BASE}/api/products/${pid}`)
-              .then(r => r.ok ? r.json() : null)
-              .catch(() => null)
-          );
-          const raws = await Promise.all(fetches);
-          products = raws.filter(Boolean).map(r => { const p = normalizeProduct(r); _productCache.set(p.id, p); return p; });
+        if (col.products && col.products.length) {
+          products = col.products.map(r => { const p = normalizeProduct(r); _productCache.set(p.id, p); return p; });
         }
       }
     } else {
