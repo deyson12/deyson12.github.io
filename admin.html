@@ -4562,12 +4562,14 @@ async function loadBanners() {
   btn.classList.add('spinning');
   document.getElementById('bnnGrid').innerHTML = '<div class="state-box"><div class="state-sub">Cargando banners…</div></div>';
   try {
-    const res = await fetch(`${API_BASE}/api/banners`, {
-      headers: { 'Authorization': `Bearer ${getToken()}` }
-    });
-    if (res.status === 401 || res.status === 403) { localStorage.removeItem(AUTH_KEY); location.reload(); return; }
-    if (!res.ok) throw new Error(res.statusText);
-    _allBanners = await res.json();
+    const [resBanners, resCollections] = await Promise.all([
+      fetch(`${API_BASE}/api/banners`, { headers: { 'Authorization': `Bearer ${getToken()}` } }),
+      fetch(`${API_BASE}/api/collections`, { headers: { 'Authorization': `Bearer ${getToken()}` } })
+    ]);
+    if (resBanners.status === 401 || resBanners.status === 403) { localStorage.removeItem(AUTH_KEY); location.reload(); return; }
+    if (!resBanners.ok) throw new Error(resBanners.statusText);
+    _allBanners = await resBanners.json();
+    if (resCollections.ok) _colecciones = await resCollections.json();
     renderBanners();
   } catch (e) {
     showToast('Error al cargar banners: ' + e.message);
@@ -4766,30 +4768,26 @@ function _renderBannerForm(b) {
       </div>
       <div class="pf-form-field">
         <label class="pf-form-label">Botón 1 — acción</label>
-        <select class="pf-form-input" id="bfBtn1Action" onchange="updateBnnPreview()">
+        <select class="pf-form-input" id="bfBtn1Action" onchange="_updateBannerArgsFields('btn1');updateBnnPreview()">
           <option value="filterCategory" ${(v.btn1?.action||'filterCategory')==='filterCategory'?'selected':''}>filterCategory</option>
           <option value="openBannerPopup" ${v.btn1?.action==='openBannerPopup'?'selected':''}>openBannerPopup</option>
+          <option value="collection" ${v.btn1?.action==='collection'?'selected':''}>collection</option>
         </select>
       </div>
-      <div class="pf-form-field" style="grid-column:span 2">
-        <label class="pf-form-label">Botón 1 — args (JSON array, ej: ["all",null])</label>
-        <input class="pf-form-input" id="bfBtn1Args" oninput="updateBnnPreview()">
-      </div>
+      <div id="bfBtn1ArgsContainer" class="pf-form-field" style="grid-column:span 2"></div>
       <div class="pf-form-field">
         <label class="pf-form-label">Botón 2 — texto</label>
         <input class="pf-form-input" id="bfBtn2Text" value="${v.btn2?.text || ''}" oninput="updateBnnPreview()">
       </div>
       <div class="pf-form-field">
         <label class="pf-form-label">Botón 2 — acción</label>
-        <select class="pf-form-input" id="bfBtn2Action" onchange="updateBnnPreview()">
+        <select class="pf-form-input" id="bfBtn2Action" onchange="_updateBannerArgsFields('btn2');updateBnnPreview()">
           <option value="filterCategory" ${v.btn2?.action==='filterCategory'?'selected':''}>filterCategory</option>
           <option value="openBannerPopup" ${(v.btn2?.action||'openBannerPopup')==='openBannerPopup'?'selected':''}>openBannerPopup</option>
+          <option value="collection" ${v.btn2?.action==='collection'?'selected':''}>collection</option>
         </select>
       </div>
-      <div class="pf-form-field" style="grid-column:span 2">
-        <label class="pf-form-label">Botón 2 — args (JSON array)</label>
-        <input class="pf-form-input" id="bfBtn2Args" oninput="updateBnnPreview()">
-      </div>
+      <div id="bfBtn2ArgsContainer" class="pf-form-field" style="grid-column:span 2"></div>
     </div>
     <div class="pf-form-field">
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text-primary)">
@@ -4835,11 +4833,12 @@ function _renderBannerForm(b) {
       <button style="flex:1;padding:11px;border:1.5px solid var(--border);background:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;color:var(--text-secondary);transition:background .15s" onclick="closeBannerModal()">Cancelar</button>
     </div>`;
 
-  // Asignar args por JS para evitar que las comillas del JSON rompan el atributo HTML
-  document.getElementById('bfBtn1Args').value = v.btn1?.args ? JSON.stringify(v.btn1.args) : '["all",null]';
-  document.getElementById('bfBtn2Args').value = v.btn2?.args ? JSON.stringify(v.btn2.args) : '["offer","Ofertas del día"]';
-  // Render initial preview
-  updateBnnPreview();
+  // Inicializar campos dinámicos para botones
+  setTimeout(() => {
+    _updateBannerArgsFields('btn1');
+    _updateBannerArgsFields('btn2');
+    updateBnnPreview();
+  }, 0);
 }
 
 function updateBnnPreview() {
@@ -4859,14 +4858,71 @@ function updateBnnPreview() {
     titleEm:     document.getElementById('bfTitleEm')?.value || 'destacado',
     sub:         document.getElementById('bfSub')?.value   || 'Subtítulo del banner',
     template:    document.getElementById('bfTemplate')?.value || 'glow',
-    btn1: { text: document.getElementById('bfBtn1Text')?.value || 'Ver más', action: 'filterCategory', args: [] },
-    btn2: { text: document.getElementById('bfBtn2Text')?.value || 'Explorar', action: 'filterCategory', args: [] },
+    btn1: { text: document.getElementById('bfBtn1Text')?.value || 'Ver más', action: document.getElementById('bfBtn1Action')?.value || 'filterCategory', args: _getBannerBtnArgs('btn1') },
+    btn2: { text: document.getElementById('bfBtn2Text')?.value || 'Explorar', action: document.getElementById('bfBtn2Action')?.value || 'filterCategory', args: _getBannerBtnArgs('btn2') },
   };
   frame.innerHTML = renderBannerTemplate(b);
 }
 
+function _getBannerBtnArgs(btnNum) {
+  const action = document.getElementById(`bfBtn${btnNum.slice(-1)}Action`)?.value || 'filterCategory';
+  if (action === 'filterCategory') {
+    const catSelect = document.getElementById(`bfBtn${btnNum.slice(-1)}CatSelect`);
+    return catSelect ? [catSelect.value, null] : ['all', null];
+  } else if (action === 'collection') {
+    const colSelect = document.getElementById(`bfBtn${btnNum.slice(-1)}ColSelect`);
+    return colSelect ? [colSelect.value] : [];
+  } else if (action === 'openBannerPopup') {
+    const titleInput = document.getElementById(`bfBtn${btnNum.slice(-1)}PopupTitle`);
+    return titleInput ? [titleInput.value || 'Ofertas'] : ['Ofertas'];
+  }
+  return [];
+}
+
+function _updateBannerArgsFields(btnNum) {
+  const btnIdx = btnNum === 'btn1' ? '1' : '2';
+  const action = document.getElementById(`bfBtn${btnIdx}Action`)?.value || 'filterCategory';
+  const container = document.getElementById(`bfBtn${btnIdx}ArgsContainer`);
+  if (!container) return;
+
+  // Obtener los args existentes del banner (si está editando)
+  const btnData = btnNum === 'btn1' ? window._editingBannerData?.btn1 : window._editingBannerData?.btn2;
+  const existingArgs = btnData?.args || [];
+
+  let html = '';
+  if (action === 'filterCategory') {
+    const selectedCat = existingArgs[0] || allCategories[0]?.name || 'all';
+    html = `
+      <label class="pf-form-label">Categoría</label>
+      <select class="pf-form-input" id="bfBtn${btnIdx}CatSelect" onchange="updateBnnPreview()">
+        <option value="all" ${selectedCat === 'all' ? 'selected' : ''}>Todas las categorías</option>
+        ${allCategories.map(c => `<option value="${c.name}" ${selectedCat === c.name ? 'selected' : ''}>${c.name}</option>`).join('')}
+      </select>
+    `;
+  } else if (action === 'collection') {
+    const selectedCol = existingArgs[0] || _colecciones[0]?.slug || '';
+    html = `
+      <label class="pf-form-label">Colección</label>
+      <select class="pf-form-input" id="bfBtn${btnIdx}ColSelect" onchange="updateBnnPreview()">
+        <option value="">— Selecciona una colección —</option>
+        ${_colecciones.filter(c => c.active).map(c => `<option value="${c.slug}" ${selectedCol === c.slug ? 'selected' : ''}>${c.title || c.slug}</option>`).join('')}
+      </select>
+    `;
+  } else if (action === 'openBannerPopup') {
+    const existingTitle = existingArgs[0] || '';
+    html = `
+      <label class="pf-form-label">Título del popup</label>
+      <input class="pf-form-input" type="text" id="bfBtn${btnIdx}PopupTitle" placeholder="ej: Ofertas del día" value="${existingTitle}" oninput="updateBnnPreview()">
+    `;
+  }
+
+  container.innerHTML = html;
+  updateBnnPreview();
+}
+
 function openBannerCreateModal() {
   _editingBannerId = null;
+  window._editingBannerData = null;
   document.getElementById('bannerModalTitle').textContent = 'Nuevo banner';
   _renderBannerForm(null);
   document.getElementById('bannerModal').classList.add('open');
@@ -4876,6 +4932,7 @@ function openBannerEditModal(id) {
   const b = _allBanners.find(x => x.id === id);
   if (!b) return;
   _editingBannerId = id;
+  window._editingBannerData = b;
   document.getElementById('bannerModalTitle').textContent = 'Editar banner — ' + id;
   _renderBannerForm(b);
   document.getElementById('bannerModal').classList.add('open');
@@ -4885,9 +4942,8 @@ async function saveBanner() {
   const id = (document.getElementById('bfId')?.value || '').trim();
   if (!id) { showToast('El ID del banner es obligatorio.'); return; }
 
-  let btn1Args, btn2Args;
-  try { btn1Args = JSON.parse(document.getElementById('bfBtn1Args').value); } catch (_) { showToast('Args botón 1: JSON inválido.'); return; }
-  try { btn2Args = JSON.parse(document.getElementById('bfBtn2Args').value); } catch (_) { showToast('Args botón 2: JSON inválido.'); return; }
+  const btn1Args = _getBannerBtnArgs('btn1');
+  const btn2Args = _getBannerBtnArgs('btn2');
 
   const dto = {
     id,

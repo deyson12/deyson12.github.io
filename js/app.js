@@ -1197,6 +1197,7 @@ window._sbnrAct = function(id, btnIdx) {
   const btn = btnIdx === 0 ? b.btn1 : b.btn2;
   if (btn.action === 'filterCategory') filterCategory(btn.args[0], btn.args[1]);
   else if (btn.action === 'openBannerPopup') openBannerPopup(btn.args[0], btn.args[1]);
+  else if (btn.action === 'collection') openBannerPopup('collection:' + btn.args[0], btn.args[1]);
 };
 
 // ===== BANNER =====
