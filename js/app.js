@@ -710,6 +710,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (_popupQueue.length) _showNextPopup();
   _handleProductDeepLink();
   _handleOrderDeepLink();
+  _handleCollectionDeepLink();
   // Track page view (once per session) — already fired at DOMContentLoaded, skip here
   // Track UTM entry — already fired at DOMContentLoaded, skip here
   // Scroll-to-top button visibility
@@ -2757,6 +2758,17 @@ function toggleWish(e, id) {
 }
 
 // ===== PRODUCT MODAL =====
+async function _handleCollectionDeepLink() {
+  const slug = new URLSearchParams(location.search).get('c');
+  if (!slug) return;
+  try {
+    const res = await fetch(`${API_BASE}/api/collections/slug/${encodeURIComponent(slug)}`);
+    if (!res.ok) return;
+    const col = await res.json();
+    openBannerPopup('collection:' + slug, col.title || slug);
+  } catch (_) {}
+}
+
 function _handleProductDeepLink() {
   const id = new URLSearchParams(location.search).get('p');
   if (!id) return;
@@ -3282,13 +3294,30 @@ async function openBannerPopup(filter, title) {
       const _geoOffer = _geoCoords ? `&lat=${_geoCoords.lat}&lng=${_geoCoords.lng}` : '';
       const _or = await fetch(`${API_BASE}/api/products/pidefacil/offers?page=0&size=50${_geoOffer}`);
       if (_or.ok) products = _cacheProducts((await _or.json()).content);
+    } else if (filter && filter.startsWith('collection:')) {
+      const slug = filter.slice('collection:'.length);
+      const _colRes = await fetch(`${API_BASE}/api/collections/slug/${encodeURIComponent(slug)}`);
+      if (_colRes.ok) {
+        const col = await _colRes.json();
+        if (col.productIds && col.productIds.length) {
+          const fetches = col.productIds.map(pid =>
+            fetch(`${API_BASE}/api/products/${pid}`)
+              .then(r => r.ok ? r.json() : null)
+              .catch(() => null)
+          );
+          const raws = await Promise.all(fetches);
+          products = raws.filter(Boolean).map(r => { const p = normalizeProduct(r); _productCache.set(p.id, p); return p; });
+        }
+      }
     } else {
       const _geoCat = _geoCoords ? `&lat=${_geoCoords.lat}&lng=${_geoCoords.lng}` : '';
       const _cr = await fetch(`${API_BASE}/api/products/pidefacil/paged?category=${encodeURIComponent(filter)}&page=0&size=50${_geoCat}`);
       if (_cr.ok) products = _cacheProducts((await _cr.json()).content);
     }
   } catch (_) {}
-  document.getElementById('bnrPopupGrid').innerHTML = products.map(p => buildCard(p)).join('');
+  document.getElementById('bnrPopupGrid').innerHTML = products.length
+    ? products.map(p => buildCard(p)).join('')
+    : '<p style="text-align:center;padding:24px;color:var(--text-muted)">No hay productos en esta colección.</p>';
 }
 function closeBannerPopup() { document.getElementById('bnrPopupOverlay').classList.remove('open'); document.body.style.overflow = ''; }
 function handleBnrPopupClick(e) { if (e.target === document.getElementById('bnrPopupOverlay')) closeBannerPopup(); }

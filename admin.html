@@ -630,6 +630,10 @@
       <span class="nav-item-icon">🗺️</span>
       Zonas cobertura
     </button>
+    <button class="nav-item" id="navColecciones" onclick="showSection('colecciones');closeNavDrawer()">
+      <span class="nav-item-icon">🔗</span>
+      Colecciones
+    </button>
     <button class="nav-item" id="navEmailTest" onclick="showSection('emailtest');closeNavDrawer()">
       <span class="nav-item-icon">✉️</span>
       Email Test
@@ -1261,6 +1265,75 @@
   </div>
 </div>
 
+<!-- COLECCIONES SECTION -->
+<div class="content" id="coleccionesSection" style="display:none">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+    <h2 style="font-size:18px;font-weight:800;flex:1">🔗 Colecciones</h2>
+    <button class="btn-confirm" onclick="openColeccionModal(null)" style="display:flex;align-items:center;gap:6px;padding:9px 18px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15"><path d="M12 5v14M5 12h14"/></svg>
+      Nueva colección
+    </button>
+  </div>
+  <p style="font-size:13px;color:var(--text-muted);margin-bottom:18px">Agrupa productos de distintas categorías y compártelos con un link: <strong>pidefacil.shop/?c=SLUG</strong></p>
+  <div class="table-wrap" id="coleccionesTableWrap">
+    <div class="table-count" id="coleccionesCount">—</div>
+    <table>
+      <thead><tr>
+        <th>Slug / Link</th>
+        <th>Título</th>
+        <th style="text-align:center">Productos</th>
+        <th style="text-align:center">Estado</th>
+        <th style="text-align:right">Acciones</th>
+      </tr></thead>
+      <tbody id="coleccionesTbody"><tr><td colspan="5" style="text-align:center;padding:32px;color:var(--text-muted)"><div class="spinner" style="margin:0 auto 8px"></div>Cargando…</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- COLECCION MODAL -->
+<div class="modal-overlay" id="colModal" onclick="_colHandleOverlay(event)">
+  <div class="modal-box" style="max-width:580px">
+    <div class="modal-head">
+      <div class="modal-head-title" id="colModalTitle">Nueva colección</div>
+      <button class="modal-close" onclick="closeColeccionModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-content" style="padding:20px 24px;display:flex;flex-direction:column;gap:16px">
+      <input type="hidden" id="colId">
+      <div class="pf-form-row">
+        <label class="pf-form-label">Slug (URL) <span style="color:#b91c1c">*</span></label>
+        <input class="pf-form-input" id="colSlug" type="text" placeholder="ej: mundial-2026" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9-]/g,'-')">
+        <span style="font-size:11px;color:var(--text-muted)">Accesible en: <strong>pidefacil.shop/?c=<span id="colSlugPreview">slug</span></strong></span>
+      </div>
+      <div class="pf-form-row">
+        <label class="pf-form-label">Título visible en el popup <span style="color:#b91c1c">*</span></label>
+        <input class="pf-form-input" id="colTitle" type="text" placeholder="ej: ⚽ Productos del Mundial 2026">
+      </div>
+      <div class="pf-form-row">
+        <label class="pf-form-label" style="margin-bottom:6px">Productos seleccionados (<span id="colProdCount">0</span>)</label>
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <div style="position:relative;flex:1">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--text-muted)"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input class="pf-form-input" id="colProdSearch" type="text" placeholder="Buscar producto por nombre…" style="padding-left:32px" oninput="_colSearchProducts()">
+          </div>
+        </div>
+        <div id="colProdSearchResults" style="max-height:180px;overflow-y:auto;border:1.5px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px;display:none"></div>
+        <div id="colProdSelected" style="display:flex;flex-wrap:wrap;gap:6px;min-height:32px"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input type="checkbox" id="colActive" style="width:16px;height:16px;accent-color:var(--primary)">
+        <label for="colActive" style="font-size:13px;font-weight:600">Activa (visible al abrir el link)</label>
+      </div>
+      <div id="colMsg" style="font-size:13px;display:none;padding:10px 14px;border-radius:var(--radius-sm)"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeColeccionModal()">Cancelar</button>
+      <button class="btn-confirm" id="colSaveBtn" onclick="saveColeccion()">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <!-- EMAIL TEST SECTION -->
 <div class="content" id="emailTestSection" style="display:none">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
@@ -1681,7 +1754,8 @@ function showSection(section) {
   document.getElementById('marketingSection').style.display  = section === 'marketing'  ? 'block' : 'none';
   document.getElementById('qrSection').style.display         = section === 'qr'         ? 'block' : 'none';
   document.getElementById('zonasSection').style.display      = section === 'zonas'      ? 'block' : 'none';
-  document.getElementById('emailTestSection').style.display   = section === 'emailtest'  ? 'block' : 'none';
+  document.getElementById('emailTestSection').style.display   = section === 'emailtest'   ? 'block' : 'none';
+  document.getElementById('coleccionesSection').style.display  = section === 'colecciones' ? 'block' : 'none';
   document.getElementById('navPedidos').classList.toggle('active',    section === 'pedidos');
   document.getElementById('navAnalytics').classList.toggle('active',  section === 'analytics');
   document.getElementById('navProductos').classList.toggle('active',  section === 'productos');
@@ -1691,8 +1765,9 @@ function showSection(section) {
   document.getElementById('navMarketing').classList.toggle('active',  section === 'marketing');
   document.getElementById('navQr').classList.toggle('active',          section === 'qr');
   document.getElementById('navZonas').classList.toggle('active',       section === 'zonas');
-  document.getElementById('navEmailTest').classList.toggle('active',    section === 'emailtest');
-  const sectionLabels = { pedidos: 'Pedidos', analytics: 'Analytics', productos: 'Productos', banners: 'Banners', cupones: 'Cupones & Gift Cards', publicidad: 'Publicidad', marketing: 'Marketing', qr: 'Generador QR', zonas: 'Zonas cobertura', emailtest: 'Email Test' };
+  document.getElementById('navEmailTest').classList.toggle('active',      section === 'emailtest');
+  document.getElementById('navColecciones').classList.toggle('active',   section === 'colecciones');
+  const sectionLabels = { pedidos: 'Pedidos', analytics: 'Analytics', productos: 'Productos', banners: 'Banners', cupones: 'Cupones & Gift Cards', publicidad: 'Publicidad', marketing: 'Marketing', qr: 'Generador QR', zonas: 'Zonas cobertura', emailtest: 'Email Test', colecciones: 'Colecciones' };
   const labelEl = document.getElementById('topbarSectionLabel');
   if (labelEl) labelEl.textContent = sectionLabels[section] ?? section;
   history.replaceState(null, '', '#' + section);
@@ -1705,6 +1780,7 @@ function showSection(section) {
   if (section === 'marketing')  loadMarketingConsents();
   if (section === 'qr')         _qrRenderTemplates();
   if (section === 'zonas')      loadZonas();
+  if (section === 'colecciones') loadColecciones();
 }
 
 function onRefresh() {
@@ -1789,8 +1865,8 @@ function toggleTesterModeDevice() {
 }
 
 // ── AUTH ──────────────────────────────────────────────────
-function getToken() { return sessionStorage.getItem(AUTH_KEY); }
-function doLogout() { sessionStorage.removeItem(AUTH_KEY); location.reload(); }
+function getToken() { return localStorage.getItem(AUTH_KEY); }
+function doLogout() { localStorage.removeItem(AUTH_KEY); location.reload(); }
 
 async function doLogin() {
   const email = document.getElementById('inputEmail').value.trim();
@@ -1808,7 +1884,7 @@ async function doLogin() {
     });
     if (!res.ok) throw new Error('Unauthorized');
     const data = await res.json();
-    sessionStorage.setItem(AUTH_KEY, data.token ?? data.accessToken ?? data.jwt ?? '');
+    localStorage.setItem(AUTH_KEY, data.token ?? data.accessToken ?? data.jwt ?? '');
     showDashboard();
   } catch {
     errEl.textContent = 'Credenciales incorrectas o sin acceso.';
@@ -1891,7 +1967,7 @@ async function loadOrders() {
     const res = await fetch(`${API_BASE}/api/orders/seller/${_FIXED_SELLER_ID}/month/${currentMonth}`, {
       headers: { 'Authorization': `Bearer ${getToken()}` }
     });
-    if (res.status === 401 || res.status === 403) { sessionStorage.removeItem(AUTH_KEY); location.reload(); return; }
+    if (res.status === 401 || res.status === 403) { localStorage.removeItem(AUTH_KEY); location.reload(); return; }
     if (!res.ok) throw new Error(res.statusText);
     allOrders = await res.json();
     updateStats();
@@ -2490,7 +2566,7 @@ async function _fetchAnalyticsSection(section, force = false) {
   const res = await fetch(`${API_BASE}/api/analytics/stats?excludeLoopback=${document.getElementById('chkExcludeLocal')?.checked ?? true}&sellerId=${_FIXED_SELLER_ID}&section=${encodeURIComponent(section)}`, {
     headers: { 'Authorization': `Bearer ${getToken()}` }
   });
-  if (res.status === 401 || res.status === 403) { sessionStorage.removeItem(AUTH_KEY); location.reload(); return; }
+  if (res.status === 401 || res.status === 403) { localStorage.removeItem(AUTH_KEY); location.reload(); return; }
   if (!res.ok) throw new Error(res.statusText);
   const partial = await res.json();
   _analyticsStatsCache = { ..._analyticsStatsCache, ...partial };
@@ -3790,7 +3866,7 @@ async function loadMarketingConsents() {
     const res = await fetch(`${API_BASE}/api/marketing-consents`, {
       headers: { 'Authorization': `Bearer ${getToken()}` }
     });
-    if (res.status === 401 || res.status === 403) { sessionStorage.removeItem(AUTH_KEY); location.reload(); return; }
+    if (res.status === 401 || res.status === 403) { localStorage.removeItem(AUTH_KEY); location.reload(); return; }
     if (!res.ok) throw new Error(res.statusText);
     _allConsents = await res.json();
     renderMarketingConsents();
@@ -4130,7 +4206,7 @@ async function loadProducts() {
     const res = await fetch(`${API_BASE}/api/products/all`, {
       headers: { 'Authorization': `Bearer ${getToken()}` }
     });
-    if (res.status === 401 || res.status === 403) { sessionStorage.removeItem(AUTH_KEY); location.reload(); return; }
+    if (res.status === 401 || res.status === 403) { localStorage.removeItem(AUTH_KEY); location.reload(); return; }
     if (!res.ok) throw new Error(res.statusText);
 
     const raw = await res.json();
@@ -4449,7 +4525,7 @@ async function saveProdEdit(id) {
       },
       body: JSON.stringify(body)
     });
-    if (res.status === 401 || res.status === 403) { sessionStorage.removeItem(AUTH_KEY); location.reload(); return; }
+    if (res.status === 401 || res.status === 403) { localStorage.removeItem(AUTH_KEY); location.reload(); return; }
     if (!res.ok) throw new Error(res.statusText);
 
     const updated = { ...p, price, originalPrice, category, active, dropshippingUrl, dropshipping_url: dropshippingUrl, dropshippingPrice, dropshipping_price: dropshippingPrice, revenue };
@@ -4481,7 +4557,7 @@ async function loadBanners() {
     const res = await fetch(`${API_BASE}/api/banners`, {
       headers: { 'Authorization': `Bearer ${getToken()}` }
     });
-    if (res.status === 401 || res.status === 403) { sessionStorage.removeItem(AUTH_KEY); location.reload(); return; }
+    if (res.status === 401 || res.status === 403) { localStorage.removeItem(AUTH_KEY); location.reload(); return; }
     if (!res.ok) throw new Error(res.statusText);
     _allBanners = await res.json();
     renderBanners();
@@ -4867,7 +4943,7 @@ async function clearCache() {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${getToken()}` }
     });
-    if (res.status === 401 || res.status === 403) { sessionStorage.removeItem(AUTH_KEY); location.reload(); return; }
+    if (res.status === 401 || res.status === 403) { localStorage.removeItem(AUTH_KEY); location.reload(); return; }
     if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
     showToast('Caché limpiada correctamente.');
   } catch (e) {
@@ -5241,7 +5317,7 @@ async function loadCoupons() {
     const res = await fetch(`${API_BASE}/api/coupons`, {
       headers: { 'Authorization': `Bearer ${getToken()}` }
     });
-    if (res.status === 401 || res.status === 403) { sessionStorage.removeItem(AUTH_KEY); location.reload(); return; }
+    if (res.status === 401 || res.status === 403) { localStorage.removeItem(AUTH_KEY); location.reload(); return; }
     if (!res.ok) throw new Error(res.statusText);
     _allCoupons = await res.json();
     renderCoupons();
@@ -5813,7 +5889,7 @@ async function loadZonas() {
     const res = await fetch(`${API_BASE}/api/zones`, {
       headers: { 'Authorization': `Bearer ${getToken()}` }
     });
-    if (res.status === 401 || res.status === 403) { sessionStorage.removeItem(AUTH_KEY); location.reload(); return; }
+    if (res.status === 401 || res.status === 403) { localStorage.removeItem(AUTH_KEY); location.reload(); return; }
     if (!res.ok) throw new Error('HTTP ' + res.status);
     _allZones = await res.json();
   } catch (e) {
@@ -6065,7 +6141,7 @@ async function _zpkSave() {
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
       body: JSON.stringify([..._zpkSelected])
     });
-    if (res.status === 401 || res.status === 403) { sessionStorage.removeItem(AUTH_KEY); location.reload(); return; }
+    if (res.status === 401 || res.status === 403) { localStorage.removeItem(AUTH_KEY); location.reload(); return; }
     if (!res.ok) throw new Error('HTTP ' + res.status);
     // Update cache and chip label on the product card
     _prodZoneCache[_zpkProductId] = _zpkSelected.size;
@@ -6307,7 +6383,7 @@ async function _saveNewZona() {
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
       body: JSON.stringify(payload)
     });
-    if (res.status === 401 || res.status === 403) { sessionStorage.removeItem(AUTH_KEY); location.reload(); return; }
+    if (res.status === 401 || res.status === 403) { localStorage.removeItem(AUTH_KEY); location.reload(); return; }
     if (!res.ok) throw new Error('HTTP ' + res.status);
     _closeZonaModal();
     showToast('✅ Zona creada correctamente.');
@@ -6366,6 +6442,231 @@ async function sendEmailTest() {
   } finally {
     btn.disabled = false;
     btn.textContent = 'Enviar email de prueba';
+  }
+}
+
+// ===== COLECCIONES =====
+let _colecciones      = [];
+let _colAllProducts   = [];   // caché de productos para el buscador
+let _colSelectedIds   = [];   // IDs actualmente seleccionados en el modal
+
+async function loadColecciones() {
+  try {
+    const res = await fetch(`${API_BASE}/api/collections`, { headers: { Authorization: `Bearer ${getToken()}` } });
+    if (!res.ok) throw new Error();
+    _colecciones = await res.json();
+  } catch (_) { _colecciones = []; }
+  _renderColeccionesTable();
+}
+
+function _renderColeccionesTable() {
+  const tbody = document.getElementById('coleccionesTbody');
+  const count = document.getElementById('coleccionesCount');
+  count.textContent = `${_colecciones.length} colección${_colecciones.length !== 1 ? 'es' : ''}`;
+  if (!_colecciones.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--text-muted)">Sin colecciones aún. Crea la primera con el botón de arriba.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = _colecciones.map(c => `
+    <tr>
+      <td>
+        <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:12px">${c.slug}</code><br>
+        <a href="/?c=${encodeURIComponent(c.slug)}" target="_blank" rel="noopener" style="font-size:11px;color:var(--primary)">
+          pidefacil.shop/?c=${c.slug}
+        </a>
+      </td>
+      <td style="font-weight:600">${c.title}</td>
+      <td style="text-align:center">${c.productIds ? c.productIds.length : 0}</td>
+      <td style="text-align:center">
+        <span class="status-badge ${c.active ? 'status-confirmado' : 'status-cancelado'}" style="cursor:pointer" onclick="_colToggleActive('${c.id}',this)">
+          ${c.active ? 'Activa' : 'Inactiva'}
+        </span>
+      </td>
+      <td style="text-align:right;white-space:nowrap">
+        <button class="btn-action btn-action-edit" onclick="openColeccionModal('${c.id}')" title="Editar">✏️</button>
+        <button class="btn-action btn-action-delete" onclick="_colDelete('${c.id}')" title="Eliminar">🗑️</button>
+      </td>
+    </tr>`).join('');
+}
+
+async function _colToggleActive(id, el) {
+  try {
+    const res = await fetch(`${API_BASE}/api/collections/${id}/active`, {
+      method: 'PATCH', headers: { Authorization: `Bearer ${getToken()}` }
+    });
+    if (!res.ok) throw new Error();
+    const updated = await res.json();
+    const col = _colecciones.find(c => c.id === id);
+    if (col) { col.active = updated.active; }
+    _renderColeccionesTable();
+  } catch (_) { alert('Error al cambiar estado.'); }
+}
+
+async function _colDelete(id) {
+  if (!confirm('¿Eliminar esta colección? Esta acción no se puede deshacer.')) return;
+  try {
+    const res = await fetch(`${API_BASE}/api/collections/${id}`, {
+      method: 'DELETE', headers: { Authorization: `Bearer ${getToken()}` }
+    });
+    if (!res.ok) throw new Error();
+    _colecciones = _colecciones.filter(c => c.id !== id);
+    _renderColeccionesTable();
+  } catch (_) { alert('Error al eliminar.'); }
+}
+
+async function openColeccionModal(id) {
+  _colSelectedIds = [];
+  document.getElementById('colId').value      = id || '';
+  document.getElementById('colSlug').value    = '';
+  document.getElementById('colTitle').value   = '';
+  document.getElementById('colActive').checked = true;
+  document.getElementById('colProdSearch').value = '';
+  document.getElementById('colProdSearchResults').style.display = 'none';
+  document.getElementById('colProdSearchResults').innerHTML = '';
+  document.getElementById('colMsg').style.display = 'none';
+  document.getElementById('colModalTitle').textContent = id ? 'Editar colección' : 'Nueva colección';
+  document.getElementById('colSlugPreview').textContent = 'slug';
+
+  if (id) {
+    const col = _colecciones.find(c => c.id === id);
+    if (col) {
+      document.getElementById('colSlug').value    = col.slug;
+      document.getElementById('colTitle').value   = col.title;
+      document.getElementById('colActive').checked = col.active;
+      document.getElementById('colSlugPreview').textContent = col.slug;
+      _colSelectedIds = col.productIds ? [...col.productIds] : [];
+    }
+  }
+
+  // Cargar productos para el buscador si no están en caché
+  if (!_colAllProducts.length) {
+    try {
+      const r = await fetch(`${API_BASE}/api/products/all`, { headers: { Authorization: `Bearer ${getToken()}` } });
+      if (r.ok) _colAllProducts = await r.json();
+    } catch (_) {}
+  }
+
+  _colRenderSelected();
+  document.getElementById('colModal').classList.add('open');
+  document.getElementById('colSlug').addEventListener('input', function() {
+    document.getElementById('colSlugPreview').textContent = this.value || 'slug';
+  }, { once: false });
+}
+
+function closeColeccionModal() {
+  document.getElementById('colModal').classList.remove('open');
+}
+
+function _colHandleOverlay(e) {
+  if (e.target.id === 'colModal') closeColeccionModal();
+}
+
+function _colSearchProducts() {
+  const q = document.getElementById('colProdSearch').value.trim().toLowerCase();
+  const box = document.getElementById('colProdSearchResults');
+  if (!q) { box.style.display = 'none'; box.innerHTML = ''; return; }
+  const matches = _colAllProducts.filter(p =>
+    p.active !== false && p.name && p.name.toLowerCase().includes(q) && !_colSelectedIds.includes(p.id)
+  ).slice(0, 10);
+  if (!matches.length) {
+    box.style.display = 'block';
+    box.innerHTML = '<div style="padding:10px 14px;font-size:13px;color:var(--text-muted)">Sin resultados</div>';
+    return;
+  }
+  box.style.display = 'block';
+  box.innerHTML = matches.map(p => `
+    <div onclick="_colAddProduct('${p.id}')" style="padding:9px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);font-size:13px;transition:background .15s"
+         onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+      ${p.image ? `<img src="${p.image}" style="width:34px;height:34px;object-fit:cover;border-radius:6px;flex-shrink:0">` : '<div style="width:34px;height:34px;background:var(--bg);border-radius:6px;flex-shrink:0"></div>'}
+      <div>
+        <div style="font-weight:600;line-height:1.3">${p.name}</div>
+        <div style="font-size:11px;color:var(--text-muted)">${p.id.slice(0,8)}…</div>
+      </div>
+    </div>`).join('');
+}
+
+function _colAddProduct(id) {
+  if (_colSelectedIds.includes(id)) return;
+  _colSelectedIds.push(id);
+  document.getElementById('colProdSearch').value = '';
+  document.getElementById('colProdSearchResults').style.display = 'none';
+  document.getElementById('colProdSearchResults').innerHTML = '';
+  _colRenderSelected();
+}
+
+function _colRemoveProduct(id) {
+  _colSelectedIds = _colSelectedIds.filter(x => x !== id);
+  _colRenderSelected();
+}
+
+function _colRenderSelected() {
+  const wrap = document.getElementById('colProdSelected');
+  const count = document.getElementById('colProdCount');
+  count.textContent = _colSelectedIds.length;
+  if (!_colSelectedIds.length) {
+    wrap.innerHTML = '<span style="font-size:12px;color:var(--text-muted)">Ningún producto seleccionado aún.</span>';
+    return;
+  }
+  wrap.innerHTML = _colSelectedIds.map(id => {
+    const p = _colAllProducts.find(x => x.id === id);
+    const name = p ? p.name : id.slice(0,8) + '…';
+    return `<span style="display:inline-flex;align-items:center;gap:5px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-full);padding:4px 10px;font-size:12px;font-weight:600">
+      ${name}
+      <button onclick="_colRemoveProduct('${id}')" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:14px;line-height:1;padding:0 2px" title="Quitar">&times;</button>
+    </span>`;
+  }).join('');
+}
+
+async function saveColeccion() {
+  const id    = document.getElementById('colId').value;
+  const slug  = document.getElementById('colSlug').value.trim();
+  const title = document.getElementById('colTitle').value.trim();
+  const active = document.getElementById('colActive').checked;
+  const msgEl  = document.getElementById('colMsg');
+
+  if (!slug || !title) {
+    msgEl.style.display = 'block';
+    msgEl.style.background = '#fef2f2';
+    msgEl.style.color = '#b91c1c';
+    msgEl.textContent = 'El slug y el título son obligatorios.';
+    return;
+  }
+
+  msgEl.style.display = 'none';
+  const btn = document.getElementById('colSaveBtn');
+  btn.disabled = true;
+  btn.textContent = 'Guardando…';
+
+  const body = { slug, title, active, productIds: _colSelectedIds };
+  try {
+    const url    = id ? `${API_BASE}/api/collections/${id}` : `${API_BASE}/api/collections`;
+    const method = id ? 'PUT' : 'POST';
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) {
+      const txt = await res.text();
+      throw new Error(txt || res.status);
+    }
+    const saved = await res.json();
+    if (id) {
+      const idx = _colecciones.findIndex(c => c.id === id);
+      if (idx !== -1) _colecciones[idx] = saved; else _colecciones.unshift(saved);
+    } else {
+      _colecciones.unshift(saved);
+    }
+    _renderColeccionesTable();
+    closeColeccionModal();
+  } catch (e) {
+    msgEl.style.display = 'block';
+    msgEl.style.background = '#fef2f2';
+    msgEl.style.color = '#b91c1c';
+    msgEl.textContent = 'Error: ' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Guardar';
   }
 }
 </script>
