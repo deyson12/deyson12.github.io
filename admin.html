@@ -761,6 +761,22 @@
     </label>
   </div>
 
+  <!-- Time range selector for analytics -->
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:16px;flex-wrap:wrap;padding:10px;background:var(--bg);border-radius:var(--radius-sm);border:1px solid var(--border)">
+    <span style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em">Período:</span>
+    <button class="filter-btn active" id="timeRangeBtn-5m" onclick="setAnalyticsTimeRange('5m')" title="Últimos 5 minutos">5m</button>
+    <button class="filter-btn" id="timeRangeBtn-15m" onclick="setAnalyticsTimeRange('15m')" title="Últimos 15 minutos">15m</button>
+    <button class="filter-btn" id="timeRangeBtn-30m" onclick="setAnalyticsTimeRange('30m')" title="Últimos 30 minutos">30m</button>
+    <button class="filter-btn" id="timeRangeBtn-1h" onclick="setAnalyticsTimeRange('1h')" title="Última hora">1h</button>
+    <button class="filter-btn" id="timeRangeBtn-12h" onclick="setAnalyticsTimeRange('12h')" title="Últimas 12 horas">12h</button>
+    <button class="filter-btn" id="timeRangeBtn-24h" onclick="setAnalyticsTimeRange('24h')" title="Últimas 24 horas">24h</button>
+    <button class="filter-btn" id="timeRangeBtn-7d" onclick="setAnalyticsTimeRange('7d')" title="Últimos 7 días">7d</button>
+    <button class="filter-btn" id="timeRangeBtn-30d" onclick="setAnalyticsTimeRange('30d')" title="Últimos 30 días">30d</button>
+    <button class="filter-btn" id="timeRangeBtn-90d" onclick="setAnalyticsTimeRange('90d')" title="Últimos 90 días">90d</button>
+    <button class="filter-btn" id="timeRangeBtn-all" onclick="setAnalyticsTimeRange('all')" title="Desde siempre">Siempre</button>
+    <span style="font-size:10px;color:var(--text-muted);margin-left:auto;display:none" id="anTimeRangeInfo">—</span>
+  </div>
+
   <!-- KPIs principales -->
   <div class="an-section-label">💰 KPIs del mes: <span id="anMonthKpiLabel" style="font-weight:800;text-transform:capitalize"></span></div>
   <div class="an-kpis-grid">
@@ -1827,6 +1843,97 @@ let allOrders = [];
 let currentStatus = 'ALL';
 let currentMonth = (() => { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; })();
 
+// Analytics time range state
+let analyticsTimeRange = '90d'; // default: últimos 90 días
+let analyticsDateRange = { start: null, end: null }; // computed from timeRange
+
+const ANALYTICS_TIME_RANGES = {
+  '5m':  { label: 'Últimos 5 minutos',   minutes: 5 },
+  '15m': { label: 'Últimos 15 minutos',  minutes: 15 },
+  '30m': { label: 'Últimos 30 minutos',  minutes: 30 },
+  '1h':  { label: 'Última hora',         minutes: 60 },
+  '12h': { label: 'Últimas 12 horas',    minutes: 720 },
+  '24h': { label: 'Últimas 24 horas',    minutes: 1440 },
+  '7d':  { label: 'Últimos 7 días',      minutes: 10080 },
+  '30d': { label: 'Últimos 30 días',     minutes: 43200 },
+  '90d': { label: 'Últimos 90 días',     minutes: 129600 },
+  'all': { label: 'Desde siempre',       minutes: null },
+};
+
+function _getAnalyticsTimeRangePref() {
+  return localStorage.getItem('analyticsTimeRange') || '90d';
+}
+
+function _saveAnalyticsTimeRangePref(range) {
+  localStorage.setItem('analyticsTimeRange', range);
+}
+
+function _computeAnalyticsDateRange() {
+  const now = new Date();
+  const rangeConfig = ANALYTICS_TIME_RANGES[analyticsTimeRange];
+  
+  if (analyticsTimeRange === 'all') {
+    analyticsDateRange = {
+      start: new Date('2000-01-01'),
+      end: now
+    };
+  } else if (rangeConfig && rangeConfig.minutes) {
+    const startTime = new Date(now.getTime() - rangeConfig.minutes * 60000);
+    analyticsDateRange = {
+      start: startTime,
+      end: now
+    };
+  }
+}
+
+function _formatDateForApi(date) {
+  if (!date) return null;
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  const hh = String(date.getHours()).padStart(2, '0');
+  const mm = String(date.getMinutes()).padStart(2, '0');
+  const ss = String(date.getSeconds()).padStart(2, '0');
+  return `${y}-${m}-${d}T${hh}:${mm}:${ss}`;
+}
+
+function _formatDateForDisplay(start, end) {
+  if (!start || !end) return '';
+  const opts = { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+  const startStr = start.toLocaleDateString('es-CO', opts);
+  const endStr = end.toLocaleDateString('es-CO', opts);
+  return `${startStr} → ${endStr}`;
+}
+
+function _getAnalyticsTimeRangeLabel() {
+  return ANALYTICS_TIME_RANGES[analyticsTimeRange]?.label || 'Desconocido';
+}
+
+function _updateAnalyticsTimeRangeUI() {
+  // Update active button state
+  document.querySelectorAll('[id^="timeRangeBtn-"]').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  const activeBtn = document.getElementById(`timeRangeBtn-${analyticsTimeRange}`);
+  if (activeBtn) activeBtn.classList.add('active');
+  
+  // Update info text
+  _computeAnalyticsDateRange();
+  const infoEl = document.getElementById('anTimeRangeInfo');
+  if (infoEl) {
+    infoEl.textContent = _formatDateForDisplay(analyticsDateRange.start, analyticsDateRange.end);
+    infoEl.style.display = analyticsTimeRange !== '5m' ? 'block' : 'none';
+  }
+}
+
+function setAnalyticsTimeRange(range) {
+  if (!ANALYTICS_TIME_RANGES[range]) return;
+  analyticsTimeRange = range;
+  _saveAnalyticsTimeRangePref(range);
+  _updateAnalyticsTimeRangeUI();
+  loadAnalytics();
+}
+
 function _getExcludeLocalPref() {
   const raw = localStorage.getItem(EXCLUDE_LOCAL_PREF_KEY);
   if (raw === null) return true;
@@ -1910,6 +2017,11 @@ function showDashboard() {
   _applyExcludeLocalPref();
   refreshTesterModeAdminBtn();
   _updateMonthNavs();
+  
+  // Initialize analytics time range from localStorage
+  analyticsTimeRange = _getAnalyticsTimeRangePref();
+  _updateAnalyticsTimeRangeUI();
+  
   // Restore section from URL hash if present
   const validSections = ['pedidos', 'analytics', 'productos', 'banners', 'publicidad', 'marketing', 'qr'];
   const hashSection = location.hash.replace('#', '');
@@ -2570,7 +2682,21 @@ function _setAnGroupLoading(groupId, loading) {
 
 async function _fetchAnalyticsSection(section, force = false) {
   if (!force && _analyticsLoadedSections.has(section)) return;
-  const res = await fetch(`${API_BASE}/api/analytics/stats?excludeLoopback=${document.getElementById('chkExcludeLocal')?.checked ?? true}&sellerId=${_FIXED_SELLER_ID}&section=${encodeURIComponent(section)}`, {
+  
+  // Compute date range if not already computed
+  if (!analyticsDateRange.start || !analyticsDateRange.end) {
+    _computeAnalyticsDateRange();
+  }
+  
+  // Build query parameters
+  let url = `${API_BASE}/api/analytics/stats?excludeLoopback=${document.getElementById('chkExcludeLocal')?.checked ?? true}&sellerId=${_FIXED_SELLER_ID}&section=${encodeURIComponent(section)}`;
+  
+  // Add date range parameters for all time ranges except 'all'
+  if (analyticsTimeRange !== 'all' && analyticsDateRange.start && analyticsDateRange.end) {
+    url += `&dateFrom=${_formatDateForApi(analyticsDateRange.start)}&dateTo=${_formatDateForApi(analyticsDateRange.end)}`;
+  }
+  
+  const res = await fetch(url, {
     headers: { 'Authorization': `Bearer ${getToken()}` }
   });
   if (res.status === 401 || res.status === 403) { localStorage.removeItem(AUTH_KEY); location.reload(); return; }
@@ -2701,6 +2827,10 @@ async function loadAnalytics() {
   const loader = document.getElementById('analyticsLoader');
   if (loader) loader.style.display = 'flex';
   organizeAnalyticsCards();
+  
+  // Compute date range based on selected time range
+  _computeAnalyticsDateRange();
+  
   try {
     // Ensure categories are loaded
     if (!allCategories.length) {
@@ -2743,6 +2873,7 @@ async function loadAnalytics() {
     } catch (_) {}
 
     _analyticsPrevMonthOrders = prevMonthOrders;
+    // Clear cache to force fresh data fetch with new date range
     _analyticsStatsCache = {};
     _analyticsLoadedSections.clear();
     await _fetchAnalyticsSection('overview', true);
@@ -2756,7 +2887,52 @@ async function loadAnalytics() {
   }
 }
 
+function _updateAnalyticsCardTitles() {
+  const periodLabel = _getAnalyticsTimeRangeLabel();
+  
+  // Map of card container IDs and their title updates
+  const updates = {
+    'anTopProducts': `👁️ Productos más vistos (${periodLabel})`,
+    'anTopWishlist': `❤️ Productos más guardados en favoritos (${periodLabel})`,
+    'anNoResults': `🔍 Búsquedas sin resultados (${periodLabel})`,
+    'anTopSearches': `🔎 Top búsquedas con resultado (${periodLabel})`,
+    'anHighCancel': `❌ Productos con alta cancelación (${periodLabel})`,
+    'anTopCategories': `🏷️ Categorías más filtradas (${periodLabel})`,
+    'anByDay': `📈 Eventos por día (${periodLabel})`,
+    'anTrafficSource': `📣 Tráfico por fuente UTM (${periodLabel})`,
+    'anVisMapEl': `🗺️ Mapa de visitantes (${periodLabel})`,
+    'anRevenueCity': `💵 Ingresos por ciudad (${periodLabel})`
+  };
+  
+  // Update each card's title
+  Object.entries(updates).forEach(([containerId, newTitle]) => {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    const card = container.closest('.an-card');
+    if (card) {
+      const titleEl = card.querySelector('.an-card-title');
+      if (titleEl) {
+        // Keep the tip span if it exists
+        const tipSpan = titleEl.querySelector('.an-tip');
+        const emoji = newTitle.split(' ')[0];
+        const textPart = newTitle.substring(emoji.length + 1);
+        titleEl.innerHTML = `${emoji} ${textPart}${tipSpan ? ' ' : ''}${tipSpan ? tipSpan.outerHTML : ''}`;
+      }
+    }
+  });
+  
+  // Update map count if applicable
+  const mapCountEl = document.getElementById('anVisMapCount');
+  if (mapCountEl) {
+    mapCountEl.textContent = `(${periodLabel})`;
+  }
+}
+
 function renderAnalytics(s, prevMonthOrders = []) {
+  // Update all card titles with current time range
+  _updateAnalyticsCardTitles();
+  
   // ── Traffic stats ──────────────────────────────────────────────
   document.getElementById('anVisitorsToday').textContent  = s.uniqueVisitorsToday   ?? 0;
   document.getElementById('anVisitorsMonth').textContent  = s.uniqueVisitorsThisMonth ?? 0;
