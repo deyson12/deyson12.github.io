@@ -2763,10 +2763,10 @@ async function _handleCollectionDeepLink() {
   const slug = new URLSearchParams(location.search).get('c');
   if (!slug) return;
   try {
-    const res = await fetch(`${API_BASE}/api/collections/slug/${encodeURIComponent(slug)}`);
+    const res = await fetch(`${API_BASE}/api/collections/slug/${encodeURIComponent(slug)}/with-products`);
     if (!res.ok) return;
     const col = await res.json();
-    openBannerPopup('collection:' + slug, col.title || slug);
+    openBannerPopupWithData(col);
   } catch (_) {}
 }
 
@@ -3283,6 +3283,17 @@ function toggleTheme() {
   syncThemeIcon();
 }
 
+/** Direct call for collection popup with pre-loaded data (no extra fetch) */
+function openBannerPopupWithData(col) {
+  document.getElementById('bnrPopupTitle').textContent = col.title || col.slug || '';
+  document.getElementById('bnrPopupOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  const products = (col.products || []).map(r => { const p = normalizeProduct(r); _productCache.set(p.id, p); return p; });
+  document.getElementById('bnrPopupGrid').innerHTML = products.length
+    ? products.map(p => buildCard(p)).join('')
+    : '<p style="text-align:center;padding:24px;color:var(--text-muted)">No hay productos en esta colección.</p>';
+}
+
 // ===== BANNER POPUP =====
 async function openBannerPopup(filter, title) {
   document.getElementById('bnrPopupTitle').textContent = title;
@@ -3295,16 +3306,6 @@ async function openBannerPopup(filter, title) {
       const _geoOffer = _geoCoords ? `&lat=${_geoCoords.lat}&lng=${_geoCoords.lng}` : '';
       const _or = await fetch(`${API_BASE}/api/products/pidefacil/offers?page=0&size=50${_geoOffer}`);
       if (_or.ok) products = _cacheProducts((await _or.json()).content);
-    } else if (filter && filter.startsWith('collection:')) {
-      const slug = filter.slice('collection:'.length);
-      // UNA SOLA PETICIÓN que devuelve colección + todos los productos
-      const _colRes = await fetch(`${API_BASE}/api/collections/slug/${encodeURIComponent(slug)}/with-products`);
-      if (_colRes.ok) {
-        const col = await _colRes.json();
-        if (col.products && col.products.length) {
-          products = col.products.map(r => { const p = normalizeProduct(r); _productCache.set(p.id, p); return p; });
-        }
-      }
     } else {
       const _geoCat = _geoCoords ? `&lat=${_geoCoords.lat}&lng=${_geoCoords.lng}` : '';
       const _cr = await fetch(`${API_BASE}/api/products/pidefacil/paged?category=${encodeURIComponent(filter)}&page=0&size=50${_geoCat}`);
