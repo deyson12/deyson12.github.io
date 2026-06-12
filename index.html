@@ -571,7 +571,7 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
     </div>
     <div class="order-footer">
       <div class="tnc-check-row">
-        <input type="checkbox" id="chkTnc" onchange="document.getElementById('btnSendOrder').disabled=!this.checked">
+        <input type="checkbox" id="chkTnc">
         <label class="tnc-check-label" for="chkTnc">
           He leído y acepto los
           <span class="tnc-link" onclick="openTnc();event.stopPropagation()">Términos y Condiciones</span>,
@@ -584,7 +584,7 @@ body{font-family:var(--font-body,'DM Sans',sans-serif);background:var(--bg);colo
           Acepto recibir promociones y novedades por WhatsApp.
         </label>
       </div>
-      <button class="btn-send-order" id="btnSendOrder" disabled onclick="sendWhatsappOrder()">
+      <button class="btn-send-order" id="btnSendOrder" onclick="sendWhatsappOrder()">
         <svg viewBox="0 0 24 24"><path fill="#25D366" d="M12 0C5.373 0 0 5.373 0 12c0 2.025.507 3.967 1.399 5.671L.1 23.9l6.499-1.699A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/><path fill="#fff" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/></svg>
         Enviar pedido por WhatsApp
       </button>
@@ -784,8 +784,6 @@ function closeTnc() { document.getElementById('tncOverlay').classList.remove('op
 function _tncAccept() {
   var cb = document.getElementById('chkTnc');
   cb.checked = true;
-  document.getElementById('btnSendOrder').disabled = false;
-  cb.dispatchEvent(new Event('change'));
   closeTnc();
 }
 </script>

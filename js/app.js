@@ -2212,18 +2212,11 @@ function _orderLoading(show) {
   el.style.display = show ? 'flex' : 'none';
   const btn = document.getElementById('btnSendOrder');
   if (btn) {
-    const tncOk = document.getElementById('chkTnc')?.checked ?? true;
-    btn.disabled = show || !tncOk;
+    btn.disabled = show;
   }
 }
 
 async function sendWhatsappOrder() {
-  if (!(document.getElementById('chkTnc')?.checked)) {
-    showToast('Debes aceptar los Términos y Condiciones para continuar', '');
-    document.getElementById('chkTnc')?.focus();
-    return;
-  }
-
   const dir    = document.getElementById('inputDireccion').value.trim();
   const nom    = document.getElementById('inputNombre').value.trim();
   const phone  = document.getElementById('inputCelular').value.replace(/\D/g, '');
@@ -2235,6 +2228,12 @@ async function sendWhatsappOrder() {
   if (!/^3\d{9}$/.test(phone)) { showToast('Ingresa un celular colombiano válido, ej: 3001234567', ''); document.getElementById('inputCelular').focus(); return; }
   if (!pago) { showToast('Selecciona el método de pago', '');       document.getElementById('inputPago').focus(); return; }
   if (pago === 'Efectivo' && !cambio) { showToast('Ingresa el valor con que vas a pagar', ''); document.getElementById('inputCambio').focus(); return; }
+  if (!(document.getElementById('chkTnc')?.checked)) {
+    showToast('Debes aceptar los Términos y Condiciones para continuar', '⚠️');
+    document.getElementById('chkTnc')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    document.getElementById('chkTnc')?.focus();
+    return;
+  }
 
   // Open placeholder tab early to reduce popup blocking on mobile browsers.
   // Only for WhatsApp flow; Wompi has its own redirect.
