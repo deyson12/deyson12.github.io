@@ -711,6 +711,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   _handleProductDeepLink();
   _handleOrderDeepLink();
   _handleCollectionDeepLink();
+  _handleBuyDeepLink();
   // Track page view (once per session) — already fired at DOMContentLoaded, skip here
   // Track UTM entry — already fired at DOMContentLoaded, skip here
   // Scroll-to-top button visibility
@@ -1792,6 +1793,15 @@ function addToCart(id, e) {
   trackEvent('CART_ADD', { productId: p?.id, name: p?.name, price: p?.price, qty: ex ? ex.qty : 1 });
 }
 
+function _addToCartSilent(product, qty) {
+  const ex = cart.find(x => x.id === product.id);
+  if (ex) ex.qty += qty;
+  else cart.push({ ...product, qty });
+  checkedItems.add(product.id);
+  saveCart(); updateCartUI(); renderCartPanel(); updateAllBtns();
+  trackEvent('CART_ADD', { productId: product.id, name: product.name, price: product.price, qty });
+}
+
 function updateAllBtns() {
   _productCache.forEach(p => {
     const ci = cart.find(c => c.id === p.id);
@@ -2768,6 +2778,63 @@ async function _handleCollectionDeepLink() {
     const col = await res.json();
     openBannerPopupWithData(col);
   } catch (_) {}
+}
+
+async function _handleBuyDeepLink() {
+  const params = new URLSearchParams(location.search);
+  const buyParam = params.get('buy');
+  if (!buyParam) return;
+
+  // Pre-fill user data if provided in URL
+  const urlNombre = params.get('nombre');
+  const urlCel = params.get('cel');
+  if (urlNombre || urlCel) {
+    try {
+      const u = JSON.parse(localStorage.getItem('cy_user') || '{}');
+      if (urlNombre) u.name = urlNombre.trim();
+      if (urlCel) u.phone = urlCel.trim();
+      localStorage.setItem('cy_user', JSON.stringify(u));
+    } catch (_) {}
+  }
+
+  // Parse items: "shortId1:qty1,shortId2:qty2"
+  const items = buyParam.split(',').map(token => {
+    const [shortId, qtyStr] = token.trim().split(':');
+    return { shortId: shortId?.trim(), qty: Math.max(1, parseInt(qtyStr) || 1) };
+  }).filter(x => x.shortId);
+
+  if (!items.length) return;
+
+  // Replace cart with deeplink items (flyer = intentional purchase)
+  const buyMode = params.get('buy_mode');
+  if (buyMode !== 'add') {
+    cart = []; checkedItems.clear();
+  }
+
+  // Resolve each product and add to cart
+  let added = 0;
+  await Promise.allSettled(items.map(async ({ shortId, qty }) => {
+    try {
+      let product = [..._productCache.values()].find(x => x.id.startsWith(shortId));
+      if (!product) {
+        const r = await fetch(`${API_BASE}/api/products/resolve/${encodeURIComponent(shortId)}`);
+        if (!r.ok) { console.warn('[buy deeplink] producto no encontrado:', shortId); return; }
+        const raw = await r.json();
+        product = normalizeProduct(raw);
+        _productCache.set(product.id, product);
+      }
+      _addToCartSilent(product, qty);
+      added++;
+    } catch (e) {
+      console.warn('[buy deeplink] error cargando producto:', shortId, e);
+    }
+  }));
+
+  if (added > 0) {
+    openOrderPopup();
+  } else {
+    showToast('No pudimos cargar el producto del volante', '⚠️');
+  }
 }
 
 function _handleProductDeepLink() {
