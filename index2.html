@@ -1,0 +1,2953 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Mapa de registros</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* =========================================================
+   MAPA
+========================================================= */
+
+#map {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+
+/* =========================================================
+   BOTÓN HAMBURGUESA
+========================================================= */
+
+.menu-button {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+
+    width: 48px;
+    height: 48px;
+
+    z-index: 1000;
+
+    border: 0;
+    border-radius: 10px;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 2px 10px rgba(0, 0, 0, .20);
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 24px;
+
+    transition: .2s;
+}
+
+.menu-button:hover {
+    background: #f3f4f6;
+}
+
+
+/* =========================================================
+   SIDEBAR
+========================================================= */
+
+.sidebar {
+    position: fixed;
+
+    top: 0;
+    left: 0;
+    bottom: 0;
+
+    width: 390px;
+
+    z-index: 900;
+
+    background: #ffffff;
+
+    box-shadow:
+        4px 0 18px rgba(0, 0, 0, .15);
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+
+    transform: translateX(0);
+
+    transition:
+        transform .25s ease;
+}
+
+.sidebar.hidden {
+    transform: translateX(-100%);
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.header {
+    padding:
+        20px
+        18px
+        17px
+        75px;
+
+    border-bottom:
+        1px solid #e5e7eb;
+
+    background:
+        #ffffff;
+}
+
+.header h1 {
+    margin: 0;
+
+    color:
+        #111827;
+
+    font-size:
+        20px;
+}
+
+.header p {
+    margin:
+        6px 0 0;
+
+    color:
+        #6b7280;
+
+    font-size:
+        12px;
+
+    line-height:
+        1.4;
+}
+
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+.status {
+    padding:
+        11px 15px;
+
+    background:
+        #f8fafc;
+
+    border-bottom:
+        1px solid #e5e7eb;
+}
+
+.status-text {
+    color:
+        #374151;
+
+    font-size:
+        12px;
+
+    font-weight:
+        600;
+}
+
+.progress {
+    width:
+        100%;
+
+    height:
+        5px;
+
+    margin-top:
+        8px;
+
+    overflow:
+        hidden;
+
+    border-radius:
+        10px;
+
+    background:
+        #e5e7eb;
+}
+
+.progress-bar {
+    width:
+        0%;
+
+    height:
+        100%;
+
+    background:
+        #2563eb;
+
+    transition:
+        width .2s ease;
+}
+
+
+/* =========================================================
+   ESTADÍSTICAS
+========================================================= */
+
+.stats {
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap:
+        7px;
+
+    padding:
+        12px 15px;
+}
+
+.stat {
+    padding:
+        9px 4px;
+
+    text-align:
+        center;
+
+    border:
+        1px solid #e5e7eb;
+
+    border-radius:
+        8px;
+
+    background:
+        #f9fafb;
+}
+
+.stat-number {
+    color:
+        #111827;
+
+    font-size:
+        18px;
+
+    font-weight:
+        700;
+}
+
+.stat-label {
+    margin-top:
+        2px;
+
+    color:
+        #6b7280;
+
+    font-size:
+        9px;
+
+    text-transform:
+        uppercase;
+}
+
+
+/* =========================================================
+   FILTROS
+========================================================= */
+
+.filters {
+    display:
+        grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap:
+        7px;
+
+    padding:
+        0 15px 12px;
+}
+
+.filters input,
+.filters select {
+    width:
+        100%;
+
+    height:
+        35px;
+
+    padding:
+        0 9px;
+
+    border:
+        1px solid #d1d5db;
+
+    border-radius:
+        6px;
+
+    outline:
+        none;
+
+    background:
+        #ffffff;
+
+    color:
+        #374151;
+
+    font-size:
+        12px;
+}
+
+.filters input:focus,
+.filters select:focus {
+    border-color:
+        #2563eb;
+}
+
+.search {
+    grid-column:
+        1 / -1;
+}
+
+.button {
+    height:
+        35px;
+
+    border:
+        0;
+
+    border-radius:
+        6px;
+
+    background:
+        #2563eb;
+
+    color:
+        #ffffff;
+
+    font-size:
+        12px;
+
+    font-weight:
+        600;
+
+    cursor:
+        pointer;
+}
+
+.button:hover {
+    background:
+        #1d4ed8;
+}
+
+
+/* =========================================================
+   ERRORES
+========================================================= */
+
+.error-box {
+    margin:
+        0 15px 10px;
+
+    padding:
+        9px;
+
+    max-height:
+        110px;
+
+    overflow-y:
+        auto;
+
+    border:
+        1px solid #fecaca;
+
+    border-radius:
+        7px;
+
+    background:
+        #fef2f2;
+
+    color:
+        #991b1b;
+
+    font-size:
+        11px;
+
+    line-height:
+        1.4;
+}
+
+
+/* =========================================================
+   LISTA
+========================================================= */
+
+.list {
+    flex:
+        1;
+
+    overflow-y:
+        auto;
+
+    padding:
+        0 10px 15px;
+}
+
+.list-title {
+    padding:
+        4px 5px 8px;
+
+    color:
+        #6b7280;
+
+    font-size:
+        11px;
+}
+
+.record {
+    margin-bottom:
+        7px;
+
+    padding:
+        10px;
+
+    border:
+        1px solid #e5e7eb;
+
+    border-radius:
+        8px;
+
+    background:
+        #ffffff;
+
+    cursor:
+        pointer;
+
+    transition:
+        .15s;
+}
+
+.record:hover {
+    background:
+        #eff6ff;
+
+    border-color:
+        #93c5fd;
+}
+
+.record-name {
+    color:
+        #111827;
+
+    font-size:
+        13px;
+
+    font-weight:
+        700;
+}
+
+.record-address {
+    margin-top:
+        4px;
+
+    color:
+        #6b7280;
+
+    font-size:
+        11px;
+
+    line-height:
+        1.4;
+}
+
+.record-company {
+    margin-top:
+        5px;
+
+    color:
+        #374151;
+
+    font-size:
+        11px;
+}
+
+.badge {
+    display:
+        inline-block;
+
+    margin-top:
+        6px;
+
+    margin-right:
+        3px;
+
+    padding:
+        3px 6px;
+
+    border-radius:
+        5px;
+
+    background:
+        #eff6ff;
+
+    color:
+        #1d4ed8;
+
+    font-size:
+        9px;
+}
+
+
+/* =========================================================
+   INFO WINDOW
+========================================================= */
+
+.info {
+    min-width:
+        270px;
+
+    max-width:
+        360px;
+
+    padding:
+        2px;
+}
+
+.info h3 {
+    margin:
+        0 0 10px;
+
+    color:
+        #111827;
+
+    font-size:
+        16px;
+}
+
+.info-row {
+    margin-bottom:
+        6px;
+
+    color:
+        #374151;
+
+    font-size:
+        12px;
+
+    line-height:
+        1.35;
+}
+
+.info-label {
+    color:
+        #6b7280;
+
+    font-weight:
+        700;
+}
+
+.map-link {
+    display:
+        inline-block;
+
+    margin-top:
+        7px;
+
+    color:
+        #2563eb;
+
+    text-decoration:
+        none;
+
+    font-size:
+        12px;
+
+    font-weight:
+        700;
+}
+
+
+/* =========================================================
+   PERSONAS EN MISMA UBICACIÓN
+========================================================= */
+
+.group-item {
+    padding:
+        8px 0;
+
+    border-bottom:
+        1px solid #eeeeee;
+
+    cursor:
+        pointer;
+}
+
+.group-item:last-child {
+    border-bottom:
+        0;
+}
+
+.group-item:hover {
+    color:
+        #2563eb;
+}
+
+.group-name {
+    font-size:
+        12px;
+
+    font-weight:
+        700;
+}
+
+.group-meta {
+    margin-top:
+        2px;
+
+    color:
+        #6b7280;
+
+    font-size:
+        10px;
+}
+
+
+/* =========================================================
+   OVERLAY
+========================================================= */
+
+.overlay {
+    position:
+        fixed;
+
+    inset:
+        0;
+
+    z-index:
+        850;
+
+    background:
+        rgba(0, 0, 0, .30);
+
+    opacity:
+        1;
+
+    pointer-events:
+        auto;
+
+    transition:
+        opacity .25s ease;
+}
+
+.overlay.hidden {
+    opacity:
+        0;
+
+    pointer-events:
+        none;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (min-width: 601px) {
+
+    .overlay {
+        display:
+            none;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .sidebar {
+        width:
+            min(390px, 88vw);
+    }
+
+    .header {
+        padding-left:
+            18px;
+    }
+
+    .menu-button {
+        top:
+            10px;
+
+        left:
+            10px;
+
+        width:
+            44px;
+
+        height:
+            44px;
+    }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- =========================================================
+     MAPA
+========================================================= -->
+
+<div id="map"></div>
+
+<!-- =========================================================
+     BOTÓN MENU
+========================================================= -->
+
+<button
+id="menuButton"
+class="menu-button"
+onclick="toggleSidebar()"
+aria-label="Abrir menú"
+
+>
+
+```
+☰
+```
+
+</button>
+
+<!-- =========================================================
+     OVERLAY
+========================================================= -->
+
+<div
+    id="overlay"
+    class="overlay"
+    onclick="closeSidebar()"
+></div>
+
+<!-- =========================================================
+     SIDEBAR
+========================================================= -->
+
+<aside
+    id="sidebar"
+    class="sidebar"
+>
+
+```
+<!-- HEADER -->
+
+<div class="header">
+
+    <h1>
+        📍 Mapa de registros
+    </h1>
+
+    <p>
+        Datos cargados desde
+        <strong>datos.json</strong>
+    </p>
+
+</div>
+
+
+<!-- STATUS -->
+
+<div class="status">
+
+    <div
+        id="statusText"
+        class="status-text"
+    >
+        ⏳ Esperando Google Maps...
+    </div>
+
+
+    <div class="progress">
+
+        <div
+            id="progressBar"
+            class="progress-bar"
+        ></div>
+
+    </div>
+
+</div>
+
+
+<!-- ESTADISTICAS -->
+
+<div class="stats">
+
+    <div class="stat">
+
+        <div
+            id="totalCount"
+            class="stat-number"
+        >
+            0
+        </div>
+
+        <div class="stat-label">
+            Registros
+        </div>
+
+    </div>
+
+
+    <div class="stat">
+
+        <div
+            id="locatedCount"
+            class="stat-number"
+        >
+            0
+        </div>
+
+        <div class="stat-label">
+            Ubicados
+        </div>
+
+    </div>
+
+
+    <div class="stat">
+
+        <div
+            id="addressCount"
+            class="stat-number"
+        >
+            0
+        </div>
+
+        <div class="stat-label">
+            Direcciones
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- FILTROS -->
+
+<div class="filters">
+
+    <input
+        id="searchInput"
+        class="search"
+        type="text"
+        placeholder="🔎 Buscar..."
+        oninput="renderList()"
+    >
+
+
+    <input
+        id="minAge"
+        type="number"
+        placeholder="Edad mínima"
+        oninput="renderList()"
+    >
+
+
+    <input
+        id="maxAge"
+        type="number"
+        placeholder="Edad máxima"
+        oninput="renderList()"
+    >
+
+
+    <select
+        id="companyFilter"
+        onchange="renderList()"
+    >
+
+        <option value="">
+            Todas las empresas
+        </option>
+
+    </select>
+
+
+    <button
+        class="button"
+        onclick="fitMap()"
+    >
+        🗺️ Ver todo
+    </button>
+
+</div>
+
+
+<!-- ERRORES -->
+
+<div
+    id="errorBox"
+    class="error-box"
+    style="display:none;"
+></div>
+
+
+<!-- LISTA -->
+
+<div class="list">
+
+    <div class="list-title">
+        REGISTROS
+    </div>
+
+    <div id="recordList"></div>
+
+</div>
+```
+
+</aside>
+
+<script>
+
+/* =========================================================
+   VARIABLES
+========================================================= */
+
+let map = null;
+
+let geocoder = null;
+
+let infoWindow = null;
+
+let records = [];
+
+let markers = [];
+
+
+/*
+ * Guardamos las coordenadas ya utilizadas.
+ *
+ * Esto permite saber si una nueva dirección
+ * cae exactamente en una ubicación que ya
+ * tiene marcador.
+ */
+
+const markerByLocation = new Map();
+
+
+/*
+ * Contador de personas ubicadas.
+ */
+
+let locatedCount = 0;
+
+
+/*
+ * Total de direcciones procesadas.
+ */
+
+let processedAddresses = 0;
+
+
+/* =========================================================
+   MENU
+========================================================= */
+
+function toggleSidebar() {
+
+    const sidebar =
+        document.getElementById(
+            "sidebar"
+        );
+
+    const overlay =
+        document.getElementById(
+            "overlay"
+        );
+
+
+    sidebar.classList.toggle(
+        "hidden"
+    );
+
+    overlay.classList.toggle(
+        "hidden"
+    );
+
+}
+
+
+function closeSidebar() {
+
+    document
+        .getElementById(
+            "sidebar"
+        )
+        .classList.add(
+            "hidden"
+        );
+
+
+    document
+        .getElementById(
+            "overlay"
+        )
+        .classList.add(
+            "hidden"
+        );
+
+}
+
+
+/* =========================================================
+   GOOGLE MAPS
+========================================================= */
+
+function initMap() {
+
+    /*
+     * IMPORTANTE:
+     *
+     * Este centro y zoom son FIJOS.
+     *
+     * Durante la carga de datos NO se modifica
+     * ni center ni zoom.
+     */
+
+    map =
+        new google.maps.Map(
+            document.getElementById(
+                "map"
+            ),
+            {
+
+                center: {
+                    lat: 6.2442,
+                    lng: -75.5812
+                },
+
+                /*
+                 * Zoom alejado.
+                 */
+
+                zoom: 11,
+
+                mapTypeControl: true,
+
+                streetViewControl: true,
+
+                fullscreenControl: true
+
+            }
+        );
+
+
+    geocoder =
+        new google.maps.Geocoder();
+
+
+    infoWindow =
+        new google.maps.InfoWindow();
+
+
+    setStatus(
+        "⏳ Cargando datos.json..."
+    );
+
+
+    loadData();
+
+}
+
+
+/* =========================================================
+   CARGAR DATOS
+========================================================= */
+
+async function loadData() {
+
+    try {
+
+        const response =
+            await fetch(
+                "datos.json"
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "No se pudo cargar datos.json"
+            );
+
+        }
+
+
+        const text =
+            await response.text();
+
+
+        /*
+         * Acepta:
+         *
+         * {...}
+         * {...}
+         * {...}
+         */
+
+        const data =
+            parseConcatenatedJSON(
+                text
+            );
+
+
+        if (!data.length) {
+
+            throw new Error(
+                "No se encontraron registros válidos"
+            );
+
+        }
+
+
+        records =
+            data.map(
+                (item, index) => ({
+
+                    ...item,
+
+                    _index:
+                        index,
+
+                    _status:
+                        "pending",
+
+                    _lat:
+                        null,
+
+                    _lng:
+                        null,
+
+                    _formattedAddress:
+                        null
+
+                })
+            );
+
+
+        document.getElementById(
+            "totalCount"
+        ).textContent =
+            records.length.toLocaleString();
+
+
+        populateCompanies();
+
+        renderList();
+
+
+        /*
+         * Comenzar inmediatamente
+         * con las direcciones.
+         */
+
+        processAddresses();
+
+    }
+
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+
+        setStatus(
+            "❌ " +
+            error.message
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   PARSER JSON CONCATENADO
+========================================================= */
+
+function parseConcatenatedJSON(
+    text
+) {
+
+    const result = [];
+
+    let depth = 0;
+
+    let start = -1;
+
+    let inString = false;
+
+    let escaped = false;
+
+
+    for (
+        let i = 0;
+        i < text.length;
+        i++
+    ) {
+
+        const char =
+            text[i];
+
+
+        if (inString) {
+
+            if (escaped) {
+
+                escaped = false;
+
+                continue;
+
+            }
+
+
+            if (
+                char === "\\"
+            ) {
+
+                escaped = true;
+
+                continue;
+
+            }
+
+
+            if (
+                char === '"'
+            ) {
+
+                inString = false;
+
+            }
+
+
+            continue;
+
+        }
+
+
+        if (
+            char === '"'
+        ) {
+
+            inString = true;
+
+            continue;
+
+        }
+
+
+        if (
+            char === "{"
+        ) {
+
+            if (
+                depth === 0
+            ) {
+
+                start = i;
+
+            }
+
+            depth++;
+
+        }
+
+
+        else if (
+            char === "}"
+        ) {
+
+            depth--;
+
+
+            if (
+                depth === 0 &&
+                start !== -1
+            ) {
+
+                const block =
+                    text.substring(
+                        start,
+                        i + 1
+                    );
+
+
+                try {
+
+                    result.push(
+                        JSON.parse(
+                            block
+                        )
+                    );
+
+                }
+
+                catch (error) {
+
+                    console.error(
+                        "Objeto inválido:",
+                        block
+                    );
+
+                }
+
+
+                start = -1;
+
+            }
+
+        }
+
+    }
+
+
+    return result;
+
+}
+
+
+/* =========================================================
+   NORMALIZAR DIRECCIÓN
+========================================================= */
+
+function normalizeAddress(
+    address
+) {
+
+    if (!address) {
+
+        return "";
+
+    }
+
+
+    let value =
+        String(address)
+            .toUpperCase()
+            .replace(
+                /\s+/g,
+                " "
+            )
+            .trim();
+
+
+    value =
+        value
+
+            .replace(
+                /\bCRA\b/g,
+                "CARRERA"
+            )
+
+            .replace(
+                /\bCR\b/g,
+                "CARRERA"
+            )
+
+            .replace(
+                /\bKR\b/g,
+                "CARRERA"
+            )
+
+            .replace(
+                /\bKRA\b/g,
+                "CARRERA"
+            )
+
+            .replace(
+                /\bCLL\b/g,
+                "CALLE"
+            )
+
+            .replace(
+                /\bCL\b/g,
+                "CALLE"
+            );
+
+
+    /*
+     * Si no especifican ciudad,
+     * asumimos Medellín.
+     */
+
+    if (
+        !value.includes(
+            "MEDELLIN"
+        ) &&
+        !value.includes(
+            "MEDELLÍN"
+        )
+    ) {
+
+        value +=
+            ", Medellín, Antioquia, Colombia";
+
+    }
+
+
+    return value;
+
+}
+
+
+/* =========================================================
+   DIRECCIÓN BASE
+========================================================= */
+
+function getAddressKey(
+    address
+) {
+
+    let value =
+        normalizeAddress(
+            address
+        );
+
+
+    /*
+     * Quitamos apartamento,
+     * torre, interior, etc.
+     *
+     * Así las personas del mismo edificio
+     * comparten coordenada.
+     */
+
+    value =
+        value
+
+            .replace(
+                /\bAPTO\b.*$/i,
+                ""
+            )
+
+            .replace(
+                /\bAPT\b.*$/i,
+                ""
+            )
+
+            .replace(
+                /\bAPARTAMENTO\b.*$/i,
+                ""
+            )
+
+            .replace(
+                /\bTORRE\b.*$/i,
+                ""
+            )
+
+            .replace(
+                /\bINT\b.*$/i,
+                ""
+            )
+
+            .replace(
+                /\bINTERIOR\b.*$/i,
+                ""
+            )
+
+            .replace(
+                /\bURBANIZACION\b.*$/i,
+                ""
+            )
+
+            .replace(
+                /\bURBANIZACIÓN\b.*$/i,
+                ""
+            )
+
+            .replace(
+                /\s+/g,
+                " "
+            )
+
+            .trim();
+
+
+    return value;
+
+}
+
+
+/* =========================================================
+   PROCESAR DIRECCIONES
+========================================================= */
+
+async function processAddresses() {
+
+    const uniqueAddresses =
+        new Map();
+
+
+    /*
+     * Obtener únicamente direcciones
+     * diferentes.
+     */
+
+    records.forEach(
+        record => {
+
+            const key =
+                getAddressKey(
+                    record.nomenclatura
+                );
+
+
+            if (
+                key &&
+                !uniqueAddresses.has(
+                    key
+                )
+            ) {
+
+                uniqueAddresses.set(
+                    key,
+                    record.nomenclatura
+                );
+
+            }
+
+        }
+    );
+
+
+    const addresses =
+        [
+            ...uniqueAddresses.entries()
+        ];
+
+
+    document.getElementById(
+        "addressCount"
+    ).textContent =
+        addresses.length.toLocaleString();
+
+
+    const total =
+        addresses.length;
+
+
+    /*
+     * ======================================================
+     * PROCESAMOS UNA DIRECCIÓN A LA VEZ.
+     *
+     * Cada vez que termina una:
+     *
+     * 1. Se actualizan sus registros.
+     * 2. Se crea el punto.
+     * 3. El punto aparece inmediatamente.
+     * 4. El mapa NO se mueve.
+     * ======================================================
+     */
+
+    for (
+        let i = 0;
+        i < total;
+        i++
+    ) {
+
+        const [
+            key,
+            originalAddress
+        ] =
+            addresses[i];
+
+
+        try {
+
+            const result =
+                await geocodeAddress(
+                    normalizeAddress(
+                        originalAddress
+                    )
+                );
+
+
+            if (
+                result &&
+                result.geometry &&
+                result.geometry.location
+            ) {
+
+                const location =
+                    result.geometry.location;
+
+
+                /*
+                 * Registros correspondientes
+                 * a esta dirección.
+                 */
+
+                const matchingRecords =
+                    records.filter(
+                        record =>
+                            getAddressKey(
+                                record.nomenclatura
+                            ) === key
+                    );
+
+
+                matchingRecords.forEach(
+                    record => {
+
+                        record._lat =
+                            location.lat();
+
+                        record._lng =
+                            location.lng();
+
+                        record._formattedAddress =
+                            result.formatted_address;
+
+                        record._status =
+                            "located";
+
+                    }
+                );
+
+
+                /*
+                 * Actualizamos contador.
+                 */
+
+                locatedCount =
+                    records.filter(
+                        record =>
+                            record._status ===
+                            "located"
+                    ).length;
+
+
+                /*
+                 * =================================================
+                 * CREAR EL PUNTO INMEDIATAMENTE
+                 * =================================================
+                 */
+
+                addLocationMarker(
+                    location,
+                    matchingRecords
+                );
+
+
+                /*
+                 * Actualizar UI.
+                 */
+
+                document.getElementById(
+                    "locatedCount"
+                ).textContent =
+                    locatedCount.toLocaleString();
+
+
+                renderList();
+
+            }
+
+        }
+
+        catch (error) {
+
+            console.warn(
+                "Error geocodificando:",
+                originalAddress,
+                error
+            );
+
+        }
+
+
+        processedAddresses =
+            i + 1;
+
+
+        updateProgress(
+            processedAddresses,
+            total
+        );
+
+
+        /*
+         * Pausa pequeña para no saturar
+         * la API.
+         */
+
+        await sleep(
+            100
+        );
+
+    }
+
+
+    /*
+     * ======================================================
+     * FINAL
+     * ======================================================
+     */
+
+    setStatus(
+        `✓ Terminado · ${locatedCount.toLocaleString()} registros ubicados`
+    );
+
+}
+
+
+/* =========================================================
+   GEOCODIFICAR
+========================================================= */
+
+function geocodeAddress(
+    address
+) {
+
+    return new Promise(
+        (
+            resolve,
+            reject
+        ) => {
+
+            geocoder.geocode(
+                {
+
+                    address:
+                        address,
+
+                    region:
+                        "CO"
+
+                },
+
+                (
+                    results,
+                    status
+                ) => {
+
+                    if (
+                        status ===
+                            "OK" &&
+                        results &&
+                        results.length
+                    ) {
+
+                        resolve(
+                            results[0]
+                        );
+
+                    }
+
+                    else {
+
+                        reject(
+                            status
+                        );
+
+                    }
+
+                }
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   AGREGAR UBICACIÓN
+========================================================= */
+
+function addLocationMarker(
+    location,
+    locationRecords
+) {
+
+    const lat =
+        location.lat();
+
+    const lng =
+        location.lng();
+
+
+    /*
+     * Clave de coordenadas.
+     */
+
+    const key =
+        `${lat.toFixed(6)},${lng.toFixed(6)}`;
+
+
+    /*
+     * ======================================================
+     * SI YA HAY UN MARCADOR AQUÍ
+     * ======================================================
+     */
+
+    if (
+        markerByLocation.has(
+            key
+        )
+    ) {
+
+        const marker =
+            markerByLocation.get(
+                key
+            );
+
+
+        marker._records.push(
+            ...locationRecords
+        );
+
+
+        /*
+         * Eliminar duplicados.
+
+         */
+
+        marker._records =
+            [
+                ...new Map(
+                    marker._records.map(
+                        record => [
+                            record._index,
+                            record
+                        ]
+                    )
+                ).values()
+            ];
+
+
+        updateMarkerTitle(
+            marker
+        );
+
+
+        return;
+
+    }
+
+
+    /*
+     * ======================================================
+     * NUEVO MARCADOR
+     * ======================================================
+     */
+
+    const marker =
+        new google.maps.Marker({
+
+            position: {
+
+                lat:
+                    lat,
+
+                lng:
+                    lng
+
+            },
+
+            map:
+                map,
+
+            title:
+                locationRecords.length === 1
+                    ? (
+                        locationRecords[0]
+                            .nombre ||
+                        "Registro"
+                    )
+                    : `${locationRecords.length} registros`
+
+        });
+
+
+    marker._records =
+        [
+            ...locationRecords
+        ];
+
+
+    /*
+     * Guardamos el marcador.
+     */
+
+    markerByLocation.set(
+        key,
+        marker
+    );
+
+
+    markers.push(
+        marker
+    );
+
+
+    /*
+     * ======================================================
+     * CLICK
+     * ======================================================
+     */
+
+    marker.addListener(
+        "click",
+        () => {
+
+            openMarkerInfo(
+                marker
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   ACTUALIZAR TÍTULO MARCADOR
+========================================================= */
+
+function updateMarkerTitle(
+    marker
+) {
+
+    const count =
+        marker._records.length;
+
+
+    marker.setTitle(
+
+        count === 1
+            ? (
+                marker
+                    ._records[0]
+                    .nombre ||
+                "Registro"
+            )
+            : `${count} registros`
+
+    );
+
+}
+
+
+/* =========================================================
+   INFO DEL MARCADOR
+========================================================= */
+
+function openMarkerInfo(
+    marker
+) {
+
+    const list =
+        marker._records || [];
+
+
+    let html;
+
+
+    /*
+     * UNA PERSONA
+     */
+
+    if (
+        list.length === 1
+    ) {
+
+        html =
+            createInfoWindow(
+                list[0]
+            );
+
+    }
+
+
+    /*
+     * VARIAS PERSONAS
+     */
+
+    else {
+
+        const first =
+            list[0];
+
+
+        html = `
+
+            <div class="info">
+
+                <h3>
+                    📍 ${list.length} registros
+                </h3>
+
+
+                <div class="info-row">
+
+                    <span class="info-label">
+                        Dirección:
+                    </span>
+
+                    <br>
+
+                    ${
+                        escapeHtml(
+                            first.nomenclatura
+                        )
+                    }
+
+                </div>
+
+
+                <hr>
+
+
+                ${
+                    list
+                        .map(
+                            record => `
+
+                            <div
+                                class="group-item"
+                                data-record-index="${record._index}"
+                            >
+
+                                <div class="group-name">
+
+                                    ${
+                                        escapeHtml(
+                                            record.nombre ||
+                                            "Sin nombre"
+                                        )
+                                    }
+
+                                </div>
+
+
+                                <div class="group-meta">
+
+                                    ${
+                                        record.edad != null
+                                            ? `Edad: ${record.edad}`
+                                            : ""
+                                    }
+
+                                    ${
+                                        record.nombre_empresa
+                                            ? ` · ${escapeHtml(record.nombre_empresa)}`
+                                            : ""
+                                    }
+
+                                </div>
+
+                            </div>
+
+                        `
+                        )
+                        .join("")
+                }
+
+            </div>
+
+        `;
+
+    }
+
+
+    infoWindow.setContent(
+        html
+    );
+
+
+    infoWindow.open({
+
+        map:
+            map,
+
+        anchor:
+            marker
+
+    });
+
+
+    /*
+     * Eventos de personas agrupadas.
+     */
+
+    setTimeout(
+        () => {
+
+            document
+                .querySelectorAll(
+                    ".group-item"
+                )
+                .forEach(
+                    element => {
+
+                        element.onclick =
+                            () => {
+
+                                const index =
+                                    Number(
+                                        element
+                                            .dataset
+                                            .recordIndex
+                                    );
+
+
+                                focusRecord(
+                                    index
+                                );
+
+                            };
+
+                    }
+                );
+
+        },
+        0
+    );
+
+}
+
+
+/* =========================================================
+   INFO DE UNA PERSONA
+========================================================= */
+
+function createInfoWindow(
+    record
+) {
+
+    const mapsUrl =
+        `https://www.google.com/maps/search/?api=1&query=${record._lat},${record._lng}`;
+
+
+    return `
+
+        <div class="info">
+
+            <h3>
+
+                ${
+                    escapeHtml(
+                        record.nombre ||
+                        "Sin nombre"
+                    )
+                }
+
+            </h3>
+
+
+            ${
+                record.edad != null
+                    ? `
+
+                        <div class="info-row">
+
+                            <span class="info-label">
+                                Edad:
+                            </span>
+
+                            ${
+                                escapeHtml(
+                                    String(
+                                        record.edad
+                                    )
+                                )
+                            }
+
+                        </div>
+
+                    `
+                    : ""
+            }
+
+
+            ${
+                record.cdcliente != null
+                    ? `
+
+                        <div class="info-row">
+
+                            <span class="info-label">
+                                Cliente:
+                            </span>
+
+                            ${
+                                escapeHtml(
+                                    String(
+                                        record.cdcliente
+                                    )
+                                )
+                            }
+
+                        </div>
+
+                    `
+                    : ""
+            }
+
+
+            ${
+                record.cddni
+                    ? `
+
+                        <div class="info-row">
+
+                            <span class="info-label">
+                                DNI:
+                            </span>
+
+                            ${
+                                escapeHtml(
+                                    record.cddni
+                                )
+                            }
+
+                        </div>
+
+                    `
+                    : ""
+            }
+
+
+            ${
+                record.email
+                    ? `
+
+                        <div class="info-row">
+
+                            <span class="info-label">
+                                Email:
+                            </span>
+
+                            ${
+                                escapeHtml(
+                                    record.email
+                                )
+                            }
+
+                        </div>
+
+                    `
+                    : ""
+            }
+
+
+            ${
+                record.celular
+                    ? `
+
+                        <div class="info-row">
+
+                            <span class="info-label">
+                                Celular:
+                            </span>
+
+                            ${
+                                escapeHtml(
+                                    record.celular
+                                )
+                            }
+
+                        </div>
+
+                    `
+                    : ""
+            }
+
+
+            ${
+                record.nombre_empresa
+                    ? `
+
+                        <div class="info-row">
+
+                            <span class="info-label">
+                                Empresa:
+                            </span>
+
+                            <br>
+
+                            ${
+                                escapeHtml(
+                                    record.nombre_empresa
+                                )
+                            }
+
+                        </div>
+
+                    `
+                    : ""
+            }
+
+
+            <div class="info-row">
+
+                <span class="info-label">
+                    Dirección:
+                </span>
+
+                <br>
+
+                ${
+                    escapeHtml(
+                        record.nomenclatura ||
+                        ""
+                    )
+                }
+
+            </div>
+
+
+            ${
+                record._formattedAddress
+                    ? `
+
+                        <div
+                            class="info-row"
+                            style="
+                                color:#9ca3af;
+                                font-size:10px;
+                            "
+                        >
+
+                            Google:
+                            ${
+                                escapeHtml(
+                                    record._formattedAddress
+                                )
+                            }
+
+                        </div>
+
+                    `
+                    : ""
+            }
+
+
+            <a
+                class="map-link"
+                href="${mapsUrl}"
+                target="_blank"
+                rel="noopener"
+            >
+                🗺️ Abrir en Google Maps
+            </a>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   LISTA
+========================================================= */
+
+function renderList() {
+
+    const container =
+        document.getElementById(
+            "recordList"
+        );
+
+
+    const search =
+        document
+            .getElementById(
+                "searchInput"
+            )
+            .value
+            .toLowerCase()
+            .trim();
+
+
+    const minAge =
+        parseInt(
+            document.getElementById(
+                "minAge"
+            ).value
+        ) || null;
+
+
+    const maxAge =
+        parseInt(
+            document.getElementById(
+                "maxAge"
+            ).value
+        ) || null;
+
+
+    const company =
+        document.getElementById(
+            "companyFilter"
+        ).value;
+
+
+    const filtered =
+        records.filter(
+            record => {
+
+                const text =
+                    [
+                        record.nombre,
+                        record.email,
+                        record.celular,
+                        record.nomenclatura,
+                        record.nombre_empresa,
+                        record.cddni
+                    ]
+                    .filter(Boolean)
+                    .join(" ")
+                    .toLowerCase();
+
+
+                if (
+                    search &&
+                    !text.includes(
+                        search
+                    )
+                ) {
+
+                    return false;
+
+                }
+
+
+                if (
+                    minAge !== null &&
+                    Number(
+                        record.edad
+                    ) < minAge
+                ) {
+
+                    return false;
+
+                }
+
+
+                if (
+                    maxAge !== null &&
+                    Number(
+                        record.edad
+                    ) > maxAge
+                ) {
+
+                    return false;
+
+                }
+
+
+                if (
+                    company &&
+                    record.nombre_empresa !==
+                    company
+                ) {
+
+                    return false;
+
+                }
+
+
+                return true;
+
+            }
+        );
+
+
+    container.innerHTML =
+        "";
+
+
+    filtered.forEach(
+        record => {
+
+            const element =
+                document.createElement(
+                    "div"
+                );
+
+
+            element.className =
+                "record";
+
+
+            element.onclick =
+                () =>
+                    focusRecord(
+                        record._index
+                    );
+
+
+            element.innerHTML = `
+
+                <div class="record-name">
+
+                    ${
+                        escapeHtml(
+                            record.nombre ||
+                            "Sin nombre"
+                        )
+                    }
+
+                </div>
+
+
+                <div class="record-address">
+
+                    📍 ${
+                        escapeHtml(
+                            record.nomenclatura ||
+                            "Sin dirección"
+                        )
+                    }
+
+                </div>
+
+
+                ${
+                    record.nombre_empresa
+                        ? `
+
+                            <div class="record-company">
+
+                                🏢 ${
+                                    escapeHtml(
+                                        record.nombre_empresa
+                                    )
+                                }
+
+                            </div>
+
+                        `
+                        : ""
+                }
+
+
+                ${
+                    record.edad != null
+                        ? `
+
+                            <span class="badge">
+
+                                ${
+                                    escapeHtml(
+                                        String(
+                                            record.edad
+                                        )
+                                    )
+                                }
+                                años
+
+                            </span>
+
+                        `
+                        : ""
+                }
+
+
+                ${
+                    record._status ===
+                    "located"
+                        ? `
+
+                            <span
+                                class="badge"
+                                style="
+                                    background:#ecfdf5;
+                                    color:#047857;
+                                "
+                            >
+                                ✓ Ubicado
+                            </span>
+
+                        `
+                        : `
+
+                            <span
+                                class="badge"
+                                style="
+                                    background:#fef3c7;
+                                    color:#92400e;
+                                "
+                            >
+                                ⏳ Pendiente
+                            </span>
+
+                        `
+                }
+
+            `;
+
+
+            container.appendChild(
+                element
+            );
+
+        }
+    );
+
+
+    if (
+        !filtered.length
+    ) {
+
+        container.innerHTML = `
+
+            <div
+                style="
+                    padding:20px;
+                    text-align:center;
+                    color:#9ca3af;
+                    font-size:12px;
+                "
+            >
+                No hay registros que coincidan.
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+/* =========================================================
+   EMPRESAS
+========================================================= */
+
+function populateCompanies() {
+
+    const select =
+        document.getElementById(
+            "companyFilter"
+        );
+
+
+    const companies =
+        [
+            ...new Set(
+                records
+                    .map(
+                        record =>
+                            record.nombre_empresa
+                    )
+                    .filter(Boolean)
+            )
+        ]
+        .sort(
+            (a, b) =>
+                String(a)
+                    .localeCompare(
+                        String(b)
+                    )
+        );
+
+
+    companies.forEach(
+        company => {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+
+            option.value =
+                company;
+
+
+            option.textContent =
+                company;
+
+
+            select.appendChild(
+                option
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   ENFOCAR REGISTRO
+========================================================= */
+
+function focusRecord(
+    index
+) {
+
+    const record =
+        records[index];
+
+
+    if (!record) {
+
+        return;
+
+    }
+
+
+    if (
+        record._status !==
+        "located"
+    ) {
+
+        alert(
+            "Este registro todavía no tiene ubicación."
+        );
+
+        return;
+
+    }
+
+
+    /*
+     * IMPORTANTE:
+     *
+     * Aquí sí hacemos zoom porque el usuario
+     * hizo clic explícitamente en un registro.
+     *
+     * Durante la carga automática jamás hacemos
+     * esto.
+     */
+
+    map.panTo({
+
+        lat:
+            record._lat,
+
+        lng:
+            record._lng
+
+    });
+
+
+    map.setZoom(
+        18
+    );
+
+
+    const key =
+        `${record._lat.toFixed(6)},${record._lng.toFixed(6)}`;
+
+
+    const marker =
+        markerByLocation.get(
+            key
+        );
+
+
+    if (marker) {
+
+        openMarkerInfo(
+            marker
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   FIT MAP
+========================================================= */
+
+function fitMap() {
+
+    /*
+     * Esta función queda disponible
+     * únicamente cuando el usuario pulsa
+     * "Ver todo".
+     *
+     * No se ejecuta automáticamente.
+     */
+
+    if (!markers.length) {
+
+        return;
+
+    }
+
+
+    const bounds =
+        new google.maps.LatLngBounds();
+
+
+    markers.forEach(
+        marker => {
+
+            bounds.extend(
+                marker.getPosition()
+            );
+
+        }
+    );
+
+
+    map.fitBounds(
+        bounds
+    );
+
+}
+
+
+/* =========================================================
+   PROGRESO
+========================================================= */
+
+function updateProgress(
+    current,
+    total
+) {
+
+    const percentage =
+        total > 0
+            ? (
+                current /
+                total
+            ) * 100
+            : 0;
+
+
+    document.getElementById(
+        "progressBar"
+    ).style.width =
+        `${percentage}%`;
+
+
+    setStatus(
+        `⏳ ${current.toLocaleString()} de ${total.toLocaleString()} direcciones procesadas · ${locatedCount.toLocaleString()} ubicados`
+    );
+
+}
+
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+function setStatus(
+    text
+) {
+
+    document.getElementById(
+        "statusText"
+    ).textContent =
+        text;
+
+}
+
+
+/* =========================================================
+   ESCAPAR HTML
+========================================================= */
+
+function escapeHtml(
+    value
+) {
+
+    return String(
+        value ?? ""
+    )
+
+    .replace(
+        /&/g,
+        "&amp;"
+    )
+
+    .replace(
+        /</g,
+        "&lt;"
+    )
+
+    .replace(
+        />/g,
+        "&gt;"
+    )
+
+    .replace(
+        /"/g,
+        "&quot;"
+    )
+
+    .replace(
+        /'/g,
+        "&#039;"
+    );
+
+}
+
+
+/* =========================================================
+   DELAY
+========================================================= */
+
+function sleep(
+    ms
+) {
+
+    return new Promise(
+        resolve =>
+            setTimeout(
+                resolve,
+                ms
+            )
+    );
+
+}
+
+</script>
+
+<!-- =========================================================
+     GOOGLE MAPS API
+
+     CAMBIA TU_API_KEY POR TU API KEY REAL
+========================================================= -->
+
+<script
+    async
+    defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCZDKgSFqjayBMohK8lawKi2KPf8HLWdnM&callback=initMap">
+</script>
+
+</body>
+</html>
